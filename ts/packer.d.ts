@@ -573,6 +573,7 @@ declare namespace bws.packer {
     function setWrapperArray(str: string): void;
     function drawWrapper(wrapperIndex: number, size: number): void;
 }
+declare function main(): void;
 declare namespace bws.packer {
     /**
      * A packer.
