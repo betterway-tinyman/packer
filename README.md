@@ -5,8 +5,8 @@ Packer
 ## References
 ##### Demo
 ![alt text](http://betterwaysystems.github.io/packer/demo/packer.gif "Packer")
-	- Web: http://betterwaysystems.github.io/packer/demo/
-	- Video: http://betterwaysystems.github.io/packer/demo/packer.mp4
+  - Web: http://betterwaysystems.github.io/packer/demo/
+  - Video: http://betterwaysystems.github.io/packer/demo/packer.mp4
 
 ##### Programming
 - API Documents
@@ -14,24 +14,24 @@ Packer
 	- TypeScript API Document: http://betterwaysystems.github.io/packer/api/ts
 
 ##### Algorithm from Boxologic
-	- Boxologic: https://github.com/exad/boxologic
-	- Airforce Bin Packing: http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf
+  - Boxologic: https://github.com/exad/boxologic
+  - Airforce Bin Packing: http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf
 
 ## Installation
 ##### TypeScript (JavaScript) only
 If you want the TypeScript (JavaScript) only mode, any installation procedure is not required.
-	- `release/ts/index.html`
-	- http://betterwaysystems.github.io/packer/
+  - http://betterwaysystems.github.io/packer/
+  - `release/ts/index.html`
 
 ##### Build Cloud Server
 However, if you want to install the C++ mode, you've to install Visual C++ Redistributable for Visual Studio 2015. After the installation, execute `release/cpp/Packer.exe`. Then a cloud server deducting packer solution will be opened. After running the cloud server, open `release/ts/index.html`.
 
 You also can separate cloud server(C++) and clients(Web), let users to connect remote Packer server, by editing ip address in  `release/ts/server.xml`
 
-	- https://www.microsoft.com/en-US/download/details.aspx?id=48145
-	- `release/cpp/Packer.exe`
-	- `release/ts/index.html`
-	- `release/ts/server.xml`
+  - https://www.microsoft.com/en-US/download/details.aspx?id=48145
+  - `release/cpp/Packer.exe`
+  - `release/ts/index.html`
+  - `release/ts/server.xml`
 
 ## Implementation
 ##### Design
