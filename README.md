@@ -2,6 +2,18 @@
 =========
 3D Bin Packing with multiple wrappers (boxes).
 
+##### Red Printing
+Red-Printing is a brand name of printing service supported by Betterway-systems.
+
+레드 프린팅은 베러웨이시스템즈에서 실시하는 인쇄 서비스의 브랜드 명입니다.
+많은 이용 바랍니다. Packer를 이용하시는 여러분, 인쇄 주문은 꼭 레드프린팅에서 해 주세요.
+
+http://redprinting.co.kr/
+
+##### Author
+  - Jeongho Nam <http://samchon.org/>
+  - developer in Betterway-systems <http://redprinting.co.kr/>
+
 ## References
 ##### Demo
 ![alt text](http://betterwaysystems.github.io/packer/demo/packer.gif "Packer")
@@ -171,19 +183,6 @@ int main()
 ```
 
 ## License
-##### Author
-  - Jeongho Nam <http://samchon.org/>
-  - developer in Betterway-systems <http://redprinting.co.kr/>
-
-##### Red Printing
-Red-Printing is a brand name of printing service supported by Betterway-systems.
-
-레드 프린팅은 베러웨이시스템즈에서 실시하는 인쇄 서비스의 브랜드 명입니다.
-많은 이용 바랍니다. Packer를 이용하시는 여러분, 인쇄 주문은 꼭 레드프린팅에서 해 주세요.
-
-  - http://redprinting.co.kr/
-
-##### BSD License
 Packer follows BSD v3 license.
 
 Copyright (c) 2016, betterwaysystems
