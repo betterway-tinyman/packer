@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" 
+		   xmlns:ui="org.samchon.library.ui.*" 
+		   xmlns:menu="org.samchon.protocol.movie.menu.*" 
+		   xmlns:component="bws.packer.component.*"
+		   
+		   creationComplete="creationCompleted(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import bws.packer.entity.InstanceArray;
+			import bws.packer.entity.Packer;
+			import bws.packer.entity.Wrapper;
+			import bws.packer.entity.WrapperArray;
+			import bws.packer.entity.form.InstanceForm;
+			import bws.packer.entity.form.InstanceFormArray;
+			import bws.packer.entity.form.PackerForm;
+			
+			import mx.collections.ArrayList;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import org.samchon.protocol.invoke.Invoke;
+			
+			public var application:index;
+			
+			protected var packerForm:PackerForm;
+			[Bindable]protected var instanceFormArray:InstanceFormArray;
+			[Bindable]protected var wrapperArray:WrapperArray;
+			
+			/* ----------------------------------------------------
+				CONSTRUCTORS
+			---------------------------------------------------- */
+			protected function creationCompleted(event:FlexEvent):void
+			{
+				packerForm = new PackerForm();
+				instanceFormArray = packerForm.instanceFormArray;
+				wrapperArray = packerForm.wrapperArray;
+			}
+			
+			/* ----------------------------------------------------
+				OPERATORS
+			---------------------------------------------------- */
+			protected function optimize(event:MouseEvent):void
+			{
+				this.enabled = false;
+				
+				packerForm.gaParameters = gaParametersForm.toParameters();
+				this.sendData(packerForm.toInvoke());
+			}
+			
+			/* ----------------------------------------------------
+				FILE I/O
+			---------------------------------------------------- */
+			protected function newFile(event:MouseEvent):void
+			{
+				this.gaParametersForm.init();
+				this.instanceFormArray.removeAll();
+				this.wrapperArray.removeAll();
+			}
+			
+			protected function openFile(event:MouseEvent):void
+			{
+				var fileReference:FileReference = new FileReference();
+				fileReference.addEventListener
+				(
+					Event.SELECT,
+					function (event:Event):void
+					{
+						fileReference.load();
+					}
+				);
+				fileReference.addEventListener
+				(
+					Event.COMPLETE,
+					function (event:Event):void
+					{
+						try
+						{
+							var str:String = fileReference.data.readUTFBytes(fileReference.data.bytesAvailable);
+							var xml:XML = new XML(str);
+							
+							packerForm.construct(xml);
+							gaParametersForm.setParameters(packerForm.gaParameters);
+						}
+						catch (error:Error)
+						{
+							Alert.show("Invalid XML format.", "File Error");
+						}
+					}
+				);
+				
+				fileReference.browse([new FileFilter("XML file only", "*.xml")]);
+			}
+			
+			protected function saveFile(event:MouseEvent):void
+			{
+				packerForm.gaParameters = gaParametersForm.toParameters();
+				
+				var fileReference:FileReference = new FileReference();
+				fileReference.save
+				(
+					packerForm.toXML(),
+					"packer.xml"
+				);
+			}
+			
+			/* ----------------------------------------------------
+				ELEMENTS I/O
+			---------------------------------------------------- */
+			protected function addInstance(event:MouseEvent):void
+			{
+				instanceFormArray.addItem(new InstanceForm());
+			}
+			protected function removeInstance(event:MouseEvent):void
+			{
+				var selectedIndices:Array = instanceGrid.selectedIndices;
+				selectedIndices.sort();
+				
+				for (var i:int = selectedIndices.length - 1; i >= 0; i--)
+					instanceFormArray.removeItemAt(selectedIndices[i]);
+			}
+			
+			protected function addWrapper(event:MouseEvent):void
+			{
+				wrapperArray.addItem(new Wrapper());	
+			}
+			protected function removeWrapper(event:MouseEvent):void
+			{
+				var selectedIndices:Array = wrapperGrid.selectedIndices;
+				selectedIndices.sort();
+				
+				for (var i:int = selectedIndices.length - 1; i >= 0; i--)
+					wrapperArray.removeItemAt(selectedIndices[i]);	
+			}
+			
+			/* ----------------------------------------------------
+				MESSAGE CHAIN
+			---------------------------------------------------- */
+			public function sendData(invoke:Invoke):void
+			{
+				application.sendData(invoke);
+			}
+			
+			public function replyData(invoke:Invoke):void
+			{
+				// NOTHING TO DO
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--
+	==============================================
+		제품 목록 -> InstanceArray
+	==============================================
+	-->
+	<s:HGroup>
+		<menu:MenuButton label="New File" 
+						 image="assets/buttons/newFile.png" 
+						 click="newFile(event)" />
+		<menu:MenuButton label="Open File" 
+						 image="assets/buttons/openFile.png" 
+						 click="openFile(event)" />
+		<menu:MenuButton label="Save File" 
+						 image="assets/buttons/saveFile.png" 
+						 click="saveFile(event)" />
+		<menu:MenuButton label="Pack"
+						 image="assets/buttons/document.png" 
+						 click="optimize(event)" />
+	</s:HGroup>
+	
+	<mx:HRule width="100%" />
+	
+	<s:Label text="Parameters of Genetic Algorithm" />
+	<component:GAParametersForm id="gaParametersForm" />
+	
+	<s:Label text="Instances to pack" />
+	<mx:DataGrid id="instanceGrid" 
+				 dataProvider="{instanceFormArray}" 
+				 editable="true" allowMultipleSelection="true" sortableColumns="false"
+				 width="100%" height="100%">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Name" 
+							   dataField="name" />
+			<mx:DataGridColumn headerText="Width" 
+							   dataField="width" />
+			<mx:DataGridColumn headerText="Height" 
+							   dataField="height" />
+			<mx:DataGridColumn headerText="Length" 
+							   dataField="length" />
+			<mx:DataGridColumn headerText="Count" 
+							   dataField="count" />
+		</mx:columns>
+	</mx:DataGrid>
+	
+	<s:HGroup width="100%" horizontalAlign="right">
+		<s:Button icon="assets/icons/plus16.png" 
+				  label="Add" 
+				  click="addInstance(event)" />
+		<s:Button icon="assets/icons/trash16.png" 
+				  label="Remove" 
+				  click="removeInstance(event)" />
+	</s:HGroup>
+	
+	<mx:HRule width="100%" />
+	
+	<!--
+	==============================================
+		포장지 목록 -> WrapperArray
+	==============================================
+	-->
+	<s:Label text="List of Wrappers" />
+	<mx:DataGrid id="wrapperGrid" 
+				 dataProvider="{wrapperArray}"
+				 editable="true" allowMultipleSelection="true" sortableColumns="false"
+				 width="100%" height="100%">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Name" 
+							   dataField="name" />
+			<mx:DataGridColumn headerText="Price" 
+							   dataField="price" />
+			<mx:DataGridColumn headerText="Width" 
+							   dataField="width_" />
+			<mx:DataGridColumn headerText="Height" 
+							   dataField="height_" />
+			<mx:DataGridColumn headerText="Length" 
+							   dataField="length_" />
+			<mx:DataGridColumn headerText="Thickness" 
+							   dataField="thickness" />
+		</mx:columns>
+	</mx:DataGrid>
+	
+	<s:HGroup width="100%" horizontalAlign="right">
+		<s:Button icon="assets/icons/plus16.png"
+				  label="Add" 
+				  click="addWrapper(event)" />
+		<s:Button icon="assets/icons/trash16.png"
+				  label="Remove" 
+				  click="removeWrapper(event)" />
+	</s:HGroup>
+</ui:VGroup>
