@@ -45,7 +45,7 @@ namespace namtree
 		 *
 		 * @see samchon::namtree
 		 * @see namtree::NTSide
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 	class SAMCHON_FRAMEWORK_API NTFile
 		: public library::FTFile,

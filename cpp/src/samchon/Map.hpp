@@ -82,7 +82,7 @@ namespace samchon
 	 *
 	 * <p> Aliased as member type map::allocator_type. </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename _Kty, typename _Ty, typename _Pr = std::less<_Kty>, typename _Alloc = std::allocator<std::pair<const _Kty, _Ty>>>
 	class Map

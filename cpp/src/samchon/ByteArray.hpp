@@ -25,7 +25,7 @@ namespace samchon
 	 * but only for representing entity data, I recomment you to use Entity instead. </p>
 	 * 
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API ByteArray
 		: public std::vector<unsigned char>
@@ -93,10 +93,10 @@ namespace samchon
 		 *	\li BIG_ENDIAN to SMALL_ENDIAN
 		 *	li SMALL_ENDIAN to BIG_ENDIAN
 		 */
-		template <typename _Ty> static auto reverse(const _Ty &val) -> _Ty
+		template <typename T> static auto reverse(const T &val) -> T
 		{
-			_Ty res;
-			int size = sizeof(_Ty);
+			T res;
+			int size = sizeof(T);
 
 			unsigned char *originalBytes = (unsigned char*)&val;
 			unsigned char *reversedBytes = (unsigned char*)&res;
@@ -118,10 +118,10 @@ namespace samchon
 		 * @throw exception out of range
 		 * @return Read data from the byte stream
 		 */
-		template <typename _Ty> auto read() const -> _Ty
+		template <typename T> auto read() const -> T
 		{
-			_Ty *ptr = (_Ty*)(data() + position);
-			((ByteArray*)this)->position += sizeof(_Ty);
+			T *ptr = (T*)(data() + position);
+			((ByteArray*)this)->position += sizeof(T);
 
 			return *ptr;
 		};
@@ -133,7 +133,7 @@ namespace samchon
 			std::string str = (char*)(data() + position);
 			((ByteArray*)this)->position = str.size();
 
-			return move(str);
+			return str;
 		};
 
 		/**
@@ -149,9 +149,9 @@ namespace samchon
 		 * @throw exception out of range
 		 * @return Read data from the byte stream
 		 */
-		template <typename _Ty> auto readReversely() const -> _Ty
+		template <typename T> auto readReversely() const -> T
 		{
-			_Ty val = read<_Ty>();
+			T val = read<T>();
 			return reverse(val);
 		}
 
@@ -165,10 +165,10 @@ namespace samchon
 		 * @tparam _Ty A type of data to write
 		 * @param val Something to write on ByteArray
 		 */
-		template <typename _Ty> void write(const _Ty &val)
+		template <typename T> void write(const T &val)
 		{
 			unsigned char *ptr = (unsigned char*)&val;
-			insert(end(), ptr, ptr + sizeof(_Ty));
+			insert(end(), ptr, ptr + sizeof(T));
 		};
 		template<> void write(const std::string &str)
 		{
@@ -190,7 +190,7 @@ namespace samchon
 		 * @tparam _Ty A type of data to write
 		 * @param val Something to write on ByteArray
 		 */
-		template<typename _Ty> void writeReversely(const _Ty &val)
+		template<typename T> void writeReversely(const T &val)
 		{
 			write(reverse(val));
 		};

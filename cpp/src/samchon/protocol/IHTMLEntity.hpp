@@ -36,7 +36,7 @@ namespace protocol
 	 * @image html  cpp/result/example_entity.png
 	 * @image latex cpp/result/example_entity.png
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API IHTMLEntity
 	{
@@ -85,25 +85,25 @@ namespace protocol
 		 * @param args Left argument to be contained with \<td\> tags.
 		 * @return A string of \<th\> tag represents title columns.
 		 */
-		template <typename _Ty, typename ... _Args>
-		static auto toTH(const _Ty &val, const _Args& ... args) -> std::string
+		template <typename T, typename ... _Args>
+		static auto toTH(const T &val, const _Args& ... args) -> std::string
 		{
 			std::string str;
 			size_t i = 0;
 			size_t size = sizeof...(args)+1;
 
 			fetchTX("th", str, i, size, val, args...);
-			return move(str);
+			return str;
 		};
-		template <typename _Ty>
-		static auto toTH(const _Ty &val) -> std::string
+		template <typename T>
+		static auto toTH(const T &val) -> std::string
 		{
 			std::string str =
 				"\t<th>\n" +
 				"\t\t" + toTD(val) + "\n" +
 				"\t</th>";
 
-			return move(str);
+			return str;
 		};
 
 		/**
@@ -138,25 +138,25 @@ namespace protocol
 		 * @param args Left argument to be contained with \<tr\> tags.
 		 * @return A string of \<th\> tag represents data columns of a row.
 		 */
-		template <typename _Ty, typename ... _Args>
-		static auto toTR(const _Ty &val, const _Args& ... args) -> std::string
+		template <typename T, typename ... _Args>
+		static auto toTR(const T &val, const _Args& ... args) -> std::string
 		{
 			std::string str;
 			size_t i = 0;
 			size_t size = sizeof...(args)+1;
 
 			fetchTX("tr", str, i, size, val, args...);
-			return move(str);
+			return str;
 		};
-		template <typename _Ty>
-		static auto toTR(const _Ty &val) -> std::string
+		template <typename T>
+		static auto toTR(const T &val) -> std::string
 		{
 			std::string str =
 				"\t<tr>\n" +
 				"\t\t" + toTD(val) + "\n" +
 				"\t</tr>";
 
-			return move(str);
+			return str;
 		};
 
 		/**
@@ -167,16 +167,16 @@ namespace protocol
 		virtual auto toHTML() const->std::string = 0;
 
 	protected:
-		template <typename _Ty, typename ... _Args>
-		static void fetchTX(const std::string &tag, std::string &str, size_t &index, size_t size, const _Ty &val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		static void fetchTX(const std::string &tag, std::string &str, size_t &index, size_t size, const T &val, const _Args& ... args)
 		{
 			fetchTX(tag, str, index, size, val);
 
 			index++;
 			fetchTX(tag, str, index, size, args...);
 		};
-		template <typename _Ty>
-		static void fetchTX(const std::string &tag, std::string &str, size_t &index, size_t size, const _Ty &val)
+		template <typename T>
+		static void fetchTX(const std::string &tag, std::string &str, size_t &index, size_t size, const T &val)
 		{
 			if (index == 0)
 				str += "\t<" + tag + ">\n";
@@ -187,8 +187,8 @@ namespace protocol
 				str += "\t</" + tag + ">";
 		};
 
-		template <typename _Ty>
-		static auto toTD(const _Ty &val) -> std::string
+		template <typename T>
+		static auto toTD(const T &val) -> std::string
 		{
 			std::stringstream ss;
 

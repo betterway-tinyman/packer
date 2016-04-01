@@ -31,7 +31,7 @@ namespace samchon
 		 * @see protocol::Entity
 		 * @see library::GeneticAlgorithm
 		 * 		
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace tsp
 		{

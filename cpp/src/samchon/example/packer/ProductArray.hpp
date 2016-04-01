@@ -17,7 +17,7 @@ namespace packer
 	/**
 	 * @brief An array of Product objects.
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class ProductArray
 		: public SharedEntityArray<Product>

@@ -11,29 +11,6 @@ namespace library
 {
 	/**
 	 * @brief A genetic algorithm class
-	 * 		  
-	 * @tparam GeneArray An array(std::vector) containing genes as elments; sequnce listing.\n\n
-	 * The GeneArray must be a type of <i>std::vector</i>.
-	 *
-	 * @tparam Compare 
-	 *	A comparison class (or struct) returns whether left gene is more optimal.\n\n
-	 *
-	 *	Default template parameter of Compare is <i>std::less<GeneArray></i>. It means to compare
-	 *	two std::vector (GeneArray must be a std::vector). Thus, you've to keep follwing rules.\n\n
-	 *
-	 *	If you don't want to follow the rules or want a custom comparison class, you have to
-	 *	realize a comparison class. The following code is an example realizing the comparison class.
-	 *
-	 *		- GeneArray is inherited from <i>std::vector</i>
-	 *		- GeneArray has custom <i>auto operator<(const GeneArray &) const -> bool</i>
-	 *
-	 * @code
-	 template <typename _Ty>
-	 struct MyCompare
-	 {
-	 auto operator()(const _Ty &newObj, const _Ty &prevObj) const -> bool;
-	 };
-	 * @endcode
 	 * 
 	 * @details
 	 * <p> In the field of artificial intelligence, a genetic algorithm (GA) is a search heuristic 
@@ -56,21 +33,42 @@ namespace library
 	 * <p> Be careful for the mistakes of direction or position of Compare. </p>
 	 * <p> Most of logical errors failed to access optimal solution are occured by those mistakens. </p>
 	 *
+	 * @tparam GeneArray An array(std::vector) containing genes as elments; sequnce listing.
+	 *					 The GeneArray must be a type of <i>std::vector</i>.
+	 *
+	 * @tparam Compare
+	 *	<p> A comparison class (or struct) returns whether left gene is more optimal. </p>
+	 *
+	 *	<p> Default template parameter of Compare is <i>std::less<GeneArray></i>. It means to compare
+	 *	two std::vector (GeneArray must be a std::vector). Thus, you've to keep follwing rules. </p>
+	 *
+	 *	<p> If you don't want to follow the rules or want a custom comparison class, you have to
+	 *	realize a comparison class. The following code is an example realizing the comparison class. </p>
+	 *
+	 *		- GeneArray is inherited from <i>std::vector</i>
+	 *		- GeneArray has custom <i>auto operator<(const GeneArray &) const -> bool</i>
+	 *
+	 * @code
+	 template <typename _Ty>
+	 struct MyCompare
+	 {
+	 auto operator()(const _Ty &newObj, const _Ty &prevObj) const -> bool;
+	 };
+	 * @endcode
+	 *
 	 * @see library::GAPopulation
 	 * @see samchon::library
 	 * @see example::tsp
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename GeneArray, typename Compare = std::less<GeneArray>, typename Gene = GeneArray::value_type>
+	template <typename GeneArray, typename Compare = std::less<GeneArray>>
 	class GeneticAlgorithm
 	{
 	public:
 		typedef GAPopulation<GeneArray, Compare> Population;
 
-	private:
-		std::vector<Gene> candidates;
-
+	protected:
 		/**
 		 * @brief Whether each element (Gene) is unique in their GeneArray
 		 */
@@ -98,47 +96,30 @@ namespace library
 		/**
 		 * @brief Construct from parameters of Genetic Algorithm
 		 *
-		 * @paream candidates Candidate genes used for mutation.
 		 * @param unique Whether each Gene is unique in their GeneArray
 		 * @param mutationRate Rate of mutation
 		 * @param tournament Size of tournament in selection
-		 * @param elitism Whether to keep the elitest GeneArray
-		 */
-		GeneticAlgorithm(const std::vector<Gene> &candidates, bool unique, double mutationRate = 0.015, size_t tournament = 10)
-		{
-			this->candidates = candidates;
-			this->unique = unique;
-
-			this->mutationRate = mutationRate;
-			this->tournament = tournament;
-		};
-
-		/**
-		 * @brief Construct from parameters of Genetic Algorithm
-		 *
-		 * @param unique Whether each Gene is unique in their GeneArray
-		 * @param mutationRate Rate of mutation
-		 * @param tournament Size of tournament in selection
-		 * @param elitism Whether to keep the elitest GeneArray
 		 */
 		GeneticAlgorithm(bool unique, double mutationRate = 0.015, size_t tournament = 10)
-			: GeneticAlgorithm(nullptr, unique, mutationRate, tournament)
 		{
+			this->unique = unique;
+			this->mutationRate = mutationRate;
+			this->tournament = tournament;
 		};
 
 		/**
 		 * @brief Evolve a GeneArray 
 		 * @details Convinient method accessing to evolvePopulation().
 		 *
-		 * @param geneArray An initial set of genes; sequence listing
+		 * @param individual An initial set of genes; sequence listing
 		 * @param population Size of population in a generation
 		 * @param generation Size of generation in evolution
 		 *
 		 * @return A evolved GeneArray optimally
 		 */
-		inline auto evolveGeneArray(std::shared_ptr<GeneArray> geneArray, size_t population, size_t generation) const -> std::shared_ptr<GeneArray>
+		inline auto evolveGeneArray(std::shared_ptr<GeneArray> individual, size_t population, size_t generation) const -> std::shared_ptr<GeneArray>
 		{
-			std::shared_ptr<Population> myPopulation(new Population(geneArray, population));
+			std::shared_ptr<Population> myPopulation(new Population(individual, population));
 
 			for (size_t i = 0; i < generation; i++)
 				myPopulation = evolvePopulation(myPopulation);
@@ -244,14 +225,14 @@ namespace library
 		 */
 		auto crossover(std::shared_ptr<GeneArray> &parent1, std::shared_ptr<GeneArray> &parent2) const -> std::shared_ptr<GeneArray>
 		{
-			std::shared_ptr<GeneArray> geneArray(new GeneArray(*parent1));
+			std::shared_ptr<GeneArray> individual(new GeneArray(*parent1));
 			size_t size = parent1->size();
 
 			if (unique == false)
 			{
 				for (size_t i = 0; i < size; i++)
 					if (Math::random() > .5)
-						geneArray->at(i) = parent2->at(i);
+						individual->at(i) = parent2->at(i);
 			}
 			else
 			{
@@ -275,11 +256,11 @@ namespace library
 					if (ptrSet.find(ptr) != ptrSet.end())
 						continue;
 
-					geneArray->at(*indexSet.begin()) = ptr;
+					individual->at(*indexSet.begin()) = ptr;
 					indexSet.erase(indexSet.begin());
 				}
 			}
-			return geneArray;
+			return individual;
 		};
 
 	protected:
@@ -310,49 +291,19 @@ namespace library
 		 *
 		 * <p> Genes in the GeneArray will be swapped following percentage of the mutationRate. </p>
 		 *
-		 * @param geneArray A container of genes to mutate
+		 * @param individual A container of genes to mutate
 		 * @see mutationRate;
 		 */
-		virtual void mutate(std::shared_ptr<GeneArray> geneArray) const
+		virtual void mutate(std::shared_ptr<GeneArray> individual) const
 		{
-			for (size_t i = 0; i < geneArray->size(); i++)
+			for (size_t i = 0; i < individual->size(); i++)
 			{
 				if (Math::random() > mutationRate)
 					continue;
 
-				if (candidates.empty() == true)
-				{
-					// WHEN CANDIDATES ARE NOT SPECIFIED, JUST SHUFFLE SEQUENCE OF GENES
-					size_t j = (size_t)(Math::random() * geneArray->size());
-					std::swap(geneArray->at(i), geneArray->at(j));
-				}
-				else if (unique == false)
-				{
-					// PICK A CANDIDATE
-					geneArray->at(i) = candidates.at((size_t)(Math::random() * candidates.size()));
-				}
-				else // HAS CANDIDATES AND NEED TO BE UNIQUE
-				{
-					Gene item;
-					bool duplicated = true;
-
-					// PICK ONE
-					while (duplicated == true)
-					{
-						item = candidates.at((size_t)(Math::random() * candidates.size()));
-
-						duplicated = false;
-
-						for (size_t j = 0; j < geneArray->size(); j++)
-							if (i != j && geneArray->at(i) == geneArray->at(j))
-							{
-								duplicated = true;
-								break;
-							}
-					}
-
-					geneArray->at(i) = item;
-				}
+				// JUST SHUFFLE SEQUENCE OF GENES
+				size_t j = (size_t)(Math::random() * individual->size());
+				std::swap(individual->at(i), individual->at(j));
 			}
 		};
 	};

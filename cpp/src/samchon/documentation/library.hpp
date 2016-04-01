@@ -79,7 +79,7 @@ namespace samchon
 	 *
 	 * </ul>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	namespace library
 	{

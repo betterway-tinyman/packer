@@ -22,7 +22,7 @@ namespace tsp
 	 * <p> @image html cpp/example_tsp.png
 	 * @image latex cpp/example_tsp.png </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Travel
 		: public SharedEntityArray<GeometryPoint>
@@ -168,7 +168,7 @@ namespace tsp
 			for(size_t i = 0; i < size(); i++)
 				str += at(i)->toString() + "\n";
 
-			return move(str);
+			return str;
 		};
 	};			
 };

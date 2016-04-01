@@ -27,7 +27,7 @@ namespace protocol
 	 *	</ul>
 	 * </ul>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API IEntityGroup
 	{

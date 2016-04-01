@@ -1,7 +1,7 @@
 ﻿namespace bws.packer
 {
 	/**
-	 * A group of same type of {@link Wrapper Wrappers}.
+	 * A group of {@link Wrapper Wrappers} with same type.
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */

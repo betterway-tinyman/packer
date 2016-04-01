@@ -30,7 +30,7 @@ namespace interaction
 	* \par [Inherited]
 	*		@copydoc ExternalServer 
 	*
-	* @author Jeongho Nam
+	* @author Jeongho Nam <http://samchon.org>
 	*/
 	class MasterDriver
 		: public protocol::ExternalServer

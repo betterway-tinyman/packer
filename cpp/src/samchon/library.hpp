@@ -47,7 +47,10 @@
 // MATH
 #include <samchon/library/Math.hpp>
 #include <samchon/library/GeneticAlgorithm.hpp>
+#include <samchon/library/GAPopulation.hpp>
+#include <samchon/library/GAParameters.hpp>
 
+// CASE_GENERATOR
 #include <samchon/library/CaseGenerator.hpp>
 #include <samchon/library/CombinedPermutationGenerator.hpp>
 #include <samchon/library/PermutationGenerator.hpp>

@@ -37,7 +37,7 @@ namespace library
 	 * thus you can't do anything by the SQLi. </p>
 	 * 
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API SQLi
 	{

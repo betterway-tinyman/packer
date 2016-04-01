@@ -1,11 +1,22 @@
 ﻿namespace bws.packer
 {
+	/**
+	 * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
+	 */
 	export class PackerForm
 		extends samchon.protocol.Entity
 	{
 		private instanceFormArray: InstanceFormArray;
 		private wrapperArray: WrapperArray;
 
+		/* -----------------------------------------------------------
+			CONSTRUCTORS
+		----------------------------------------------------------- */
+		/**
+		 * Default Constructor.
+		 */
 		public constructor()
 		{
 			super();
@@ -19,6 +30,9 @@
 			this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
 		}
 
+		/* -----------------------------------------------------------
+			ACCESSORS
+		----------------------------------------------------------- */
 		public optimize(): WrapperArray
 		{
 			let packer: Packer = this.toPacker();
@@ -26,6 +40,9 @@
 			return packer.optimize();
 		}
 
+		/* -----------------------------------------------------------
+			EXPORTERS
+		----------------------------------------------------------- */
 		public TAG(): string
 		{
 			return "packerForm";
@@ -46,9 +63,20 @@
 		}
 	}
 
+	/**
+	 * An array of {@link InstanceForm} objects.
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
+	 */
 	class InstanceFormArray
 		extends samchon.protocol.EntityArray<InstanceForm>
 	{
+		/* -----------------------------------------------------------
+			CONSTRUCTORS
+		----------------------------------------------------------- */
+		/**
+		 * Default Constructor.
+		 */
 		public constructor()
 		{
 			super();
@@ -58,6 +86,9 @@
 			return new InstanceForm();
 		}
 
+		/* -----------------------------------------------------------
+			EXPORTERS
+		----------------------------------------------------------- */
 		public TAG(): string
 		{
 			return "instanceFormArray";
@@ -67,6 +98,11 @@
 			return "instanceForm";
 		}
 
+		/**
+		 * Convert {@link InstanceForm} objects to {@link InstanceArray}.
+		 *
+		 * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
+		 */
 		public toInstanceArray(): InstanceArray
 		{
 			let instanceArray: InstanceArray = new InstanceArray();
@@ -84,15 +120,34 @@
 		}
 	}
 
+
+	/**
+	 * <p> A repeated Instance. </p>
+	 *
+	 * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking 
+	 * volume of network message I/O by storing {@link count repeated count}. </p>
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
+	 */
 	class InstanceForm
 		extends samchon.protocol.Entity
 	{
+		/**
+		 * A duplicated Instance.
+		 */
 		private instance: Instance;
+
+		/**
+		 * Repeated count of the {@link instance}.
+		 */
 		private count: number;
 
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
 		----------------------------------------------------------- */
+		/**
+		 * Default Constructor.
+		 */
 		public constructor()
 		{
 			super();
@@ -144,6 +199,16 @@
 			return xml;
 		}
 
+		/**
+		 * <p> Repeated {@link instance} to {@link InstanceArray}.
+		 *
+		 * @details 
+		 * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make 
+		 * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be 
+		 * registered on {@link Packer.instanceArray}.
+		 *
+		 * @return An array of instance containing repeated {@link instance}.
+		 */
 		public toInstanceArray(): InstanceArray
 		{
 			let instanceArray: InstanceArray = new InstanceArray();

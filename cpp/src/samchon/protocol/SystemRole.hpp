@@ -18,7 +18,7 @@ namespace protocol
 	 * <p> SystemRole is an abstract and a 'control' class groupping methods, handling Invoke messages 
 	 * interacting with an system that the SystemRole is belonged to, by a subject or unit of a module. <p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API SystemRole
 		: public virtual Entity,

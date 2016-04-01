@@ -46,7 +46,7 @@ namespace library
 	 *	\li std::bind: http://www.cplusplus.com/reference/functional/bind/
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam, Jun Ryoung Ju
+	 * @author Jeongho Nam <http://samchon.org>, Jun Ryoung Ju
 	 */
 	class SAMCHON_FRAMEWORK_API EventDispatcher
 	{

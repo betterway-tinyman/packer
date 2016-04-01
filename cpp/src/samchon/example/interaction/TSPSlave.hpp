@@ -23,7 +23,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydetails slave::ParallelClient 
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class TSPSlave
 		: public Slave

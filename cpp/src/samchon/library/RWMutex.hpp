@@ -3,7 +3,7 @@
 
 namespace std
 {
-	template <typename _Ty> struct atomic;
+	template <typename T> struct atomic;
 	class condition_variable;
 	class mutex;
 };
@@ -28,7 +28,7 @@ namespace library
 	 * <p> As that reason, if STL supports the rw_mutex in near future, the RWMutex can be deprecated. </p>
 	 * 
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API RWMutex
 	{

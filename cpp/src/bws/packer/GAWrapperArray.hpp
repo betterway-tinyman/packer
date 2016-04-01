@@ -33,12 +33,16 @@ namespace packer
 		std::unordered_map<std::string, std::shared_ptr<WrapperGroup>> result;
 
 		/**
-		 * 
+		 * @brief Price of this sequence list.
+		 *
+		 * @details It stores price deducted by the packing process to block repeated operation.
 		 */
 		double price;
 
 		/**
 		 * @brief Validity of this sequence list.
+		 *
+		 * @details It stores validity of the sequence list to block repeated operation.
 		 */
 		bool valid;
 
@@ -61,7 +65,7 @@ namespace packer
 
 	protected:
 		/**
-		 *
+		 * @brief Construct result, by packing process.
 		 */
 		void constructResult();
 
@@ -76,6 +80,9 @@ namespace packer
 		 */
 		auto getResult() const -> const std::unordered_map<std::string, std::shared_ptr<WrapperGroup>>&;
 
+		/**
+		 * @brief Whether this sequence list is inferior?
+		 */
 		auto operator<(const GAWrapperArray &) const -> bool;
 	};
 };

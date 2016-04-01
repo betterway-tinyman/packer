@@ -3,7 +3,7 @@
 
 namespace std
 {
-	template <typename _Ty> struct atomic;
+	template <typename T> struct atomic;
 	class mutex;
 };
 namespace samchon
@@ -46,7 +46,7 @@ namespace library
 	 * <p> As that reason, if STL supports the semaphore in near future, the Semaphore can be deprecated. </p>
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Semaphore
 	{

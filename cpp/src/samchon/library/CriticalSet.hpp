@@ -12,9 +12,9 @@ namespace samchon
 		// *
 		// * @see library::CriticalAllocator
 		// * @see samchon::library
-		// * @author Jeongho Nam
+		// * @author Jeongho Nam <http://samchon.org>
 		// */
-		template <typename _Ty, typename _Pr = std::less<_Ty>>
-		using CriticalSet = std::set<_Ty, _Pr, CriticalAllocator<_Ty>>;
+		template <typename T, typename _Pr = std::less<T>>
+		using CriticalSet = std::set<T, _Pr, CriticalAllocator<T>>;
 	};
 };

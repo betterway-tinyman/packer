@@ -11,7 +11,7 @@ namespace packer
 	class InstanceArray;
 
 	/**
-	 * @brief A group of Wrapper(s) with same type.
+	 * @brief A group of {@link Wrapper Wrappers} with same type.
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */

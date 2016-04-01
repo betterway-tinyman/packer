@@ -16,7 +16,7 @@ namespace protocol
 	 * @brief A flash policy server
 	 * @details FlashPolicyServer is a policy server replying cross-domain-policy to flash clients.
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API FlashPolicyServer
 	{

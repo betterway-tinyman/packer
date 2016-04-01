@@ -37,7 +37,7 @@ namespace library
 	 *	\li std::bind: http://www.cplusplus.com/reference/functional/bind/
 	 * 
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Event
 	{

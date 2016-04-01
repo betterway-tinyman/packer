@@ -34,7 +34,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydoc master::ParallelClient
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SlaveDriver
 		: public virtual master::ParallelClient

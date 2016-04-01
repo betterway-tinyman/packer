@@ -16,7 +16,7 @@ namespace samchon
 	 *	\li http://www.cplusplus.com/reference/memory/shared_ptr/
 	 *
 	 * @tparam The type of managed object
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template<typename _Ty> 
 	class SmartPointer

@@ -21,7 +21,7 @@ namespace namtree
 	 *	   @image latex cpp/namtree_criteria.png </p>
 	 *
 	 * @see samchon::namtree
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API NTEntityGroup
 	{

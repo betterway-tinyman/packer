@@ -22,7 +22,7 @@ namespace packer
 	 * <p> @image html cpp/example_packer.png
 	 * @image latex cpp/example_packer.png </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Wrapper
 		: public ProductArray,
@@ -138,7 +138,7 @@ namespace packer
 				str += "\t\t" + at(i)->toString() 
 				+ ((i == size() - 1) ? "" : "\n");
 
-			return move(str);
+			return str;
 		};
 	};			
 };

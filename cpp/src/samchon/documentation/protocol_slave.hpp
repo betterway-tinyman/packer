@@ -15,7 +15,7 @@ namespace samchon
 		 * @image html cpp/protocol_slave.png
 		 * @image latex cpp/protocol_slave.png
 		 *
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace slave
 		{

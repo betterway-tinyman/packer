@@ -48,14 +48,14 @@ namespace protocol
 	 *
 	 * <p> Use SharedEntityList instead will be better I think. </p>
 	 */
-	template <typename _Ty>
+	template <typename T>
 	class EntityList
-		: public virtual Entity, public std::list<_Ty>, //CLASSES
+		: public virtual Entity, public std::list<T>, //CLASSES
 		public virtual IEntityGroup //INTERFACE
 	{
 	protected:
 		typedef Entity super;
-		typedef _Ty entity_type;
+		typedef T entity_type;
 
 	public:
 		/**

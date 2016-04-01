@@ -21,7 +21,7 @@ namespace protocol
 	 *	\li <i> UniqueEntityList<?>::push_back( move( std::unique_ptr<?>(new ?(...)) ) ); </i>
 	 *
 	 * @see samchon::protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename _Ty = Entity>
 	using UniqueEntityList =

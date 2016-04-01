@@ -13,7 +13,7 @@ namespace protocol
 	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity or Entity itself.
 	 *
 	 * @see samchon::protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename _Ty = Entity>
 	using SharedEntityList = 

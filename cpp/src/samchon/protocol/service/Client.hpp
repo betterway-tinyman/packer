@@ -41,7 +41,7 @@ namespace service
 	 * @see samchon::protocol
 	 * @see samchon::protocol::service
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Client
 		: public IClient

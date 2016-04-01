@@ -14,7 +14,7 @@ namespace library
 	 * @brief A list of XML, tags are same.
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	typedef std::vector<std::shared_ptr<XML>> XMLList;
 

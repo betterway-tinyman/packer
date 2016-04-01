@@ -21,7 +21,7 @@ namespace protocol
 	 *	\li SHARED_ENTITY_ARRAY_ELEMENT_ACCESSOR_BODY
 	 *
 	 * @see samchon::protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename _Ty = Entity>
 	using SharedEntityArray = 

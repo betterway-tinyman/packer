@@ -51,7 +51,7 @@ namespace service
 	 *	\li doLogin()
 	 *	\li doJoin()
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API User
 		: private Map<size_t, SmartPointer<Client>>,

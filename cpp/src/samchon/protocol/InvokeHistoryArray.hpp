@@ -11,7 +11,7 @@ namespace protocol
 	/**
 	 * @brief An array of InvokeHistory.
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API InvokeHistoryArray
 		: public SharedEntityArray<InvokeHistory>

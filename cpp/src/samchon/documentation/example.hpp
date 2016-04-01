@@ -5,7 +5,7 @@ namespace samchon
 	/**
 	 * @brief Module of Samchon Framework's examples.
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	namespace example
 	{

@@ -39,7 +39,7 @@ namespace library
 	 * thus you can't do anything by the SQLi. </p>
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API SQLStatement
 	{
@@ -122,15 +122,15 @@ namespace library
 		 * @param sql A sql-statement to prepare
 		 * @param ... args The parameters to bind
 		 */
-		template <typename _Ty, typename ... _Args>
-		void prepare(const std::string &sql, const _Ty& val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		void prepare(const std::string &sql, const T& val, const _Args& ... args)
 		{
 			prepare(sql);
 
 			bindParameter(val);
 			bindParameter(args...);
 		};
-		template <typename _Ty> void prepare(const std::string &str, const _Ty& val)
+		template <typename T> void prepare(const std::string &str, const T& val)
 		{
 			prepare(str);
 
@@ -139,15 +139,15 @@ namespace library
 		void prepare(const std::string &);
 		void prepare(const std::wstring &);
 
-		template <typename _Ty, typename ... _Args>
-		void prepare(const std::wstring &sql, const _Ty& val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		void prepare(const std::wstring &sql, const T& val, const _Args& ... args)
 		{
 			prepare(sql);
 
 			bindParameter(val);
 			bindParameter(args...);
 		};
-		template <typename _Ty> void prepare(const std::wstring &str, const _Ty& val)
+		template <typename T> void prepare(const std::wstring &str, const T& val)
 		{
 			prepare(str);
 
@@ -217,24 +217,24 @@ namespace library
 		 * @param index Index number of a column wants to get
 		 * @return Data stored in the record at the position of specifield column
 		 */
-		template <typename _Ty> auto at(size_t index) const -> _Ty
+		template <typename T> auto at(size_t index) const -> T
 		{
-			_Ty val;
-			sql_get_data(index + 1, C_TYPE(_Ty()), &val);
+			T val;
+			sql_get_data(index + 1, C_TYPE(T()), &val);
 
 			return val;
 		};
 		template<> auto at(size_t index) const -> std::string
 		{
-			return move(_atAsString(index));
+			return _atAsString(index);
 		}
 		template<> auto at(size_t index) const -> std::wstring
 		{
-			return move(_atAsWString(index));
+			return _atAsWString(index);
 		};
 		template<> auto at(size_t index) const -> ByteArray
 		{
-			return move(_atAsByteArray(index));
+			return _atAsByteArray(index);
 		};
 
 		/**
@@ -244,9 +244,9 @@ namespace library
 		 * @param name Name of a column wants to get
 		 * @return Data stored in the record at the position of specifield column
 		 */
-		template <typename _Ty> auto get(const std::string &) const -> _Ty
+		template <typename T> auto get(const std::string &) const -> T
 		{
-			return move(at<_Ty>(0));
+			return this->at<T>(0);
 		};
 
 		/**
@@ -264,13 +264,13 @@ namespace library
 		/* -------------------------------------------------------------------
 			BIND
 		------------------------------------------------------------------- */
-		template <typename _Ty, typename ... _Args>
-		void bindParameter(const _Ty& val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		void bindParameter(const T& val, const _Args& ... args)
 		{
 			bindParameter(val);
 			bindParameter(args...);
 		};
-		template <typename _Ty> void bindParameter(const _Ty &val)
+		template <typename T> void bindParameter(const T &val)
 		{
 			sql_bind_parameter(C_TYPE(val), SQL_TYPE(val), (void*)&val);
 		};
@@ -284,7 +284,7 @@ namespace library
 		void sql_get_data(size_t, short, void*) const;
 		void sql_bind_parameter(short, short, void*);
 
-		template <typename _Ty> auto C_TYPE(const _Ty &) const -> short;
+		template <typename T> auto C_TYPE(const T &) const -> short;
 		template<> auto C_TYPE(const bool &) const -> short;
 		template<> auto C_TYPE(const char &) const -> short;
 		template<> auto C_TYPE(const short &) const -> short;
@@ -305,7 +305,7 @@ namespace library
 		template<> auto C_TYPE(const std::wstring &) const -> short;
 		template<> auto C_TYPE(const ByteArray &) const -> short;
 
-		template <typename _Ty> auto SQL_TYPE(const _Ty &) const -> short;
+		template <typename T> auto SQL_TYPE(const T &) const -> short;
 		template<> auto SQL_TYPE(const bool &) const -> short;
 		template<> auto SQL_TYPE(const char &) const -> short;
 		template<> auto SQL_TYPE(const short &) const -> short;

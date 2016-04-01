@@ -38,7 +38,7 @@ namespace interaction
 	 *		@copydetails slave::ParallelClient
 	 *
 	 * @see protocol::slave
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Slave
 		: public protocol::slave::ParallelClient

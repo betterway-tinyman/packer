@@ -8,9 +8,9 @@
 
 #include <random>
 #include <samchon/library/GeneticAlgorithm.hpp>
-#include <samchon/library/GAParameters.hpp>
 #include <samchon/library/Event.hpp>
 #include <samchon/library/ProgressEvent.hpp>
+#include <bws/packer/PCKGeneticAlgorithm.hpp>
 
 using namespace std;
 using namespace bws::packer;
@@ -96,12 +96,11 @@ auto Packer::optimize(const GAParameters &gaParams) const -> shared_ptr<WrapperA
 		shared_ptr<GAPopulation<GAWrapperArray>> population(new GAPopulation<GAWrapperArray>(geneArray, gaParams.getPopulation()));
 
 		// EVOLVE
-		GeneticAlgorithm<GAWrapperArray> geneticAlgorithm
+		PCKGeneticAlgorithm geneticAlgorithm
 		(
-			*wrapperArray, // CANDIDATES
-			false, // NOT UNIQUE
 			gaParams.getMutationRate(), 
-			gaParams.getTournament()
+			gaParams.getTournament(),
+			wrapperArray // CANDIDATES
 		);
 
 		size_t generation = gaParams.getGeneration();

@@ -25,7 +25,7 @@ namespace library
 	 * @warning In some system, std::wstring is not for utf-8 but for unicode (utf-16).
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Charset
 	{

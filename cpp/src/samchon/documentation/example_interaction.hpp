@@ -68,7 +68,7 @@ namespace samchon
 		 * @see protocol::master
 		 * @see protocol::slave
 		 * 
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace interaction
 		{

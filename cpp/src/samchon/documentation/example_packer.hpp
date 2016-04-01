@@ -34,7 +34,7 @@ namespace samchon
 		 *
 		 * @see protocol::Entity
 		 * @see library::CaseGenerator
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace packer
 		{

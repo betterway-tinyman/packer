@@ -43,7 +43,7 @@ namespace protocol
 	 * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
 	 *
 	 * @see protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Entity
 	{

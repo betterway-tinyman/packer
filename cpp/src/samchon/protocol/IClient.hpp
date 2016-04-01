@@ -48,7 +48,7 @@ namespace protocol
 	 * @image html  cpp/protocol_interface.png
 	 * @image latex cpp/protocol_interface.png
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API IClient
 		: public virtual IProtocol

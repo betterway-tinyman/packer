@@ -32,6 +32,7 @@
     <ClInclude Include="..\src\bws\packer\InstanceFormArray.hpp" />
     <ClInclude Include="..\src\bws\packer\Packer.hpp" />
     <ClInclude Include="..\src\bws\packer\PackerForm.hpp" />
+    <ClInclude Include="..\src\bws\packer\PCKGeneticAlgorithm.hpp" />
     <ClInclude Include="..\src\bws\packer\Product.hpp" />
     <ClInclude Include="..\src\bws\packer\Server.hpp" />
     <ClInclude Include="..\src\bws\packer\Wrap.hpp" />
@@ -52,6 +53,7 @@
     <ClCompile Include="..\src\bws\packer\main.cpp" />
     <ClCompile Include="..\src\bws\packer\Packer.cpp" />
     <ClCompile Include="..\src\bws\packer\PackerForm.cpp" />
+    <ClCompile Include="..\src\bws\packer\PCKGeneticAlgorithm.cpp" />
     <ClCompile Include="..\src\bws\packer\Product.cpp" />
     <ClCompile Include="..\src\bws\packer\Server.cpp" />
     <ClCompile Include="..\src\bws\packer\Wrap.cpp" />

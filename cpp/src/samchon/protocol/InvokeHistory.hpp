@@ -30,7 +30,7 @@ namespace protocol
 	 * @see samchon::protocol::master
 	 * @see samchon::protocol::slave
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API InvokeHistory
 		: public virtual Entity

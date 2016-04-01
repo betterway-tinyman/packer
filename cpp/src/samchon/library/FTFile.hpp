@@ -15,7 +15,7 @@ namespace library
 	 * @image latex cpp/library_file_tree.png
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API FTFile
 		: public FTInstance

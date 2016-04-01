@@ -27,7 +27,7 @@ namespace packer
 	 * <p> @image html cpp/example_packer.png
 	 * @image latex cpp/example_packer.png </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class WrapperArray
 		: public SharedEntityArray<Wrapper>
@@ -223,7 +223,7 @@ namespace packer
 			for (size_t i = 0; i < size(); i++)
 				str += at(i)->toString() + "\n";
 
-			return move(str);
+			return str;
 		};
 	};			
 };

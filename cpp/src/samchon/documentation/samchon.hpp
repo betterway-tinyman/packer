@@ -10,7 +10,7 @@
  * @image html accessory/poster.jpg
  * @image latex accessory/poster.jpg
  *
- * @author Jeongho Nam
+ * @author Jeongho Nam <http://samchon.org>
  */
 namespace samchon
 {

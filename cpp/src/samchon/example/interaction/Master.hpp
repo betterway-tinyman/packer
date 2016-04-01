@@ -44,7 +44,7 @@ namespace interaction
 	 *		@copydetails master::ParallelClientArray
 	 * 
 	 * @see master
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Master
 		: public master::ParallelClientArray

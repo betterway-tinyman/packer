@@ -10,7 +10,7 @@
 
 namespace std
 {
-	template<class _Ty, class _Alloc> class list;
+	template<class T, class _Alloc> class list;
 };
 namespace samchon
 {
@@ -67,7 +67,7 @@ namespace library
 	 * @includelineno example/xml/main.cpp
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API XML
 		: public HashMap<std::string, std::shared_ptr<XMLList>>
@@ -101,7 +101,7 @@ namespace library
 		 *	\li \<price <b>high='1500' low='1300' open='1450' close='1320'</b> /\>:
 		 *		propertyMap => {{\"high\": 1500}, {\"low\": 1300}, {\"open\": 1450}, {\"close\", 1320}}
 		 *	\li \<member <b>id='jhnam88' name='Jeongho+Nam' comment='Hello.+My+name+is+Jeongho+Nam'</b> \>:
-		 *		propertyMap => {{\"id\", \"jhnam88\"}, {\"name\", \"Jeongho Nam\"}, {\"comment\", \"Hello. My name is Jeongho Nam\"}}
+		 *		propertyMap => {{\"id\", \"jhnam88\"}, {\"name\", \"Jeongho Nam <http://samchon.org>\"}, {\"comment\", \"Hello. My name is Jeongho Nam <http://samchon.org>\"}}
 		 */
 		HashMap<std::string, std::string> propertyMap;
 
@@ -225,8 +225,8 @@ namespace library
 		 *	</tr>
 		 * </table>
 		 */
-		template <typename _Ty>
-		void setValue(const _Ty &val)
+		template <typename T>
+		void setValue(const T &val)
 		{
 			std::stringstream sstream;
 			sstream << val;
@@ -242,8 +242,8 @@ namespace library
 			this->value = val.str();
 		};
 
-		template <typename _Ty>
-		void insertValue(const std::string &tag, const _Ty &val)
+		template <typename T>
+		void insertValue(const std::string &tag, const T &val)
 		{
 			std::shared_ptr<XML> xml(new XML());
 			xml->setTag(tag);
@@ -255,8 +255,8 @@ namespace library
 		/**
 		 * @brief Set a property with its key
 		 */
-		template<typename _Ty>
-		void setProperty(const std::string &key, const _Ty &val)
+		template<typename T>
+		void setProperty(const std::string &key, const T &val)
 		{
 			std::stringstream sstream;
 			sstream << val;
@@ -300,12 +300,12 @@ namespace library
 		/**
 		 * @brief Get value of the XML
 		 */
-		template<class _Ty = std::string> auto getValue() const -> _Ty
+		template<class T = std::string> auto getValue() const -> T
 		{
 			std::stringstream sstream;
 			sstream << this->value;
 
-			_Ty val;
+			T val;
 			sstream >> val;
 
 			return std::move(val);
@@ -323,12 +323,12 @@ namespace library
 		/**
 		 * @brief Get property
 		 */
-		template<class _Ty = std::string> auto getProperty(const std::string &key) const -> _Ty
+		template<class T = std::string> auto getProperty(const std::string &key) const -> T
 		{
 			std::stringstream sstream;
 			sstream << propertyMap.get(key);
 
-			_Ty val;
+			T val;
 			sstream >> val;
 
 			return std::move(val);

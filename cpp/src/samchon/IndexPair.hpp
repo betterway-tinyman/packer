@@ -4,11 +4,11 @@
 namespace samchon
 {
 	/**
-	 * @brief 
-	 * A pair of index and its value(_Ty)
+	 * @brief A pair of index and its value(T)
+	 * @tparam T Type of value.
 	 *
 	 * @details
-	 * <p> IndexPair is a std::pair<size_t, _Ty> class. </p>
+	 * <p> IndexPair is a std::pair<size_t, T> class. </p>
 	 *
 	 * <p> IndexPair expresses index and value. It's useful for expressing finding literals,
 	 * specified object, calculating mininum or maximum with its position. </p>
@@ -23,21 +23,56 @@ namespace samchon
 	 * <p> Referenced comments of std::pair </p>
 	 *	\li http://www.cplusplus.com/reference/utility/pair/
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template<class _Ty>
+	template<class T>
 	class IndexPair
-		: private std::pair<size_t, _Ty>
+		: public std::pair<size_t, T>
 	{
 	private:
-		typedef std::pair<size_t, _Ty> super;
+		typedef std::pair<size_t, T> super;
 
 	public:
-		/**
-		 * @brief Inherited constructors
-		 */
-		using super::super;
+		/* -----------------------------------------------------------
+			CONSTRUCTORS
+		----------------------------------------------------------- */
+		//using super::super;
 		
+		/**
+		 * @brief Default Constructor.
+		 */
+		IndexPair()
+			: super() 
+		{
+		};
+
+		/**
+		 * @brief Copy Constructor.
+		 */
+		template<class U> IndexPair(const IndexPair<U> &obj)
+			: super(obj)
+		{
+		};
+
+		/**
+		 * @brief Move Constructor.
+		 */
+		template<class U> IndexPair(const IndexPair<U> &&obj)
+			: super(obj)
+		{
+		};
+
+		/**
+		 * @brief Construct from members.
+		 */
+		IndexPair(size_t index, const T &val)
+			: super(index, val)
+		{
+		};
+
+		/* -----------------------------------------------------------
+			GETTERS
+		----------------------------------------------------------- */
 		/**
 		 * @brief Get index
 		 *
@@ -45,27 +80,27 @@ namespace samchon
 		 */
 		auto getIndex() const -> size_t
 		{
-			return super::first;
+			return first;
 		};
 
 		/**
-		 * @brief Get const value
+		 * @brief Get reference of value
 		 *
 		 * @return Reference of value of the pair
 		 */
-		auto getValue() -> _Ty&
+		auto getValue() -> T&
 		{
-			return super::second;
+			return second;
 		};
 
 		/**
-		 * @brief Get value
+		 * @brief Get const reference of const value
 		 *
 		 * @return Const reference of value of the pair
 		 */
-		auto getValue() const -> const _Ty&
+		auto getValue() const -> const T&
 		{
-			return super::second;
+			return second;
 		};
 	};
 };

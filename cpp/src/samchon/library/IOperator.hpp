@@ -71,7 +71,7 @@ auto operator>=(const _Ty &obj) const -> bool;
  * @param _Class The class operator methods are belonged to
  * @param _Ty Type of parameter, what to compare
  *
- * @author Jeongho Nam
+ * @author Jeongho Nam <http://samchon.org>
  */
 #define OPERATOR_METHODS_BODY(_Class, _Ty) \
 auto _Class::operator!=(const _Ty &obj) const -> bool \
@@ -117,9 +117,9 @@ namespace library
 	 *	\li OPERATOR_METHODS_BODY(_Class, _Ty)
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty>
+	template <typename T>
 	class IOperator
 	{
 	public:
@@ -149,19 +149,19 @@ namespace library
 		 */
 		virtual auto operator==(const IOperator&) const -> bool = 0;
 
-		auto operator!=(const IOperator<_Ty> &obj) const -> bool
+		auto operator!=(const IOperator<T> &obj) const -> bool
 		{
 			return !operator==(obj);
 		};
-		auto operator<=(const IOperator<_Ty> &obj) const -> bool
+		auto operator<=(const IOperator<T> &obj) const -> bool
 		{
 			return operator<(obj) || operator==(obj);
 		};
-		auto operator>(const IOperator<_Ty> &obj) const -> bool
+		auto operator>(const IOperator<T> &obj) const -> bool
 		{
 			return !operator<(obj) && !operator==(obj);
 		};
-		auto operator>=(const IOperator<_Ty> &obj) const -> bool
+		auto operator>=(const IOperator<T> &obj) const -> bool
 		{
 			return !operator<(obj);
 		};

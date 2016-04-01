@@ -24,7 +24,7 @@ namespace packer
 	 * <p> @image html cpp/example_packer.png
 	 * @image latex cpp/example_packer.png </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Instance
 		: public virtual Entity

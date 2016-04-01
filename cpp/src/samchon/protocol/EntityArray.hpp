@@ -43,14 +43,14 @@ namespace protocol
 	 *	\li class NTCriteria : public EntityArray<NTCriteria> causes a stack overflow.
 	 *	\li class NTCriteria : public SharedEntityArray<NTCriteria> doesn't cause the stack overflow.
 	 */
-	template <typename _Ty>
+	template <typename T>
 	class EntityArray
-		: public virtual Entity, public std::vector<_Ty>, //CLASSES
+		: public virtual Entity, public std::vector<T>, //CLASSES
 		public virtual IEntityGroup //INTERFACE
 	{
 	protected:
 		typedef Entity super;
-		typedef _Ty entity_type;
+		typedef T entity_type;
 
 	public:
 		/**

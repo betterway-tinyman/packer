@@ -3,7 +3,7 @@
 
 namespace std
 {
-	template <typename _Ty>
+	template <typename T>
 	struct atomic;
 };
 namespace samchon
@@ -45,7 +45,7 @@ namespace library
 	 *
 	 * @see library::UniqueAcquire
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API SharedReadLock
 	{

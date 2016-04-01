@@ -81,6 +81,9 @@
     <ClInclude Include="..\src\bws\packer\Instance.hpp">
       <Filter>Header Files\packer</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\bws\packer\PCKGeneticAlgorithm.hpp">
+      <Filter>Header Files\packer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\boxologic\Boxologic.cpp">
@@ -132,6 +135,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\bws\packer\PackerForm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bws\packer\PCKGeneticAlgorithm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

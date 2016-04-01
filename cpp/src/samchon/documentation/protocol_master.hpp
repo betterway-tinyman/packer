@@ -53,7 +53,7 @@ namespace samchon
 		 *	<p> @image html cpp/protocol_master_parallel_system.png
 		 *	@image latex cpp/protocol_master_parallel_system.png </p>
 		 *
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace master
 		{

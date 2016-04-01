@@ -97,7 +97,7 @@ namespace samchon
 	 *				 the allocator class template is used, which defines the simplest memory allocation model 
 	 *				 and is value-independent. Aliased as member type unordered_map::allocator_type.
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename Key, typename T, 
 			  typename Hash = std::hash<Key>, typename Pred = std::equal_to<Key>, 

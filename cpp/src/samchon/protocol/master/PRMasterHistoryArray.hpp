@@ -17,7 +17,7 @@ namespace master
 	/**
 	 * @brief An array of invoke histories of master.
 	 *  
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API PRMasterHistoryArray
 		: public PRInvokeHistoryArray

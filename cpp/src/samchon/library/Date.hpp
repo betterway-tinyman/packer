@@ -32,7 +32,7 @@ namespace library
 	 * @image latex cpp/subset/library_date.png
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Date
 		: public std::chrono::system_clock::time_point

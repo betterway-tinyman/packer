@@ -88,7 +88,7 @@ namespace samchon
 	 * function pointers to a Dictionary in NTFactory by your hand please. Sorry for my unripe skill on
 	 * programming. </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	namespace namtree
 	{

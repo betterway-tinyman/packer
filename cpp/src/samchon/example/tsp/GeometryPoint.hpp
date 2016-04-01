@@ -25,7 +25,7 @@ namespace tsp
 	 * <p> @image html cpp/example_tsp.png
 	 * @image latex cpp/example_tsp.png </p>
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class GeometryPoint
 		: public Entity

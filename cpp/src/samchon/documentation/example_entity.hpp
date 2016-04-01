@@ -15,7 +15,7 @@ namespace samchon
 		 *		@image html  cpp/result/example_entity_result.png
 		 *		@image latex cpp/result/example_entity_result.png
 		 * 
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace entity
 		{

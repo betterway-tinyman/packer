@@ -18,7 +18,7 @@ namespace library
 	 * @image latex cpp/library_math.png
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Math
 	{
@@ -139,13 +139,13 @@ namespace library
 		 * @param container Container to find its minimum value
 		 * @return Pair of minimum value and its index
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
-		static auto minimum(const _Cont &container) -> IndexPair<_Ty>
+		template <typename _Cont, typename T = _Cont::value_type>
+		static auto minimum(const _Cont &container) -> IndexPair<T>
 		{
 			auto it = container.begin();
 			size_t i = 0, position = 0;
 
-			const _Ty *ptr = &(*it);
+			const T *ptr = &(*it);
 
 			for (; it != container.end(); it++)
 			{
@@ -170,13 +170,13 @@ namespace library
 		 * @param container Container to find its minimum value
 		 * @return Pair of maximum value and its index
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
-		static auto maximum(const _Cont &container) -> IndexPair<_Ty>
+		template <typename _Cont, typename T = _Cont::value_type>
+		static auto maximum(const _Cont &container) -> IndexPair<T>
 		{
 			auto it = container.begin();
 			size_t i = 0, position = 0;
 
-			const _Ty *ptr = &(*it);
+			const T *ptr = &(*it);
 
 			for (; it != container.end(); it++)
 			{
@@ -201,7 +201,7 @@ namespace library
 		 * @param container Container to find its mean
 		 * @return Average(mean) of the contaier
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto mean(const _Cont &container) -> double
 		{
 			double val = 0.0;
@@ -222,7 +222,7 @@ namespace library
 		 * @param container Container to find its median
 		 * @return Median value of the container
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto median(const _Cont &container) -> double
 		{
 			auto it = container.begin();
@@ -254,10 +254,10 @@ namespace library
 		 * @param container Container to find its mode
 		 * @return Most appeared value in the container
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
-		static auto mode(const _Cont &container) -> _Ty
+		template <typename _Cont, typename T = _Cont::value_type>
+		static auto mode(const _Cont &container) -> T
 		{
-			std::map<_Ty, size_t> frequencyMap;
+			std::map<T, size_t> frequencyMap;
 			for (auto it = container.begin(); it != container.end(); it++)
 				if (frequencyMap.find(*it) == frequencyMap.end())
 					frequencyMap[*it] = 1;
@@ -278,7 +278,7 @@ namespace library
 		 * <p> \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$ </p>
 		 * @copydetails variance_p()
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto stdev_p(const _Cont &container) -> double
 		{
 			return sqrt(variance_p(contaier));
@@ -289,7 +289,7 @@ namespace library
 		 *
 		 * @copydetails variance_s()
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto stdev_s(const _Cont &container) -> double
 		{
 			return sql(variance_s(container));
@@ -306,7 +306,7 @@ namespace library
 		 * @param container Container to find its standard deviation
 		 * @return Standard deviation of the container
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto variance_p(const _Cont &container) -> double
 		{
 			double val = 0.0;
@@ -329,7 +329,7 @@ namespace library
 		 * @param container Container to find its variance
 		 * @return Variance of the container
 		 */
-		template <typename _Cont, typename _Ty = _Cont::value_type>
+		template <typename _Cont, typename T = _Cont::value_type>
 		static auto variance_s(const _Cont &container) -> double
 		{
 			double val = 0.0;

@@ -20,7 +20,7 @@ namespace namtree
 	 *	   @image latex cpp/namtree_file.png </p>
 	 *
 	 * @see samchon::namtree
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API NTParameter
 		: public virtual protocol::SharedEntityArray<NTParameterDetermined>,

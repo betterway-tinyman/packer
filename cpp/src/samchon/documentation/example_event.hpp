@@ -13,7 +13,7 @@ namespace samchon
 		 *
 		 * @see library::Event
 		 * @see library::StaticEventDispatcher
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace event
 		{

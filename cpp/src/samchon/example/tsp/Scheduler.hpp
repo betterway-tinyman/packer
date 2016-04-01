@@ -26,7 +26,7 @@ namespace tsp
 	 * @image latex cpp/example_tsp.png </p>
 	 *
 	 * @see samchon::GeneticAlgorithm
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	struct GAParameters
 	{
@@ -41,7 +41,7 @@ namespace tsp
 	 * @brief A scheduler
 	 * @details Scheduler deducts an optimal schdule(Travel) by genetic algorithm. 
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Scheduler
 		: public Entity

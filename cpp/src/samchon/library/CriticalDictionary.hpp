@@ -10,9 +10,9 @@ namespace library
 	 *
 	 * @see library::CriticalAllocator
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty, typename _Pr = std::less<std::string>>
-	using CriticalDictionary = CriticalMap<std::string, _Ty, _Pr>;
+	template <typename T, typename _Pr = std::less<std::string>>
+	using CriticalDictionary = CriticalMap<std::string, T, _Pr>;
 };
 };

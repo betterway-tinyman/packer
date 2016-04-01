@@ -19,6 +19,11 @@ namespace packer
 	class WrapperArray;
 	class Packer;
 
+	/**
+	 * @brief Bridge of Packer for repeated instances.
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
+	 */
 	class PackerForm
 		: public protocol::Entity
 	{

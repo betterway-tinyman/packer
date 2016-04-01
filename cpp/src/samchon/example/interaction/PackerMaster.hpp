@@ -26,7 +26,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydetails interaction::Master
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class PackerMaster
 		: public Master

@@ -44,14 +44,14 @@ namespace library
 	 * @tparam _Ty Type of the elements allocated by the object (aliased as member type value_type).
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <class _Ty>
+	template <class T>
 	class CriticalAllocator
-		: public std::allocator<_Ty>
+		: public std::allocator<T>
 	{
 	private:
-		typedef std::allocator<_Ty> super;
+		typedef std::allocator<T> super;
 
 		/**
 		 * @brief A rw_mutex for handling concurrency

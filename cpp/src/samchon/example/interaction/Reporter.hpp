@@ -38,7 +38,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydetails ChiefDriver 
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Reporter
 		: public ChiefDriver

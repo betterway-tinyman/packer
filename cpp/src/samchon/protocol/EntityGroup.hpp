@@ -48,7 +48,7 @@ namespace protocol
 	 * \par [Inherited]
 	 *		@copydetails protocol::Entity
 	 */
-	template <typename _Container, typename _ETy = Entity, typename _Ty = _Container::value_type>
+	template <typename _Container, typename _ETy = Entity, typename T = _Container::value_type>
 	class EntityGroup
 		: public _Container,
 		public virtual Entity, //CLASS
@@ -56,7 +56,7 @@ namespace protocol
 	{
 	public:
 		typedef _Container container_type;
-		typedef _Ty value_type;
+		typedef T value_type;
 		typedef _ETy entity_type;
 
 	public:

@@ -22,7 +22,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydetails slave::ParallelClient 
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class PackerSlave
 		: public Slave

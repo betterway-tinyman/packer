@@ -36,7 +36,7 @@ namespace library
 	 * the destruction of the UniqueWriteLock that manages it.
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API UniqueWriteLock
 	{

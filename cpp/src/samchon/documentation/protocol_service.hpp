@@ -72,7 +72,7 @@ namespace samchon
 		 * \par example/chat_service/ChatMessage.cpp
 		 *		@includelineno example/chat_service/ChatMessage.cpp
 		 *
-		 * @author Jeongho Nam
+		 * @author Jeongho Nam <http://samchon.org>
 		 */
 		namespace service
 		{

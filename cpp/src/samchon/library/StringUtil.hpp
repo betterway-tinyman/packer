@@ -32,7 +32,7 @@ namespace library
 	 *
 	 * @see library::WeakString
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API StringUtil
 	{
@@ -51,15 +51,15 @@ namespace library
 		 *			   where n is an integer (zero based) index value into the varadics of values specified.
 		 * @return New string with all of the {n} tokens replaced with the respective arguments specified.
 		 */
-		template <typename _Ty, typename ... _Args>
+		template <typename T, typename ... _Args>
 		static auto substitute(const std::string &format,
-			const _Ty& val, const _Args& ... args) -> std::string
+			const T& val, const _Args& ... args) -> std::string
 		{
 			std::string &res = _substitute(format, val);
 
 			return StringUtil::substitute(res, args...);
 		};
-		template <typename _Ty> static auto substitute(const std::string &format, const _Ty& val) -> std::string
+		template <typename T> static auto substitute(const std::string &format, const T& val) -> std::string
 		{
 			return _substitute(format, val);
 		};
@@ -77,20 +77,20 @@ namespace library
 		 *			   where n is an integer (zero based) index value into the varadics of values specified.
 		 * @return New sql-string with all of the {n} tokens replaced with the respective arguments specified.
 		 */
-		template <typename _Ty, typename ... _Args >
+		template <typename T, typename ... _Args >
 		static auto substituteSQL(const std::string &format,
-			const _Ty& value, const _Args& ... args) -> std::string
+			const T& value, const _Args& ... args) -> std::string
 		{
 			std::string &res = _substituteSQL(format, value);
 			return StringUtil::substituteSQL(res, args...);
 		};
-		template <typename _Ty> static auto substituteSQL(const std::string &format, const _Ty& value) -> std::string
+		template <typename T> static auto substituteSQL(const std::string &format, const T& value) -> std::string
 		{
 			return _substituteSQL(format, value);
 		};
 
 	protected:
-		template <typename _Ty> static auto _substitute(const std::string &format, const _Ty& value) -> std::string
+		template <typename T> static auto _substitute(const std::string &format, const T& value) -> std::string
 		{
 			std::vector<std::string> &parenthesisArray = betweens(format, { (char)'{' }, { (char)'}' });
 			std::vector<long> vec;
@@ -105,7 +105,7 @@ namespace library
 			std::string &to = toString(value);
 			return replaceAll(format, "{" + toString(index) + "}", to);
 		};
-		template <typename _Ty> static auto _substituteSQL(const std::string &format, const _Ty& value) -> std::string
+		template <typename T> static auto _substituteSQL(const std::string &format, const T& value) -> std::string
 		{
 			std::vector<std::string> &parenthesisArray = betweens(format, "{", "}");
 			std::vector<long> vec;
@@ -124,18 +124,18 @@ namespace library
 		/* ----------------------------------------------------------------------
 			SUBSTITUTE -> TO_STRING
 		---------------------------------------------------------------------- */
-		template <typename _Ty>
-		static auto toString(const _Ty &val) -> std::string
+		template <typename T>
+		static auto toString(const T &val) -> std::string
 		{
 			std::basic_stringstream<char> stream;
 			stream << val;
 
-			return move(stream.str());
+			return stream.str();
 		};
 		template<> static auto toString(const WeakString &str) -> std::string;
 
-		template <typename _Ty>
-		static auto toSQL(const _Ty &val) -> std::string
+		template <typename T>
+		static auto toSQL(const T &val) -> std::string
 		{
 			if (val == INT_MIN)
 				return "NULL";
@@ -143,7 +143,7 @@ namespace library
 			std::basic_stringstream<char> stream;
 			stream << val;
 
-			return move(stream.str());
+			return stream.str();
 		};
 		template<> static auto toSQL(const bool &flag) -> std::string;
 		template<> static auto toSQL(const char &val) -> std::string;

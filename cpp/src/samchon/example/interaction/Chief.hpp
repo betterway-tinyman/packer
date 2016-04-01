@@ -41,7 +41,7 @@ namespace interaction
 	 * \par [Inherited]
 	 *		@copydoc ExternalServerArray
 	 * 		  
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Chief
 		: public ExternalServerArray

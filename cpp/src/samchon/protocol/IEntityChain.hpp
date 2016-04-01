@@ -19,7 +19,7 @@ namespace protocol
 	 * @image latex cpp/protocol_entity.png
 	 *
 	 * @see samchon::protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API IEntityChain
 	{

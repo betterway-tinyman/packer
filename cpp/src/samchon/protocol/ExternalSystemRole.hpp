@@ -34,7 +34,7 @@ namespace protocol
 	 * @image latex cpp/protocol_external_system.png
 	 *
 	 * @see samchon::protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API ExternalSystemRole
 		: public Entity,

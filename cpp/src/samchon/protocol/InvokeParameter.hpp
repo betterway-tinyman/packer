@@ -53,7 +53,7 @@ namespace protocol
 	 * @see protocol::Invoke
 	 * @see samchon::protocol
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API InvokeParameter
 		: public virtual Entity
@@ -153,8 +153,8 @@ namespace protocol
 		 *
 		 * @tparam _Ty Type of value
 		 */
-		template <typename _Ty>
-		InvokeParameter(const std::string &name, const _Ty &val)
+		template <typename T>
+		InvokeParameter(const std::string &name, const T &val)
 			: super()
 		{
 			this->name = name;
@@ -183,8 +183,8 @@ namespace protocol
 		void setByteArray(ByteArray &&);
 
 	protected:
-		template <typename _Ty>
-		void construct_by_varadic_template(const _Ty &val)
+		template <typename T>
+		void construct_by_varadic_template(const T &val)
 		{
 			this->type = "number";
 
@@ -236,15 +236,15 @@ namespace protocol
 		 *
 		 * @tparam _Ty Type of value to get
 		 */
-		template<typename _Ty> auto getValue() const -> _Ty
+		template<typename T> auto getValue() const -> T
 		{
 			std::stringstream sstream;
 			sstream << this->str;
 
-			_Ty val;
+			T val;
 			sstream >> val;
 
-			return move(val);
+			return val;
 		};
 		template<> auto getValue() const -> std::string
 		{
@@ -274,7 +274,7 @@ namespace protocol
 		 *
 		 * @tparam _Ty Type of value to reference
 		 */
-		template <typename _Ty> auto referValue() const -> const _Ty&;
+		template <typename T> auto referValue() const -> const T&;
 		template<> auto referValue() const -> const std::string&
 		{
 			return str;
@@ -289,7 +289,7 @@ namespace protocol
 		 *
 		 * @tparam _Ty Type of value to move
 		 */
-		template <typename _Ty> auto moveValue()->_Ty;
+		template <typename T> auto moveValue()->T;
 		template<> auto moveValue() -> std::string
 		{
 			return move(str);

@@ -20,7 +20,7 @@ namespace library
 	 * @see library::GAPopulation
 	 * @see example::tsp
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class GAParameters
 		: public protocol::Entity

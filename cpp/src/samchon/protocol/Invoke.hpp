@@ -42,7 +42,7 @@ namespace protocol
 	 * @see protocol::InvokeParameter
 	 * @see samchon::protocol
 	 * 		
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API Invoke
 		: public SharedEntityArray<InvokeParameter>
@@ -104,31 +104,31 @@ namespace protocol
 		 * @param args Left arguments to be parameters of Invoke
 		 *
 		 */
-		template <typename _Ty, typename ... _Args>
-		Invoke(const std::string &listener, const _Ty &val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		Invoke(const std::string &listener, const T &val, const _Args& ... args)
 			: Invoke(listener)
 		{
 			construct_by_vardic_template(val);
 			construct_by_vardic_template(args...);
 		};
 
-		template <typename _Ty>
-		Invoke(const std::string &listener, const _Ty &val)
+		template <typename T>
+		Invoke(const std::string &listener, const T &val)
 			: Invoke(listener)
 		{
 			construct_by_vardic_template(val);
 		};
 
 	private:
-		template <typename _Ty, typename ... _Args>
-		void construct_by_vardic_template(const _Ty &val, const _Args& ... args)
+		template <typename T, typename ... _Args>
+		void construct_by_vardic_template(const T &val, const _Args& ... args)
 		{
 			construct_by_vardic_template(val);
 			construct_by_vardic_template(args...);
 		};
 
-		template <typename _Ty>
-		void construct_by_vardic_template(const _Ty &val)
+		template <typename T>
+		void construct_by_vardic_template(const T &val)
 		{
 			emplace_back(new InvokeParameter("", val));
 		};

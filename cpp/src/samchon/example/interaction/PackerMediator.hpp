@@ -39,7 +39,7 @@ namespace interaction
 	 * \par [Inherited] ParallelClientArrayMediator
 	 *		@copydetails master::ParallelClientArrayMediator
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class PackerMediator
 		: public protocol::master::ParallelClientArrayMediator

@@ -25,7 +25,7 @@ namespace library
 	 * @includelineno example/url_variables/main.cpp
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API URLVariables
 		: public HashMap<std::string, std::string>
@@ -46,7 +46,7 @@ namespace library
 		 * @brief Constructor by a string representing encoded properties
 		 * @details Converts the variable string to properties of the specified URLVariables object.
 		 *
-		 *	\li URLVariables(\"id=jhnam88&name=Jeongho+Nam") => {{\"id\", \"jhnam88\"}, {\"name\", \"Jeongho Nam\"}}
+		 *	\li URLVariables(\"id=jhnam88&name=Jeongho+Nam") => {{\"id\", \"jhnam88\"}, {\"name\", \"Jeongho Nam <http://samchon.org>\"}}
 		 *
 		 * @param A uri-encoded string containing pair of properties
 		 */
@@ -86,7 +86,7 @@ namespace library
 		 * @brief Get the string representing URLVariables
 		 * @details Returns a string object representing URLVariables following the URI\n
 		 *
-		 *	\li URLVariables({{"id", "jhnam88"}, {"name", "Jeongho Nam"}}).toString() => "id=jhnam88&name=Jeongho+Nam"
+		 *	\li URLVariables({{"id", "jhnam88"}, {"name", "Jeongho Nam <http://samchon.org>"}}).toString() => "id=jhnam88&name=Jeongho+Nam"
 		 *
 		 * @return A string representing URLVariables following the URI
 		 */

@@ -38,7 +38,7 @@ namespace protocol
 	 *	\par example/console_chat_server/main.cpp
 	 *		@includelineno example/console_chat_server/main.cpp
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API IServer
 	{

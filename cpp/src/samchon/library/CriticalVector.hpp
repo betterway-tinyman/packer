@@ -12,9 +12,9 @@ namespace library
 	 *
 	 * @see library::CriticalAllocator
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty>
-	using CriticalVector = std::vector<_Ty, CriticalAllocator<_Ty>>;
+	template <typename T>
+	using CriticalVector = std::vector<T, CriticalAllocator<T>>;
 };
 };

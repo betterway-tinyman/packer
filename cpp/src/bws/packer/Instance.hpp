@@ -8,7 +8,7 @@ namespace bws
 namespace packer
 {
 	/**
-	 * @brief An abstract class for physical 3D-instances.
+	 * @brief An abstract class of a physical 3D-instance.
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */

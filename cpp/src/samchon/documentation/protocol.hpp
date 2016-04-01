@@ -180,7 +180,7 @@ namespace samchon
 	 *	\li Boost Libraries: http://www.boost.org/
 	 *	\li Boot.Asio: http://www.boost.org/doc/libs/1_59_0/doc/html/boost_asio.html
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	namespace protocol
 	{

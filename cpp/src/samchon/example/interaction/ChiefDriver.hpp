@@ -41,7 +41,7 @@ namespace interaction
 	 *		@copydetails IClient
 	 * 
 	 * @see protocol
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class ChiefDriver
 		: public IServer,

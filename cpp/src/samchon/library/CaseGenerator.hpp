@@ -20,7 +20,7 @@ namespace library
 	 *	\li example::packer
 	 *
 	 * @see samchon::library
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API CaseGenerator
 	{

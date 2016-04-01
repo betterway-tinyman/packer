@@ -27,7 +27,7 @@ namespace protocol
 	 * @image html cpp/subset/library_sql.png
 	 * @image latex cpp/subset/library_sql.png
 	 *
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API ISQLEntity
 	{
