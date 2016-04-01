@@ -26,9 +26,9 @@ http://redprinting.co.kr/
 	- C++ API Document: http://betterwaysystems.github.io/packer/api/cpp/
 	- TypeScript API Document: http://betterwaysystems.github.io/packer/api/ts
 
-##### Algorithm from Boxologic
-  - Boxologic: https://github.com/exad/boxologic
-  - Airforce Bin Packing: http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf
+##### Algorithm from Airforce Bin Packing
+  - Thesis - [The distributer's three-midemsional pallet-packing problem: A human intelligence-based heuristic approach](http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf)
+  - GitHub: https://github.com/exad/boxologic
 
 ## Installation
 ##### TypeScript (JavaScript) only
