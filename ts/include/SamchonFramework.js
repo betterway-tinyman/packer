@@ -18,7 +18,7 @@ var samchon;
      * @param args One or more (comma separated) expressions to evaluate.
      *			   For multiple expressions, a space is inserted between each expression in the output.
      *
-     * @author Jeongho Nam
+     * @author Jeongho Nam <http://samchon.org>
      */
     function trace() {
         var args = [];
@@ -37,13 +37,14 @@ var samchon;
         ];
         for (var i = 0; i < args.length; i++) {
             var item = String(args[i]);
-            item = samchon.library.StringUtil.replaceAll(item, replacerArray);
+            item = (_a = samchon.library.StringUtil).replaceAll.apply(_a, [item].concat(replacerArray));
             if (i == 0)
                 str += item;
             else
                 str += ", " + item;
         }
         document.write("<p>" + str + "</p>");
+        var _a;
     }
     samchon.trace = trace;
 })(samchon || (samchon = {}));
@@ -64,13 +65,12 @@ var samchon;
         })(xml = example.xml || (example.xml = {}));
     })(example = samchon.example || (samchon.example = {}));
 })(samchon || (samchon = {}));
-/// <reference path="../../std.d.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
         /**
-         * @inheritdoc
+         *
          */
         var EntityArray = (function (_super) {
             __extends(EntityArray, _super);
@@ -105,22 +105,6 @@ var samchon;
                         this[v_it.first] = parseFloat(v_it.second);
                     else if (typeof this[v_it.first] == "string")
                         this[v_it.first] = v_it.second;
-                // MEMBER ENTITIES
-                //for (var e_it = xml.begin(); e_it.equals(xml.end()) != true; e_it = e_it.next()) 
-                //{
-                //	if (this.hasOwnProperty(e_it.first) == true
-                //		&& e_it.first != this.CHILD_TAG()
-                //		&& e_it.second.size() == 1
-                //		&& (this[e_it.first] instanceof Entity || this[e_it.first] instanceof EntityArray)
-                //		&& this[e_it.first] != null) 
-                //	{
-                //		var entity: IEntity = this[e_it.first];
-                //		var e_xml: library.XML = e_it.second.at(0);
-                //		if (entity == null)
-                //			continue;
-                //		entity.construct(e_xml);
-                //	}
-                //}
                 //CHILDREN
                 if (xml.has(this.CHILD_TAG()) == false)
                     return;
@@ -218,7 +202,7 @@ var samchon;
              * <p> The time complexity of Packer overs O(m^n). Elapsed time of calculation increases enourmously.
              * Do not use Packer if the digits of number of products or wrappers overs 2. </p>
              *
-             * @author Jeongho Nam
+             * @author Jeongho Nam <http://samchon.org>
              */
             var Packer = (function (_super) {
                 __extends(Packer, _super);
@@ -362,7 +346,7 @@ var samchon;
          * it would be better to using binary communication (with ByteArray).
          * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var Entity = (function () {
             /**
@@ -710,7 +694,7 @@ var samchon;
          *  <li> Comments from - https://developer.mozilla.org/en-US/docs/Web/API/Event/ </li>
          * </ul>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var BasicEvent = (function () {
             /* -------------------------------------------------------------------
@@ -963,7 +947,7 @@ var samchon;
          *  <li> n! -> FactorialGenerator </li>
          * </ul>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var CaseGenerator = (function () {
             /* ---------------------------------------------------------------
@@ -1017,7 +1001,7 @@ var samchon;
          * <p> <sub>n</sub>TT<sub>r</sub> </p>
          *
          * @inheritdoc
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var CombinedPermutationGenerator = (function (_super) {
             __extends(CombinedPermutationGenerator, _super);
@@ -1062,7 +1046,7 @@ var samchon;
          * <p> A permutation case generator. </p>
          * <p> nPr </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          * @inheritdoc
          */
         var PermuationGenerator = (function (_super) {
@@ -1191,7 +1175,7 @@ var samchon;
          * what to do with Invoke message, irrespective of the ExternalSystemRole is belonged to which
          * ExternalSystem. </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var ExternalSystem = (function (_super) {
             __extends(ExternalSystem, _super);
@@ -1294,7 +1278,7 @@ var samchon;
          *  <li> ExternalSystemArray::getRole("something")->sendData(invoke); </li>
          * </ul>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var ExternalSystemArray = (function (_super) {
             __extends(ExternalSystemArray, _super);
@@ -1396,7 +1380,7 @@ var samchon;
          * ExternalSystemRole itself, what to do with Invoke message, irrespective of the ExternalSystemRole
          * is belonged to which ExternalSystem. </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var ExternalSystemRole = (function (_super) {
             __extends(ExternalSystemRole, _super);
@@ -1465,7 +1449,7 @@ var samchon;
          * performances of each slave system. With the estimated performan index, master retrives the
          * optimal solution of distributing processes. </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var InvokeHistory = (function (_super) {
             __extends(InvokeHistory, _super);
@@ -1548,7 +1532,7 @@ var samchon;
          *
          * <img src="interface.png" />
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var ServerConnector = (function () {
             /**
@@ -1705,7 +1689,7 @@ var samchon;
              * 	<li>All the routines are done</li>
              * </ul>
              *
-             * @author Jeongho Nam
+             * @author Jeongho Nam <http://samchon.org>
              */
             var Application = (function () {
                 /**
@@ -1781,7 +1765,7 @@ var samchon;
             /**
              * A sub-movie.
              *
-             * @author Jeongho Nam
+             * @author Jeongho Nam <http://samchon.org>
              */
             var SubMovie = (function () {
                 function SubMovie() {
@@ -1815,7 +1799,7 @@ var samchon;
              * for estimation of its performance. </p>
              *
              * @inheritdoc
-             * @author Jeongho Nam
+             * @author Jeongho Nam <http://samchon.org>
              */
             var SlaveSystem = (function (_super) {
                 __extends(SlaveSystem, _super);
@@ -1886,7 +1870,7 @@ var samchon;
          *  <li> Made by AS3 - http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events/EventDispatcher.html
          * </ul>
          *
-         * @author Migrated by Jeongho Nam
+         * @author Migrated by Jeongho Nam <http://samchon.org>
          */
         var EventDispatcher = (function () {
             function EventDispatcher(target) {
@@ -1962,11 +1946,253 @@ var samchon;
         /**
          * <p> A utility class supporting static methods of string. </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var StringUtil = (function () {
             function StringUtil() {
             }
+            /* ==================================================================
+                SUBSTRING
+                    - BETWEEN(s)
+                    - TRIM
+            =====================================================================
+                BETWEEN(s)
+            ------------------------------------------------------------------ */
+            /**
+             * <p> Generate a substring. </p>
+             *
+             * <p> Extracts a substring consisting of the characters from specified start to end.
+             * It's same with str.substring( ? = (str.find(start) + start.size()), str.find(end, ?) ) </p>
+             *
+             * <code>
+             let str = between("ABCD[EFGH]IJK", "[", "]");
+             console.log(str); // PRINTS "EFGH"
+             * </code>
+             *
+             * <ul>
+             *	<li> If start is not specified, extracts from begin of the string to end. </li>
+             *	<li> If end is not specified, extracts from start to end of the string. </li>
+             *	<li> If start and end are all omitted, returns str, itself. </li>
+             * </ul>
+             *
+             * @param str Target string to be applied between
+             * @param start A string for separating substring at the front
+             * @param end A string for separating substring at the end
+             *
+             * @return substring by specified terms
+             */
+            StringUtil.between = function (str, start, end) {
+                if (start === void 0) { start = ""; }
+                if (end === void 0) { end = ""; }
+                if (start == "" && end == "")
+                    return str;
+                else if (start == "")
+                    return str.substr(0, str.indexOf(end));
+                else if (end == "")
+                    return str.substr(str.indexOf(start) + start.length);
+                else {
+                    var startIndex = str.indexOf(start);
+                    if (startIndex == -1)
+                        return "";
+                    return str.substring(startIndex + start.length, str.indexOf(end, startIndex + start.length));
+                }
+            };
+            /**
+             * <p> Fetch substrings. </p>
+             *
+             * <p> Splits a string into an array of substrings dividing by specified delimeters of start and end.
+             * It's the array of substrings adjusted the between. </p>
+             *
+             * <ul>
+             *	<li> If startStr is omitted, it's same with the split by endStr not having last item. </li>
+             *	<li> If endStr is omitted, it's same with the split by startStr not having first item. </li>
+             *	<li> If startStr and endStar are all omitted, returns <i>str</i>. </li>
+             * </ul>
+             *
+             * @param str Target string to split by between
+             * @param start A string for separating substring at the front.
+             *				If omitted, it's same with split(end) not having last item
+             * @param end A string for separating substring at the end.
+             *			  If omitted, it's same with split(start) not having first item
+             * @return An array of substrings
+             */
+            StringUtil.betweens = function (str, start, end) {
+                if (start === void 0) { start = ""; }
+                if (end === void 0) { end = ""; }
+                var substrings = [];
+                if (start == "" && end == "") {
+                    // PARAMETER IS NOT SPECIFIED
+                    // DO NOTHING
+                    return [str];
+                }
+                else if (start == end) {
+                    // SPLITTERS START AND END ARE EQUAL
+                    var prevIndex = -1;
+                    var endIndex = void 0;
+                    var n = 0;
+                    while ((endIndex = str.indexOf(start, prevIndex + 1)) != -1) {
+                        if (++n % 2 == 0) {
+                            substrings.push(str.substring(prevIndex, endIndex));
+                        }
+                        endIndex = prevIndex;
+                    }
+                }
+                else {
+                    substrings = str.split(start).splice(1);
+                    if (end != "")
+                        for (var i = substrings.length - 1; i >= 0; i--)
+                            if (substrings[i].indexOf(end) == -1)
+                                substrings.splice(i, 1);
+                            else
+                                substrings[i] = StringUtil.between(substrings[i], "", end);
+                }
+                return substrings;
+            };
+            /**
+             * Remove all designated characters from the beginning and end of the specified string.
+             *
+             * @param str The string whose designated characters should be trimmed.
+             * @param args Designated character(s).
+             *
+             * @return Updated string where designated characters was removed from the beginning and end.
+             */
+            StringUtil.trim = function (str) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                if (args.length == 0)
+                    args = StringUtil.SPACE_ARRAY;
+                return StringUtil.ltrim.apply(StringUtil, [StringUtil.rtrim.apply(StringUtil, [str].concat(args))].concat(args));
+            };
+            /**
+             * Remove all designated characters from the beginning of the specified string.
+             *
+             * @param str The string should be trimmed.
+             * @param delims Designated character(s).
+             *
+             * @return Updated string where designated characters was removed from the beginning
+             */
+            StringUtil.ltrim = function (str) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                if (args.length == 0)
+                    args = StringUtil.SPACE_ARRAY;
+                var index = 0;
+                while (index < str.length) {
+                    var maxIndex = index;
+                    for (var i = 0; i < args.length; i++) {
+                        var myIndex = str.indexOf(args[i], maxIndex) // START FROM PREVIOUS MAX_INDEX
+                            + args[i].length; // ADD ITS LENGTH
+                        maxIndex = Math.max(maxIndex, myIndex);
+                    }
+                    if (maxIndex <= index)
+                        break; // CAN BE -1
+                    else
+                        index = maxIndex;
+                }
+                if (index == str.length)
+                    return "";
+                else
+                    return str.substr(index);
+            };
+            /**
+             * Remove all designated characters from the end of the specified string.
+             *
+             * @param str The string should be trimmed.
+             * @param delims Designated character(s).
+             *
+             * @return Updated string where designated characters was removed from the end.
+             */
+            StringUtil.rtrim = function (str) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                if (args.length == 0)
+                    args = StringUtil.SPACE_ARRAY;
+                var index = str.length;
+                while (index != 0) {
+                    var minIndex = index;
+                    for (var i = 0; i < args.length; i++) {
+                        var myIndex = str.lastIndexOf(args[i], minIndex - 1);
+                        if (myIndex == -1)
+                            continue;
+                        minIndex = Math.min(minIndex, myIndex);
+                    }
+                    if (minIndex == -1 || minIndex >= index)
+                        break;
+                    else
+                        index = minIndex;
+                }
+                return str.substr(0, index);
+            };
+            /* ==================================================================
+                REPLACERS
+                    - SUBSTITUTE
+                    - REPLACE_ALL
+                    - MISCELLANEOUS
+            =====================================================================
+                SUBSTITUTE
+            ------------------------------------------------------------------ */
+            /**
+             * Substitute <code>{n}</code> tokens within the specified string.
+             *
+             * @param format The string to make substitutions in. This string can contain special tokens of the form
+             *				 <code>{n}</code>, where <code>n</code> is a zero based index, that will be replaced with the
+             *				 additional parameters found at that index if specified.
+             * @param args Additional parameters that can be substituted in the <i>format</i> parameter at each
+             *			   <code>{n}</code> location, where <code>n</code> is an integer (zero based) index value into
+             *			   the array of values specified.
+             *
+             * @return New string with all of the <code>{n}</code> tokens replaced with the respective arguments specified.
+             */
+            StringUtil.substitute = function (format) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                while (true) {
+                    if (args.length == 0)
+                        break;
+                    var parenthesisArray = StringUtil.betweens(format, "{", "}");
+                    var minIndex = Number.MAX_VALUE;
+                    for (var i = 0; i < parenthesisArray.length; i++) {
+                        var index = Number(parenthesisArray[i]);
+                        if (isNaN(index) == true)
+                            continue;
+                        minIndex = Math.min(minIndex, index);
+                    }
+                    if (minIndex == Number.MAX_VALUE)
+                        break;
+                    format = StringUtil.replaceAll(format, "{" + minIndex + "}", args[0]);
+                }
+                return format;
+            };
+            StringUtil.replaceAll = function (str) {
+                var args = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    args[_i - 1] = arguments[_i];
+                }
+                if (args.length == 2 && typeof args[0] == "string") {
+                    var before = args[0];
+                    var after = args[1];
+                    return str.split(before).join(after);
+                }
+                else {
+                    var pairs = args[0];
+                    if (pairs.length == 0)
+                        return str;
+                    for (var i = 0; i < pairs.length; i++)
+                        str = str.split(pairs[i].first).join(pairs[i].second);
+                    return str;
+                }
+            };
+            /* ------------------------------------------------------------------
+                MISCELLANEOUS
+            ------------------------------------------------------------------ */
             /**
              * <p> Get a tabbed string by specified size. </p>
              */
@@ -1985,26 +2211,26 @@ var samchon;
                     str += "&nbsp;&nbsp;&nbsp;&nbsp;";
                 return str;
             };
-            /*public static substitute(format: string, ...args: any[]): string
-            {
-                return "";
-            }*/
             /**
-             * <p> Replace all patterns of a string. </p>
+             * Replace all HTML spaces to a literal space.
+             *
+             * @param str Target string to replace.
              */
-            StringUtil.replaceAll = function (str, pairs) {
-                if (pairs.length == 0)
-                    return str;
-                for (var i = 0; i < pairs.length; i++)
-                    str = str.split(pairs[i].first).join(pairs[i].second);
-                return str;
+            StringUtil.removeHTMLSpaces = function (str) {
+                return StringUtil.replaceAll(str, new std.Pair("&nbsp;", " "), new std.Pair("\t", " "), new std.Pair("  ", " "));
             };
+            /* ------------------------------------------------------------------
+                TRIM
+            ------------------------------------------------------------------ */
+            /**
+             * An array containing whitespaces.
+             */
+            StringUtil.SPACE_ARRAY = [" ", "\t", "\r", "\n"];
             return StringUtil;
         }());
         library.StringUtil = StringUtil;
     })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
-/// <reference path="../../std.d.ts" />
 var samchon;
 (function (samchon) {
     var library;
@@ -2012,7 +2238,7 @@ var samchon;
         /**
          * <p> List of XML(s) having same tag. </p>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var XMLList = (function (_super) {
             __extends(XMLList, _super);
@@ -2057,7 +2283,6 @@ var samchon;
         library.XMLList = XMLList;
     })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
-/// <reference path="../../std.d.ts" />
 var samchon;
 (function (samchon) {
     var library;
@@ -2102,7 +2327,7 @@ var samchon;
          *	</tr>
          * </table>
          *
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var XML = (function (_super) {
             __extends(XML, _super);
@@ -2443,7 +2668,7 @@ var samchon;
                     new std.Pair("&lt;", "<"),
                     new std.Pair("&gt;", ">")
                 ];
-                return library.StringUtil.replaceAll(str, pairs);
+                return library.StringUtil.replaceAll.apply(library.StringUtil, [str].concat(pairs));
             };
             /**
              * <p> Encode a value. </p>
@@ -2475,7 +2700,7 @@ var samchon;
                     new std.Pair("<", "&lt;"),
                     new std.Pair(">", "&gt;")
                 ];
-                return library.StringUtil.replaceAll(str, pairs);
+                return library.StringUtil.replaceAll.apply(library.StringUtil, [str].concat(pairs));
             };
             /**
               * <p> Decode a property. </p>
@@ -2536,7 +2761,7 @@ var samchon;
                     new std.Pair("&#xA;", "\n"),
                     new std.Pair("&#xD;", "\r"),
                 ];
-                return library.StringUtil.replaceAll(str, pairs);
+                return library.StringUtil.replaceAll.apply(library.StringUtil, [str].concat(pairs));
             };
             /**
              * <p> Decode a property. </p>
@@ -2597,7 +2822,7 @@ var samchon;
                     new std.Pair("\n", "&#xA;"),
                     new std.Pair("\r", "&#xD;"),
                 ];
-                return library.StringUtil.replaceAll(str, pairs);
+                return library.StringUtil.replaceAll.apply(library.StringUtil, [str].concat(pairs));
             };
             /* -------------------------------------------------------------
                 EXPORTS
@@ -2679,7 +2904,7 @@ var samchon;
          * classes of S/W architecture. </p>
          *
          * @see IProtocol
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var Invoke = (function (_super) {
             __extends(Invoke, _super);
@@ -2788,7 +3013,7 @@ var samchon;
          * A parameter belongs to an Invoke.
          *
          * @see Invoke
-         * @author Jeongho Nam
+         * @author Jeongho Nam <http://samchon.org>
          */
         var InvokeParameter = (function (_super) {
             __extends(InvokeParameter, _super);
@@ -2876,4 +3101,3 @@ var samchon;
         protocol.InvokeParameter = InvokeParameter;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
-//# sourceMappingURL=SamchonFramework.js.map

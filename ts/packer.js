@@ -1268,7 +1268,7 @@ var bws;
             // NOTIFY TO FLEX
             ////////////////////////
             var flex = document.getElementById("flex");
-            flex["sendData"](invoke.toXML().toString());
+            flex.sendData(invoke.toXML().toString());
         }
         packer_1.main = main;
         function setWrapperArray(str) {
@@ -1327,7 +1327,21 @@ var bws;
     var packer;
     (function (packer) {
         /**
-         * A packer.
+         * @brief Packer, a solver of 3d bin packing with multiple wrappers.
+         *
+         * @details
+         * <p> Packer is a facade class supporting packing operations in user side. You can solve a packing problem
+         * by constructing Packer class with {@link WrapperArray wrappers} and {@link InstanceArray instances} to
+         * pack and executing {@link optimize Packer.optimize()} method. </p>
+         *
+         * <p> In background side, deducting packing solution, those algorithms are used. </p>
+         * <ul>
+         *	<li> <a href="http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf" target="_blank">
+         *		Airforce Bin Packing; 3D pallet packing problem: A human intelligence-based heuristic approach </a>
+         *	</li>
+         *	<li> Genetic Algorithm </li>
+         *	<li> Greedy and Back-tracking algorithm </li>
+         * </ul>
          *
          * @author Jeongho Nam <http://samchon.org>
          */
@@ -1371,6 +1385,10 @@ var bws;
             /* -----------------------------------------------------------
                 OPTIMIZERS
             ----------------------------------------------------------- */
+            /**
+             * <p> Deduct
+             *
+             */
             Packer.prototype.optimize = function () {
                 var wrappers = new packer.WrapperArray(); // TO BE RETURNED
                 if (this.wrapperArray.size() == 1) {
@@ -1416,7 +1434,27 @@ var bws;
                 return wrappers;
             };
             /**
-             * Initialize sequence list (gene_array).
+             * @brief Initialize sequence list (gene_array).
+             *
+             * @details
+             * <p> Deducts initial sequence list by such assumption: </p>
+             *
+             * <ul>
+             *	<li> Cost of larger wrapper is less than smaller one, within framework of price per volume unit. </li>
+             *	<ul>
+             *		<li> Wrapper Larger: (price: $1,000, volume: 100cm^3 -> price per volume unit: $10 / cm^3) </li>
+             *		<li> Wrapper Smaller: (price: $700, volume: 50cm^3 -> price per volume unit: $14 / cm^3) </li>
+             *		<li> Larger's <u>cost</u> is less than Smaller, within framework of price per volume unit </li>
+             *	</ul>
+             * </ul>
+             *
+             * <p> Method {@link initGenes initGenes()} constructs {@link WrapperGroup WrapperGroups} corresponding
+             * with the {@link wrapperArray} and allocates {@link instanceArray instances} to a {@link WrapperGroup},
+             * has the smallest <u>cost</u> between containbles. </p>
+             *
+             * <p> After executing packing solution by {@link WrapperGroup.optimize WrapperGroup.optimize()}, trying to
+             * {@link repack re-pack} each {@link WrapperGroup} to another type of {@link Wrapper}, deducts the best
+             * solution between them. It's the initial sequence list of genetic algorithm. </p>
              *
              * @return Initial sequence list.
              */
@@ -1545,8 +1583,19 @@ var bws;
 (function (bws) {
     var packer;
     (function (packer_2) {
+        /**
+         * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
         var PackerForm = (function (_super) {
             __extends(PackerForm, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
             function PackerForm() {
                 _super.call(this);
                 this.instanceFormArray = new InstanceFormArray();
@@ -1556,10 +1605,16 @@ var bws;
                 this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
                 this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
             };
+            /* -----------------------------------------------------------
+                ACCESSORS
+            ----------------------------------------------------------- */
             PackerForm.prototype.optimize = function () {
                 var packer = this.toPacker();
                 return packer.optimize();
             };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
             PackerForm.prototype.TAG = function () {
                 return "packerForm";
             };
@@ -1576,20 +1631,39 @@ var bws;
             return PackerForm;
         }(samchon.protocol.Entity));
         packer_2.PackerForm = PackerForm;
+        /**
+         * An array of {@link InstanceForm} objects.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
         var InstanceFormArray = (function (_super) {
             __extends(InstanceFormArray, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
             function InstanceFormArray() {
                 _super.call(this);
             }
             InstanceFormArray.prototype.createChild = function (xml) {
                 return new InstanceForm();
             };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
             InstanceFormArray.prototype.TAG = function () {
                 return "instanceFormArray";
             };
             InstanceFormArray.prototype.CHILD_TAG = function () {
                 return "instanceForm";
             };
+            /**
+             * Convert {@link InstanceForm} objects to {@link InstanceArray}.
+             *
+             * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
+             */
             InstanceFormArray.prototype.toInstanceArray = function () {
                 var instanceArray = new packer_2.InstanceArray();
                 for (var i = 0; i < this.size(); i++) {
@@ -1602,11 +1676,22 @@ var bws;
             };
             return InstanceFormArray;
         }(samchon.protocol.EntityArray));
+        /**
+         * <p> A repeated Instance. </p>
+         *
+         * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking
+         * volume of network message I/O by storing {@link count repeated count}. </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
         var InstanceForm = (function (_super) {
             __extends(InstanceForm, _super);
             /* -----------------------------------------------------------
                 CONSTRUCTORS
             ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
             function InstanceForm() {
                 _super.call(this);
                 this.instance = null;
@@ -1642,6 +1727,16 @@ var bws;
                     xml.push(this.instance.toXML());
                 return xml;
             };
+            /**
+             * <p> Repeated {@link instance} to {@link InstanceArray}.
+             *
+             * @details
+             * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make
+             * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be
+             * registered on {@link Packer.instanceArray}.
+             *
+             * @return An array of instance containing repeated {@link instance}.
+             */
             InstanceForm.prototype.toInstanceArray = function () {
                 var instanceArray = new packer_2.InstanceArray();
                 instanceArray.assign(this.count, this.instance);
@@ -2587,7 +2682,7 @@ var bws;
     var packer;
     (function (packer) {
         /**
-         * A group of same type of {@link Wrapper Wrappers}.
+         * A group of {@link Wrapper Wrappers} with same type.
          *
          * @author Jeongho Nam <http://samchon.org>
          */
@@ -2734,4 +2829,3 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-//# sourceMappingURL=packer.js.map

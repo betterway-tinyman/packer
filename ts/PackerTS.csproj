@@ -68,8 +68,8 @@
     <TypeScriptCompile Include="Scripts\typings\threejs\three-vrcontrols.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\threejs\three-vreffect.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\threejs\three.d.ts" />
-    <TypeScriptCompile Include="src\SamchonFramework.d.ts" />
-    <TypeScriptCompile Include="src\std.d.ts" />
+    <TypeScriptCompile Include="src\samchon\SamchonFramework.d.ts" />
+    <TypeScriptCompile Include="src\std\std.d.ts" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
@@ -121,7 +121,7 @@
     <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
     <TypeScriptModuleKind>
     </TypeScriptModuleKind>
     <TypeScriptOutFile>packer.js</TypeScriptOutFile>

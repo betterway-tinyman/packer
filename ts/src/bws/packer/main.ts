@@ -30,7 +30,7 @@
 		// NOTIFY TO FLEX
 		////////////////////////
 		let flex = document.getElementById("flex");
-		flex["sendData"](invoke.toXML().toString());
+		(<any>flex).sendData(invoke.toXML().toString());
 	}
 
 	export function setWrapperArray(str: string): void

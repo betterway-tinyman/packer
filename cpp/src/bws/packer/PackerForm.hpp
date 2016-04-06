@@ -39,7 +39,7 @@ namespace packer
 			CONSTRUCTORS
 		----------------------------------------------------------- */
 		/**
-		 * Default Constructor.
+		 * @brief Default Constructor.
 		 */
 		PackerForm();
 		virtual ~PackerForm() = default;
@@ -51,6 +51,9 @@ namespace packer
 		----------------------------------------------------------- */
 		auto optimize() const -> std::shared_ptr<WrapperArray>;
 
+		/**
+		 * @brief Get parameters of genetic algorithm.
+		 */
 		auto getGAParameters() const -> std::shared_ptr<library::GAParameters>;
 
 		/* -----------------------------------------------------------
