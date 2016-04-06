@@ -43,6 +43,12 @@
 				wrapperArray = packerForm.wrapperArray;
 			}
 			
+			public function constructPackerForm(xml:XML):void
+			{
+				packerForm.construct(xml);
+				gaParametersForm.setParameters(packerForm.gaParameters);
+			}
+			
 			/* ----------------------------------------------------
 				OPERATORS
 			---------------------------------------------------- */
@@ -85,8 +91,7 @@
 							var str:String = fileReference.data.readUTFBytes(fileReference.data.bytesAvailable);
 							var xml:XML = new XML(str);
 							
-							packerForm.construct(xml);
-							gaParametersForm.setParameters(packerForm.gaParameters);
+							this.constructPackerForm(xml);
 						}
 						catch (error:Error)
 						{

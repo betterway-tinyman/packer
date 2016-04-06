@@ -30,7 +30,9 @@
 				client = new Client(this);
 				
 				ExternalInterface.addCallback("sendData", _replyData);
+				
 				goServerInfo();
+				loadSample();
 			}
 			
 			/**
@@ -94,6 +96,29 @@
 			protected function handleServerFail(event:Event):void
 			{
 				// NOTHING TO DO ESPECIALLY
+			}
+			
+			protected function loadSample():void
+			{
+				try
+				{
+					var urlLoader:URLLoader = new URLLoader();
+					urlLoader.addEventListener(Event.COMPLETE, handleLoadSample);
+					urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleServerFail);
+					urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleServerFail);
+					
+					urlLoader.load(new URLRequest("sample.xml"));
+				}
+				catch (error:Error)
+				{
+				}
+			}
+			
+			protected function handleLoadSample(event:Event):void
+			{
+				var xml:XML = new XML(event.target.data);
+				
+				this.parameterMovie.constructPackerForm(xml);
 			}
 			
 			/* ----------------------------------------------------
