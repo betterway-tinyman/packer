@@ -136,7 +136,7 @@ declare namespace boxologic {
          * </p>
          *
          * <code>
-         FOR i to box_array.size()
+         FOR i := 0 to box_array.size()
              WHILE key IN width, length and height in box_array[i]
              BEGIN
                 value := 0
@@ -216,7 +216,7 @@ declare namespace boxologic {
          */
         private packed_layout_height;
         /**
-         * Packed {@link Pallet.volume volume} of the {@lnk pallet}.
+         * Packed {@link Pallet.vo1lume volume} of the {@lnk pallet}.
          */
         private packed_volume;
         private boxi;

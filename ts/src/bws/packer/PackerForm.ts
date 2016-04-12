@@ -110,7 +110,7 @@
 			{
 				let myInstances: InstanceArray = this.at(i).toInstanceArray();
 				//for (let j: number = 0; j < myInstances.size(); j++)
-				//	instanceArray.pushBack(myInstances.at(j));
+				//	instanceArray.push_back(myInstances.at(j));
 
 
 				instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());

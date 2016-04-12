@@ -73,6 +73,8 @@
 			protected function openFile(event:MouseEvent):void
 			{
 				var fileReference:FileReference = new FileReference();
+				var this_:ParameterMovie = this;
+				
 				fileReference.addEventListener
 				(
 					Event.SELECT,
@@ -91,7 +93,7 @@
 							var str:String = fileReference.data.readUTFBytes(fileReference.data.bytesAvailable);
 							var xml:XML = new XML(str);
 							
-							this.constructPackerForm(xml);
+							constructPackerForm(xml);
 						}
 						catch (error:Error)
 						{

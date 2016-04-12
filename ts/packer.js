@@ -135,7 +135,7 @@ var boxologic;
                 this.box_array[i] = box;
             }
             // SCRAP_LIST
-            this.scrap_list.pushBack(new boxologic.Scrap());
+            this.scrap_list.push_back(new boxologic.Scrap());
             /////////////////////////////////////
             // BEST VARIABLES
             /////////////////////////////////////
@@ -159,11 +159,11 @@ var boxologic;
                     wrap.estimateOrientation(box.layout_width, box.layout_height, box.layout_length);
                     if (this.wrapper.getThickness() != 0)
                         wrap.setPosition(wrap.getX() + this.wrapper.getThickness(), wrap.getY() + this.wrapper.getThickness(), wrap.getZ() + this.wrapper.getThickness());
-                    this.wrapper.pushBack(wrap);
+                    this.wrapper.push_back(wrap);
                 }
                 else {
                     // NOT WRAPED INSTANCES BY LACK OF VOLUME
-                    this.leftInstances.pushBack(instance);
+                    this.leftInstances.push_back(instance);
                 }
             }
         };
@@ -1466,7 +1466,7 @@ var bws;
                 var wrapperGroups = new std.Vector();
                 for (var i = 0; i < this.wrapperArray.size(); i++) {
                     var wrapper = this.wrapperArray.at(i);
-                    wrapperGroups.pushBack(new packer.WrapperGroup(wrapper));
+                    wrapperGroups.push_back(new packer.WrapperGroup(wrapper));
                 }
                 // ALLOCATE INSTNACES BY AUTHORITY
                 for (var i = 0; i < this.instanceArray.size(); i++) {
@@ -1509,8 +1509,8 @@ var bws;
                 for (var i = 0; i < wrappers.size(); i++) {
                     var wrapper = wrappers.at(i);
                     for (var j = 0; j < wrapper.size(); j++) {
-                        ga_instances.pushBack(wrapper.at(j).getInstance());
-                        genes.pushBack(wrapper);
+                        ga_instances.push_back(wrapper.at(j).getInstance());
+                        genes.push_back(wrapper);
                     }
                 }
                 // GENE_ARRAY
@@ -1529,7 +1529,7 @@ var bws;
                 for (var i = 0; i < $wrappers.size(); i++) {
                     var wrapper = $wrappers.at(i);
                     var minGroup = new packer.WrapperGroup(wrapper);
-                    minGroup.pushBack(wrapper);
+                    minGroup.push_back(wrapper);
                     for (var j = 0; j < this.wrapperArray.size(); j++) {
                         var myWrapper = this.wrapperArray.at(j);
                         if (wrapper.equals(myWrapper))
@@ -1669,7 +1669,7 @@ var bws;
                 for (var i = 0; i < this.size(); i++) {
                     var myInstances = this.at(i).toInstanceArray();
                     //for (let j: number = 0; j < myInstances.size(); j++)
-                    //	instanceArray.pushBack(myInstances.at(j));
+                    //	instanceArray.push_back(myInstances.at(j));
                     instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
                 }
                 return instanceArray;
@@ -2223,7 +2223,7 @@ var bws;
                     // SET POSITION AND SCALE
                     boundaryLine.scale.set(width, height, length_1);
                     boundaryLine.position.set(x + width / 2, y + height / 2, z + length_1 / 2);
-                    objects.pushBack(boundaryLine);
+                    objects.push_back(boundaryLine);
                 }
                 // ---------------------------------------
                 // SHAPE
@@ -2237,7 +2237,7 @@ var bws;
                 }));
                 shape.scale.set(this.getWidth(), this.getHeight(), this.getLength());
                 shape.position.set(this.x + this.getWidth() / 2, this.y + this.getHeight() / 2, this.z + this.getLength() / 2);
-                objects.pushBack(shape);
+                objects.push_back(shape);
                 return objects;
             };
             return Wrap;
@@ -2812,7 +2812,7 @@ var bws;
             WrapperGroup.prototype.pack = function (instanceArray) {
                 var boxo = new boxologic.Boxologic(new packer.Wrapper(this.sample), instanceArray);
                 var resultPair = boxo.pack();
-                this.pushBack(resultPair.first);
+                this.push_back(resultPair.first);
                 return resultPair.second;
             };
             /* -----------------------------------------------------------
@@ -2829,3 +2829,4 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+//# sourceMappingURL=packer.js.map

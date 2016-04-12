@@ -196,7 +196,7 @@
 			{
 				let wrapper: Wrapper = this.wrapperArray.at(i);
 
-				wrapperGroups.pushBack(new WrapperGroup(wrapper));
+				wrapperGroups.push_back(new WrapperGroup(wrapper));
 			}
 
 			// ALLOCATE INSTNACES BY AUTHORITY
@@ -256,8 +256,8 @@
 
 				for (let j: number = 0; j < wrapper.size(); j++)
 				{
-					ga_instances.pushBack(wrapper.at(j).getInstance());
-					genes.pushBack(wrapper);
+					ga_instances.push_back(wrapper.at(j).getInstance());
+					genes.push_back(wrapper);
 				}
 			}
 
@@ -283,7 +283,7 @@
 				let wrapper: Wrapper = $wrappers.at(i);
 				let minGroup: WrapperGroup = new WrapperGroup(wrapper);
 
-				minGroup.pushBack(wrapper);
+				minGroup.push_back(wrapper);
 
 				for (let j: number = 0; j < this.wrapperArray.size(); j++)
 				{

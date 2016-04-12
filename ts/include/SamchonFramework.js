@@ -2941,7 +2941,7 @@ var samchon;
                 else if (args.length > 1) {
                     this.listener = args[0];
                     for (var i = 1; i < args.length; i++)
-                        this.pushBack(new protocol.InvokeParameter("", args[i]));
+                        this.push_back(new protocol.InvokeParameter("", args[i]));
                 }
             }
             /**

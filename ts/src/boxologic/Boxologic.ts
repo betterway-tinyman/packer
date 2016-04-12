@@ -77,7 +77,7 @@ namespace boxologic
 		 * </p>
 		 *
 		 * <code>
-		 FOR i to box_array.size()
+		 FOR i := 0 to box_array.size()
 			 WHILE key IN width, length and height in box_array[i]
 			 BEGIN
 		 		value := 0
@@ -186,7 +186,7 @@ namespace boxologic
 		private packed_layout_height: number;
 
 		/**
-		 * Packed {@link Pallet.volume volume} of the {@lnk pallet}.
+		 * Packed {@link Pallet.vo1lume volume} of the {@lnk pallet}.
 		 */
 		private packed_volume: number;
 
@@ -310,7 +310,7 @@ namespace boxologic
 			}
 
 			// SCRAP_LIST
-			this.scrap_list.pushBack(new Scrap());
+			this.scrap_list.push_back(new Scrap());
 
 			/////////////////////////////////////
 			// BEST VARIABLES
@@ -353,12 +353,12 @@ namespace boxologic
 							wrap.getZ() + this.wrapper.getThickness()
 						);
 
-					this.wrapper.pushBack(wrap);
+					this.wrapper.push_back(wrap);
 				}
 				else
 				{
 					// NOT WRAPED INSTANCES BY LACK OF VOLUME
-					this.leftInstances.pushBack(instance);
+					this.leftInstances.push_back(instance);
 				}
 			}
 		}

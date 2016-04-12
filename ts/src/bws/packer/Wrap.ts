@@ -497,7 +497,7 @@
 				boundaryLine.scale.set(width, height, length);
 				boundaryLine.position.set(x + width / 2, y + height / 2, z + length / 2);
 				
-				objects.pushBack(boundaryLine);
+				objects.push_back(boundaryLine);
 			}
 
 			// ---------------------------------------
@@ -525,7 +525,7 @@
 				this.z + this.getLength() / 2
 			);
 
-			objects.pushBack(shape);
+			objects.push_back(shape);
 			return objects;
 		}
 	}

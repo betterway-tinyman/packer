@@ -206,7 +206,7 @@
 			let boxo: boxologic.Boxologic = new boxologic.Boxologic(new Wrapper(this.sample), instanceArray);
 			let resultPair: std.Pair<Wrapper, InstanceArray> = boxo.pack();
 
-			this.pushBack(resultPair.first);
+			this.push_back(resultPair.first);
 			return resultPair.second;
 		}
 
