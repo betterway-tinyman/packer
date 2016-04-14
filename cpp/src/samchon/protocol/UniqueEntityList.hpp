@@ -1,7 +1,7 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/protocol/IEntityUniquePtrGroup.hpp>
+#include <samchon/protocol/EntityGroup.hpp>
 #include <list>
 
 namespace samchon
@@ -11,7 +11,7 @@ namespace protocol
 	/**
 	 * @brief An EntityGroup with list container and children capsuled in unique pointers.
 	 *
-	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity or Entity itself.
+	 * @tparam T A type of children Entity. Must be a class derived from an Entity or Entity itself.
 	 *
 	 * @note
 	 * <p> std::unique_ptr doesn't allow copy construction. It allows only move construction. When inserts
@@ -23,12 +23,7 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty = Entity>
-	using UniqueEntityList =
-		EntityGroup
-		<
-			std::list<std::unique_ptr<_Ty>>,
-			_Ty, std::unique_ptr<_Ty>
-		>;
+	template <typename T = Entity>
+	using UniqueEntityList = EntityGroup<std::list<std::unique_ptr<T>>, T>;
 };
 };

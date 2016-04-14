@@ -10,17 +10,12 @@ namespace protocol
 	/**
 	 * @brief An EntityGroup with list container and children capsuled in shared pointers.
 	 *
-	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity or Entity itself.
+	 * @tparam T A type of children Entity. Must be a class derived from an Entity or Entity itself.
 	 *
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty = Entity>
-	using SharedEntityList = 
-		EntityGroup
-		<
-			std::list<std::shared_ptr<_Ty>>, 
-			_Ty, std::shared_ptr<_Ty>
-		>;
+	template <typename T = Entity>
+	using SharedEntityList = EntityGroup<std::list<std::shared_ptr<T>>, T>;
 };
 };

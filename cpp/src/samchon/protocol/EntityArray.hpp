@@ -13,7 +13,7 @@ namespace protocol
 	/**
 	 * @brief An Entity and a static array containing Entity objects
 	 *
-	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity.
+	 * @tparam T A type of children Entity. Must be a class derived from an Entity.
 	 *
 	 * @details
 	 * <p> EntityArray is a static array containing children objects derived from an Entity class.
@@ -42,6 +42,8 @@ namespace protocol
 	 * <p> Use EntityGroup instead. </p>
 	 *	\li class NTCriteria : public EntityArray<NTCriteria> causes a stack overflow.
 	 *	\li class NTCriteria : public SharedEntityArray<NTCriteria> doesn't cause the stack overflow.
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename T>
 	class EntityArray

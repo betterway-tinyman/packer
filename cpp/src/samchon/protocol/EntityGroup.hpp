@@ -9,9 +9,8 @@ namespace protocol
 	/**
 	 * @brief An Entity and a container of children Entity objects.
 	 *
-	 * @tparam _Container A type of container containing children entity objects.
-	 * @tparam _Ety A type of children entity. It must be a class derived from an Entity class, or Entity class itself.
-	 * @tparam _Ty A type of children element of _Container. Using default template parameter is recommended.
+	 * @tparam Container A type of container containing children entity objects.
+	 * @tparam T A type of children entity. It must be a class derived from an Entity class, or Entity class itself.
 	 *
 	 * @details
 	 * <p> EntityGroup is a template class for containinig children Entity objects, and also another type 
@@ -45,32 +44,24 @@ namespace protocol
 	 * objects are not serialized and referenced by pointer, its iteration and accessment is not fast.
 	 * If it needs higher performance, then use EntityArray (static array for children entity) instead. </p> 
 	 *
-	 * \par [Inherited]
-	 *		@copydetails protocol::Entity
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Container, typename _ETy = Entity, typename T = _Container::value_type>
+	template <typename Container, typename T = Entity>
 	class EntityGroup
-		: public _Container,
+		: public Container,
 		public virtual Entity, //CLASS
 		public virtual IEntityGroup	//INTERFACE
 	{
 	public:
-		typedef _Container container_type;
-		typedef T value_type;
-		typedef _ETy entity_type;
+		typedef Container container_type;
+		typedef T entity_type;
 
 	public:
 		/* ------------------------------------------------------------------------------------
 			CONSTRUCTORS
 		------------------------------------------------------------------------------------ */
-		/**
-		 * @brief Default Constructor.
-		 */
-		EntityGroup()
-			: _Container(), Entity(),
-			IEntityGroup()
-		{
-		};
+		using container_type::container_type;
+
 		virtual ~EntityGroup() = default;
 
 		/**
@@ -95,7 +86,7 @@ namespace protocol
 
 			std::shared_ptr<library::XMLList> &xmlList = xml->get(CHILD_TAG());
 
-			if (std::is_same<_Container, std::vector<_Container::value_type, _Container::allocator_type>>::value == true)
+			if (std::is_same<Container, std::vector<Container::value_type, Container::allocator_type>>::value == true)
 			{
 				//FOR RESERVE
 				assign(xmlList->size(), nullptr);
@@ -106,7 +97,7 @@ namespace protocol
 			{
 				std::shared_ptr<library::XML> &xmlElement = xmlList->at(i);
 
-				entity_type *entity = createChild(xmlElement);
+				T *entity = createChild(xmlElement);
 				if (entity != nullptr)
 				{
 					entity->construct(xmlList->at(i));
@@ -126,17 +117,17 @@ namespace protocol
 		 *
 		 * @return A new child Entity belongs to EntityGroup.
 		 */
-		virtual auto createChild(std::shared_ptr<library::XML>)->entity_type* = 0;
+		virtual auto createChild(std::shared_ptr<library::XML>) -> T* = 0;
 
 	public:
 		/* ------------------------------------------------------------------------------------
 			MODIFIERS
 		------------------------------------------------------------------------------------ */
-		using _Container::erase;
+		using Container::erase;
 
 		void erase(const std::string &key)
 		{
-			for (_Container::iterator it = begin(); it != end();)
+			for (Container::iterator it = begin(); it != end();)
 				if ((*it)->key() == key)
 					it = erase(it);
 				else
@@ -167,7 +158,7 @@ namespace protocol
 		* @param key the identifier of the element wants to access
 		* @return The element having the key, or throw exception if there is none.
 		*/
-		auto get(const std::string &key) -> value_type&
+		auto get(const std::string &key) -> typename Container::value_type&
 		{
 			for (auto it = begin(); it != end(); it++)
 				if ((*it)->key() == key)
@@ -182,7 +173,7 @@ namespace protocol
 		* @param key the identifier of the element wants to access
 		* @return The const element having the key, or throw exception if there is none.
 		*/
-		auto get(const std::string &key) const -> const value_type&
+		auto get(const std::string &key) const -> const typename Container::value_type&
 		{
 			for (auto it = begin(); it != end(); it++)
 				if ((*it)->key() == key)

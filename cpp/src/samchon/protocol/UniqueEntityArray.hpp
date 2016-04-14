@@ -10,7 +10,7 @@ namespace protocol
 	/**
 	 * @brief An EntityGroup with vector container and children capsuled in unique pointers.
 	 *
-	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity or Entity itself.
+	 * @tparam T A type of children Entity. Must be a class derived from an Entity or Entity itself.
 	 *
 	 * @details
 	 * <p> For a case of inheritance of UniqueEntityArray and the inherited UniqueEntityArray also
@@ -30,13 +30,8 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename _Ty = Entity>
-	using UniqueEntityArray =
-		EntityGroup
-		<
-			std::vector<std::unique_ptr<_Ty>>,
-			_Ty, std::unique_ptr<_Ty>
-		>;
+	template <typename T = Entity>
+	using UniqueEntityArray = EntityGroup<std::vector<std::unique_ptr<T>>, T>;
 };
 };
 

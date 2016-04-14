@@ -13,7 +13,7 @@ namespace protocol
 	/**
 	 * @brief An Entity and a static list containing Entity objects
 	 *
-	 * @tparam _Ty A type of children Entity. Must be a class derived from an Entity.
+	 * @tparam T A type of children Entity. Must be a class derived from an Entity.
 	 *
 	 * @details
 	 * <p> EntityList is a static array containing children objects derived from an Entity class.
@@ -47,13 +47,16 @@ namespace protocol
 	 * I'm planning to depreciate the EntityList in next generation. </p>
 	 *
 	 * <p> Use SharedEntityList instead will be better I think. </p>
+	 *
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename T>
 	class EntityList
 		: public virtual Entity, public std::list<T>, //CLASSES
 		public virtual IEntityGroup //INTERFACE
 	{
-	protected:
+	private:
+		typedef std::list<T> container_type;
 		typedef Entity super;
 		typedef T entity_type;
 
@@ -61,7 +64,7 @@ namespace protocol
 		/**
 		 * @brief Default Constructor
 		 */
-		EntityList();
+		using container_type::container_type;
 		virtual ~EntityList() = default;
 
 		/**
