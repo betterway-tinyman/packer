@@ -2,7 +2,7 @@
 ::	FETCH DEPENDENCIES
 :: ---------------------------------------------------------
 :: DIRECTORIES TO FETCH
-SET STD_DIR=D:\OneDrive\Project\Samchon\stl\release
+SET STD_DIR=D:\OneDrive\Project\Samchon\stl\lib
 SET FRAMEWORK_DIR=D:\OneDrive\Project\Samchon\framework\release
 
 :: DEFINITIONS (TYPESCRIPT HEADER FILE)

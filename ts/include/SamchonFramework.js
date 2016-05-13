@@ -70,7 +70,7 @@ var samchon;
     var protocol;
     (function (protocol) {
         /**
-         *
+         * @author Jeongho Nam <http://samchon.org>
          */
         var EntityArray = (function (_super) {
             __extends(EntityArray, _super);
@@ -100,7 +100,7 @@ var samchon;
                 this.clear();
                 // MEMBER VARIABLES; ATOMIC
                 var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equals(propertyMap.end()) != true; v_it = v_it.next())
+                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next())
                     if (typeof this[v_it.first] == "number" && v_it.first != "length")
                         this[v_it.first] = parseFloat(v_it.second);
                     else if (typeof this[v_it.first] == "string")
@@ -127,30 +127,51 @@ var samchon;
                 return "";
             };
             /**
-             * @inheritdoc
+             * <p> Whether have the item or not. </p>
+             *
+             * <p> Indicates whether a map has an item having the specified identifier. </p>
+             *
+             * @param key Key value of the element whose mapped value is accessed.
+             *
+             * @return Whether the map has an item having the specified identifier.
              */
             EntityArray.prototype.has = function (key) {
-                var i;
-                if (key instanceof protocol.Entity || key instanceof EntityArray) {
-                    for (i = 0; i < this.size(); i++)
-                        if (this.at(i) == key)
-                            return true;
-                }
-                else {
-                    for (var i = 0; i < this.size(); i++)
-                        if (this.at(i).key() == key)
-                            return true;
-                }
-                return false;
+                return std.any_of(this.begin(), this.end(), function (entity) {
+                    return entity.key() == key;
+                });
             };
             /**
-             * @inheritdoc
+             * <p> Count elements with a specific key. </p>
+             *
+             * <p> Searches the container for elements whose key is <i>key</i> and returns the number of elements found. </p>
+             *
+             * @param key Key value to be searched for.
+             *
+             * @return The number of elements in the container with a <i>key</i>.
+             */
+            EntityArray.prototype.count = function (key) {
+                return std.count_if(this.begin(), this.end(), function (entity) {
+                    return entity.key() == key;
+                });
+            };
+            /**
+             * <p> Get an element </p>
+             *
+             * <p> Returns a reference to the mapped value of the element identified with <i>key</i>. </p>
+             *
+             * @param key Key value of the element whose mapped value is accessed.
+             *
+             * @throw exception out of range
+             *
+             * @return A reference object of the mapped value (_Ty)
              */
             EntityArray.prototype.get = function (key) {
-                for (var i = 0; i < this.size(); i++)
-                    if (this.at(i).key() == key)
-                        return this.at(i);
-                throw Error("out of range");
+                var it = std.find_if(this.begin(), this.end(), function (entity) {
+                    return entity.key() == key;
+                });
+                if (it.equal_to(this.end()))
+                    throw new std.OutOfRange("out of range");
+                return it.value;
             };
             /**
              * <p> Get an XML object represents the EntityArray. </p>
@@ -223,10 +244,10 @@ var samchon;
                         this.productArray = obj;
                     }
                     else if (obj instanceof Packer) {
-                        var packer = obj;
-                        this.productArray = packer.productArray;
-                        for (var i = 0; i < packer.size(); i++)
-                            this.push(new packer_1.WrapperArray(packer.at(i).getSample()));
+                        var packer_2 = obj;
+                        this.productArray = packer_2.productArray;
+                        for (var i = 0; i < packer_2.size(); i++)
+                            this.push(new packer_1.WrapperArray(packer_2.at(i).getSample()));
                     }
                     else
                         throw "invalid argument";
@@ -252,12 +273,12 @@ var samchon;
                         size = caseGenerator.size() - start;
                     //FIND THE BEST SOLUTION
                     for (var i = start; i < start + size; i++) {
-                        var packer = new Packer(this);
+                        var packer_3 = new Packer(this);
                         var row = caseGenerator.at(i);
                         var validity = true;
                         for (var j = 0; j < row.length; j++) {
                             var product = this.productArray.at(j);
-                            var wrapperArray = packer.at(row[j]);
+                            var wrapperArray = packer_3.at(row[j]);
                             if (wrapperArray.tryInsert(product) == false) {
                                 validity = false;
                                 break;
@@ -266,10 +287,10 @@ var samchon;
                         if (validity == false)
                             continue;
                         //OPTIMIZE ALL WRAPPERS IN A PACKER
-                        for (var j = 0; j < packer.size(); j++)
-                            packer.at(j).optimize();
-                        if (minPacker == null || packer.calcPrice() < minPacker.calcPrice())
-                            minPacker = packer;
+                        for (var j = 0; j < packer_3.size(); j++)
+                            packer_3.at(j).optimize();
+                        if (minPacker == null || packer_3.calcPrice() < minPacker.calcPrice())
+                            minPacker = packer_3;
                     }
                     //REPLACE TO MIN_PACKER
                     this.splice(0, this.size());
@@ -358,22 +379,22 @@ var samchon;
             Entity.prototype.construct = function (xml) {
                 // MEMBER VARIABLES; ATOMIC
                 var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equals(propertyMap.end()) != true; v_it = v_it.next())
+                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next())
                     if (this.hasOwnProperty(v_it.first) == true)
                         if (typeof this[v_it.first] == "number")
                             this[v_it.first] = parseFloat(v_it.second);
                         else if (typeof this[v_it.first] == "string")
                             this[v_it.first] = v_it.second;
                 // MEMBER ENTITIES
-                //for (var e_it = xml.begin(); e_it.equals(xml.end()) != true; e_it = e_it.next())
+                //for (let e_it = xml.begin(); e_it.equal_to(xml.end()) != true; e_it = e_it.next())
                 //{
                 //	if (this.hasOwnProperty(e_it.first) == true 
                 //		&& e_it.second.size() == 1 
                 //		&& (this[e_it.first] instanceof Entity || this[e_it.first] instanceof EntityArray)
                 //		&& this[e_it.first] != null)
                 //	{
-                //		var entity: IEntity = this[e_it.first];
-                //		var e_xml: library.XML = e_it.second.at(0);
+                //		let entity: IEntity = this[e_it.first];
+                //		let e_xml: library.XML = e_it.second.at(0);
                 //		if (entity == null)
                 //			continue;
                 //		entity.construct(e_xml);
@@ -1899,8 +1920,9 @@ var samchon;
                 if (this.listeners.has(event.type) == false)
                     return false;
                 var listenerSet = this.listeners.get(event.type);
-                for (var it = listenerSet.begin(); it.equals(listenerSet.end()) == false; it = it.next())
-                    it.value.apply(event);
+                for (var it = listenerSet.begin(); it.equal_to(listenerSet.end()) == false; it = it.next())
+                    it.value.first.apply(it.value.second, [event]);
+                //it.value.apply(event);
                 return true;
             };
             /**
@@ -1916,7 +1938,7 @@ var samchon;
                 }
                 else
                     listenerSet = this.listeners.get(type);
-                listenerSet.insert(new std.Bind(listener, thisArg));
+                listenerSet.insert(new std.Pair(listener, thisArg));
             };
             /**
              * @inheritdoc
@@ -1927,7 +1949,7 @@ var samchon;
                 if (this.listeners.has(type) == false)
                     return;
                 var listenerSet = this.listeners.get(type);
-                var bind = new std.Bind(listener, thisArg);
+                var bind = new std.Pair(listener, thisArg);
                 if (listenerSet.has(bind) == false)
                     return;
                 listenerSet.erase(bind);
@@ -2479,7 +2501,7 @@ var samchon;
                         blockEnd++;
                     if (blockStart >= 1 && blockStart == blockEnd) {
                         end = str.indexOf(">", i);
-                        var xmlList;
+                        var xmlList = void 0;
                         var xml = new XML();
                         xml.construct(str.substring(start, end + 1));
                         if (this.has(xml.tag) == true)
@@ -2615,7 +2637,7 @@ var samchon;
                 return this.size();
             };
             XML.prototype.addAllProperties = function (xml) {
-                for (var it = xml.properties.begin(); it.equals(xml.properties.end()) == false; it = it.next())
+                for (var it = xml.properties.begin(); it.equal_to(xml.properties.end()) == false; it = it.next())
                     this.setProperty(it.first, it.second);
             };
             XML.prototype.clearProperties = function () {
@@ -2835,7 +2857,7 @@ var samchon;
                 var str = library.StringUtil.tab(level) + "<" + this.tag;
                 var childrenString = "";
                 //PROPERTIES
-                for (var p_it = this.properties.begin(); p_it.equals(this.properties.end()) == false; p_it = p_it.next())
+                for (var p_it = this.properties.begin(); p_it.equal_to(this.properties.end()) == false; p_it = p_it.next())
                     str += " " + p_it.first + "=\"" + XML.encodeProperty(String(p_it.second)) + "\"";
                 if (this.size() == 0) {
                     if (this.value != "")
@@ -2845,7 +2867,7 @@ var samchon;
                 }
                 else {
                     str += ">\n";
-                    for (var x_it = this.begin(); x_it.equals(this.end()) == false; x_it = x_it.next())
+                    for (var x_it = this.begin(); x_it.equal_to(this.end()) == false; x_it = x_it.next())
                         str += x_it.second.toString(level + 1);
                     str += library.StringUtil.tab(level) + "</" + this.tag + ">";
                 }
@@ -2859,7 +2881,7 @@ var samchon;
                 var str = library.StringUtil.htmlTab(level) + "&lt;" + this.tag;
                 var childrenString = "";
                 //PROPERTIES
-                for (var p_it = this.properties.begin(); p_it.equals(this.properties.end()) == false; p_it = p_it.next())
+                for (var p_it = this.properties.begin(); p_it.equal_to(this.properties.end()) == false; p_it = p_it.next())
                     str += " " + p_it.first + "=&quot;" + XML.encodeProperty(String(p_it.second)) + "&quot;";
                 if (this.size() == 0) {
                     if (this.value != "")
@@ -2869,7 +2891,7 @@ var samchon;
                 }
                 else {
                     str += "&gt;<br>\n";
-                    for (var x_it = this.begin(); x_it.equals(this.end()) == false; x_it = x_it.next())
+                    for (var x_it = this.begin(); x_it.equal_to(this.end()) == false; x_it = x_it.next())
                         str += x_it.second.toHTML(level + 1);
                     str += library.StringUtil.htmlTab(level) + "&lt;/" + this.tag + "&gt;";
                 }

@@ -67,15 +67,15 @@ var boxologic;
     boxologic.Box = Box;
 })(boxologic || (boxologic = {}));
 /**
-* <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
-*
-* <ul>
-*	<li> Original Boxologic: https://github.com/exad/boxologic </li>
-* </ul>
-*
-* @author Bill Knechtel, <br>
-*		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
-*/
+ * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
+ *
+ * <ul>
+ *	<li> Original Boxologic: https://github.com/exad/boxologic </li>
+ * </ul>
+ *
+ * @author Bill Knechtel, <br>
+ *		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
+ */
 var boxologic;
 (function (boxologic) {
     /**
@@ -210,7 +210,7 @@ var boxologic;
                 // CONSTRUCT LAYERS
                 this.construct_layers();
                 // ITERATION IN LAYERS
-                for (var it = this.layer_map.begin(); !it.equals(this.layer_map.end()); it = it.next()) {
+                for (var it = this.layer_map.begin(); !it.equal_to(this.layer_map.end()); it = it.next()) {
                     // BEGINS PACKING
                     this.iterate_layer(it.first);
                     if (this.packed_volume > this.best_solution_volume) {
@@ -356,10 +356,10 @@ var boxologic;
                 // FETCH LEFT AND RIGHT OF SCRAP_MIN_Z
                 var prev = this.scrap_min_z.prev();
                 var next = this.scrap_min_z.next();
-                if (this.scrap_min_z.equals(this.scrap_list.end())) {
+                if (this.scrap_min_z.equal_to(this.scrap_list.end())) {
                     break;
                 }
-                if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end())) {
+                if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end())) {
                     /////////////////////////////////////////////////////////
                     // NO LEFT AND RIGHT
                     /////////////////////////////////////////////////////////
@@ -392,7 +392,7 @@ var boxologic;
                         this.scrap_min_z = this.scrap_list.insert(this.scrap_min_z, scrap);
                     }
                 }
-                else if (prev.equals(this.scrap_list.end())) {
+                else if (prev.equal_to(this.scrap_list.end())) {
                     /////////////////////////////////////////////////////////
                     // NO LEFT, BUT RIGHT
                     /////////////////////////////////////////////////////////
@@ -441,7 +441,7 @@ var boxologic;
                         }
                     }
                 }
-                else if (next.equals(this.scrap_list.end())) {
+                else if (next.equal_to(this.scrap_list.end())) {
                     ////////////////////////////////////////////////////////
                     // NO RIGHT BUT LEFT
                     /////////////////////////////////////////////////////////
@@ -768,7 +768,7 @@ var boxologic;
                     (this.layer_in_layer != 0 ||
                         (
                         // NO LEFT AND RIGHT EXISTS
-                        prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end())))) {
+                        prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end())))) {
                     ////////////////////////////////////////////
                     // ~ OR SCRAP_MIN_Z HAS NO NEIGHBOR
                     ////////////////////////////////////////////
@@ -784,7 +784,7 @@ var boxologic;
                     this.layer_thickness = this.bboxy;
                 }
                 else {
-                    if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end())) {
+                    if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end())) {
                         ///////////////////////////////////////////
                         // SCRAP_MIN_Z HAS NO NEIGHBOR
                         ///////////////////////////////////////////
@@ -794,7 +794,7 @@ var boxologic;
                     }
                     else {
                         this.evened = true;
-                        if (prev.equals(this.scrap_list.end())) {
+                        if (prev.equal_to(this.scrap_list.end())) {
                             ///////////////////////////////////////////
                             // NO LEFT, BUT RIGHT
                             ///////////////////////////////////////////
@@ -802,7 +802,7 @@ var boxologic;
                             // RIGHT IS THE NEW SCRAP_MIN_Z
                             this.scrap_min_z = this.scrap_list.erase(this.scrap_min_z);
                         }
-                        else if (next.equals(this.scrap_list.end())) {
+                        else if (next.equal_to(this.scrap_list.end())) {
                             ///////////////////////////////////////////
                             // NO RIGHT, BUT LEFT
                             ///////////////////////////////////////////
@@ -869,7 +869,7 @@ var boxologic;
          */
         Boxologic.prototype.find_smallest_z = function () {
             this.scrap_min_z = this.scrap_list.begin();
-            for (var it = this.scrap_min_z; !it.equals(this.scrap_list.end()); it = it.next())
+            for (var it = this.scrap_min_z; !it.equal_to(this.scrap_list.end()); it = it.next())
                 if (it.value.cumz < this.scrap_min_z.value.cumz)
                     this.scrap_min_z = it;
         };
@@ -1157,7 +1157,7 @@ var bws;
                 // THE GENE IS VALID, THEN CALCULATE THE COST
                 this.price = 0.0;
                 this.valid = true;
-                for (var it = this.result.begin(); !it.equals(this.result.end()); it = it.next()) {
+                for (var it = this.result.begin(); !it.equal_to(this.result.end()); it = it.next()) {
                     it.second.optimize();
                     this.price += it.second.getPrice();
                 }
@@ -1416,7 +1416,7 @@ var bws;
                     // IT WILL BE SUPPORTED SOON
                     // FETCH RESULT
                     var result = geneArray.getResult();
-                    for (var it = result.begin(); !it.equals(result.end()); it = it.next())
+                    for (var it = result.begin(); !it.equal_to(result.end()); it = it.next())
                         wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
                     // TRY TO REPACK
                     wrappers = this.repack(wrappers);
@@ -1532,7 +1532,7 @@ var bws;
                     minGroup.push_back(wrapper);
                     for (var j = 0; j < this.wrapperArray.size(); j++) {
                         var myWrapper = this.wrapperArray.at(j);
-                        if (wrapper.equals(myWrapper))
+                        if (wrapper.equal_to(myWrapper))
                             continue;
                         var valid = true;
                         // CONSTRUCT GROUP OF TARGET
@@ -1668,8 +1668,6 @@ var bws;
                 var instanceArray = new packer_2.InstanceArray();
                 for (var i = 0; i < this.size(); i++) {
                     var myInstances = this.at(i).toInstanceArray();
-                    //for (let j: number = 0; j < myInstances.size(); j++)
-                    //	instanceArray.push_back(myInstances.at(j));
                     instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
                 }
                 return instanceArray;
@@ -2443,7 +2441,7 @@ var bws;
             /* -----------------------------------------------------------
                 COMPARISON
             ----------------------------------------------------------- */
-            Wrapper.prototype.equals = function (obj) {
+            Wrapper.prototype.equal_to = function (obj) {
                 return this.price == obj.price
                     && this.width_ == obj.width_ && this.height_ == obj.height_ && this.length_ == obj.length_
                     && this.thickness == obj.thickness;
@@ -2829,4 +2827,3 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-//# sourceMappingURL=packer.js.map

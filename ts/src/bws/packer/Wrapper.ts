@@ -267,7 +267,7 @@
 		/* -----------------------------------------------------------
 			COMPARISON
 		----------------------------------------------------------- */
-		public equals(obj: Wrapper): boolean
+		public equal_to(obj: Wrapper): boolean
 		{
 			return this.price == obj.price
 				&& this.width_ == obj.width_ && this.height_ == obj.height_ && this.length_ == obj.length_ 

@@ -2637,7 +2637,7 @@ declare module THREE {
         intersect(box: Box2): Box2;
         union(box: Box2): Box2;
         translate(offset: Vector2): Box2;
-        equals(box: Box2): boolean;
+        equal_to(box: Box2): boolean;
     }
 
     export class Box3 {
@@ -2670,7 +2670,7 @@ declare module THREE {
         union(box: Box3): Box3;
         applyMatrix4(matrix: Matrix4): Box3;
         translate(offset: Vector3): Box3;
-        equals(box: Box3): boolean;
+        equal_to(box: Box3): boolean;
     }
 
     export interface HSL {
@@ -2796,7 +2796,7 @@ declare module THREE {
         multiply(color: Color): Color;
         multiplyScalar(s: number): Color;
         lerp(color: Color, alpha: number): Color;
-        equals(color: Color): boolean;
+        equal_to(color: Color): boolean;
         fromArray(rgb: number[], offset?: number): Color;
         toArray(array?: number[], offset?: number): number[];
     }
@@ -2968,7 +2968,7 @@ declare module THREE {
         setFromQuaternion(q:Quaternion, order?: string, update?: boolean): Euler;
         setFromVector3( v: Vector3, order?: string ): Euler;
         reorder(newOrder: string): Euler;
-        equals(euler: Euler): boolean;
+        equal_to(euler: Euler): boolean;
         fromArray(xyzo: any[]): Euler;
         toArray(array?: number[], offset?: number): number[];
         toVector3(optionalResult?: Vector3): Vector3;
@@ -3012,7 +3012,7 @@ declare module THREE {
         closestPointToPointParameter(point: Vector3, clampToLine?: boolean): number;
         closestPointToPoint(point: Vector3, clampToLine?: boolean, optionalTarget?: Vector3): Vector3;
         applyMatrix4(matrix: Matrix4): Line3;
-        equals(line: Line3): boolean;
+        equal_to(line: Line3): boolean;
     }
 
     interface Math {
@@ -3344,7 +3344,7 @@ declare module THREE {
          * Creates an orthographic projection matrix.
          */
         makeOrthographic(left: number, right: number, top: number, bottom: number, near: number, far: number): Matrix4;
-        equals( matrix: Matrix4 ): boolean;
+        equal_to( matrix: Matrix4 ): boolean;
         fromArray(array: number[]): Matrix4;
         toArray(): number[];
     }
@@ -3372,7 +3372,7 @@ declare module THREE {
         coplanarPoint(optionalTarget?: boolean): Vector3;
         applyMatrix4(matrix: Matrix4, optionalNormalMatrix?: Matrix3): Plane;
         translate(offset: Vector3): Plane;
-        equals(plane: Plane): boolean;
+        equal_to(plane: Plane): boolean;
     }
 
     /**
@@ -3465,7 +3465,7 @@ declare module THREE {
           */
         multiplyVector3(vector: Vector3): Vector3;
         slerp(qb: Quaternion, t: number): Quaternion;
-        equals(v: Quaternion): boolean;
+        equal_to(v: Quaternion): boolean;
         fromArray(n: number[]): Quaternion;
         toArray(): number[];
 
@@ -3504,7 +3504,7 @@ declare module THREE {
         intersectBox(box: Box3, optionalTarget?: Vector3): Vector3;
         intersectTriangle(a: Vector3, b: Vector3, c: Vector3, backfaceCulling: boolean, optionalTarget?: Vector3): Vector3;
         applyMatrix4(matrix4: Matrix4): Ray;
-        equals(ray: Ray): boolean;
+        equal_to(ray: Ray): boolean;
     }
 
     export class Sphere {
@@ -3525,7 +3525,7 @@ declare module THREE {
         getBoundingBox(optionalTarget?: Box3): Box3;
         applyMatrix4(matrix: Matrix4): Sphere;
         translate(offset: Vector3): Sphere;
-        equals(sphere: Sphere): boolean;
+        equal_to(sphere: Sphere): boolean;
     }
 
     export interface SplineControlPoint {
@@ -3598,7 +3598,7 @@ declare module THREE {
         plane(optionalTarget?: Vector3): Plane;
         barycoordFromPoint(point: Vector3, optionalTarget?: Vector3): Vector3;
         containsPoint(point: Vector3): boolean;
-        equals(triangle: Triangle): boolean;
+        equal_to(triangle: Triangle): boolean;
 
         static normal(a: Vector3, b: Vector3, c: Vector3, optionalTarget?: Vector3): Vector3;
         static barycoordFromPoint(point: Vector3, a: Vector3, b: Vector3, c: Vector3, optionalTarget: Vector3): Vector3;
@@ -3707,9 +3707,9 @@ declare module THREE {
         lerp(v: Vector, alpha: number): Vector;
 
         /**
-         * equals(v:T):boolean;
+         * equal_to(v:T):boolean;
          */
-        equals(v: Vector): boolean;
+        equal_to(v: Vector): boolean;
 
         /**
          * clone():T;
@@ -3857,7 +3857,7 @@ declare module THREE {
         /**
          * Checks for strict equality of this vector and v.
          */
-        equals(v: Vector2): boolean;
+        equal_to(v: Vector2): boolean;
 
         fromArray(xy: number[], offset?: number): Vector2;
 
@@ -4047,7 +4047,7 @@ declare module THREE {
         /**
          * Checks for strict equality of this vector and v.
          */
-        equals(v: Vector3): boolean;
+        equal_to(v: Vector3): boolean;
 
         fromArray(xyz: number[], offset?: number): Vector3;
 
@@ -4200,7 +4200,7 @@ declare module THREE {
         /**
          * Checks for strict equality of this vector and v.
          */
-        equals(v: Vector4): boolean;
+        equal_to(v: Vector4): boolean;
 
         fromArray(xyzw: number[], offset?: number): Vector4;
 

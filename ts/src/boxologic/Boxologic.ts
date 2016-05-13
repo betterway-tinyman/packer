@@ -105,7 +105,7 @@ namespace boxologic
 		 * @see Scrapped
 		 * @see scrap_min_z
 		 */
-		private scrap_list: std.base.container.ILinearContainer<Scrap>;
+		private scrap_list: std.base.ILinearContainer<Scrap>;
 
 		/**
 		 * The topology {@link Scrapped}, the edge of the current layer under construction.
@@ -113,7 +113,7 @@ namespace boxologic
 		 * @see Scrapped
 		 * @see scrap_list
 		 */
-		private scrap_min_z: std.base.container.Iterator<Scrap>;
+		private scrap_min_z: std.base.Iterator<Scrap>;
 
 		/* -----------------------------------------------------------
 			VARIABLES FOR ITERATIONS
@@ -415,7 +415,7 @@ namespace boxologic
 				this.construct_layers();
 
 				// ITERATION IN LAYERS
-				for (let it = this.layer_map.begin(); !it.equals(this.layer_map.end()); it = it.next())
+				for (let it = this.layer_map.begin(); !it.equal_to(this.layer_map.end()); it = it.next())
 				{
 					// BEGINS PACKING
 					this.iterate_layer(it.first);
@@ -617,11 +617,11 @@ namespace boxologic
 				let prev = this.scrap_min_z.prev();
 				let next = this.scrap_min_z.next();
 
-				if (this.scrap_min_z.equals(this.scrap_list.end()))
+				if (this.scrap_min_z.equal_to(this.scrap_list.end()))
 				{
 					break;
 				}
-				if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end()))
+				if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end()))
 				{
 					/////////////////////////////////////////////////////////
 					// NO LEFT AND RIGHT
@@ -664,7 +664,7 @@ namespace boxologic
 						this.scrap_min_z = this.scrap_list.insert(this.scrap_min_z, scrap);
 					}
 				}
-				else if (prev.equals(this.scrap_list.end()))
+				else if (prev.equal_to(this.scrap_list.end()))
 				{
 					/////////////////////////////////////////////////////////
 					// NO LEFT, BUT RIGHT
@@ -730,7 +730,7 @@ namespace boxologic
 						}
 					}
 				}
-				else if (next.equals(this.scrap_list.end()))
+				else if (next.equal_to(this.scrap_list.end()))
 				{
 					////////////////////////////////////////////////////////
 					// NO RIGHT BUT LEFT
@@ -1167,7 +1167,7 @@ namespace boxologic
 						this.layer_in_layer != 0 || 
 						(
 							// NO LEFT AND RIGHT EXISTS
-							prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end())
+							prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end())
 						)
 					))
 				{
@@ -1190,7 +1190,7 @@ namespace boxologic
 				}
 				else
 				{
-					if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end()))
+					if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end()))
 					{
 						///////////////////////////////////////////
 						// SCRAP_MIN_Z HAS NO NEIGHBOR
@@ -1203,7 +1203,7 @@ namespace boxologic
 					{
 						this.evened = true;
 
-						if (prev.equals(this.scrap_list.end()))
+						if (prev.equal_to(this.scrap_list.end()))
 						{
 							///////////////////////////////////////////
 							// NO LEFT, BUT RIGHT
@@ -1212,7 +1212,7 @@ namespace boxologic
 							// RIGHT IS THE NEW SCRAP_MIN_Z
 							this.scrap_min_z = this.scrap_list.erase(this.scrap_min_z);
 						}
-						else if (next.equals(this.scrap_list.end()))
+						else if (next.equal_to(this.scrap_list.end()))
 						{
 							///////////////////////////////////////////
 							// NO RIGHT, BUT LEFT
@@ -1296,7 +1296,7 @@ namespace boxologic
 		{
 			this.scrap_min_z = this.scrap_list.begin();
 
-			for (let it = this.scrap_min_z; !it.equals(this.scrap_list.end()); it = it.next())
+			for (let it = this.scrap_min_z; !it.equal_to(this.scrap_list.end()); it = it.next())
 				if (it.value.cumz < this.scrap_min_z.value.cumz)
 					this.scrap_min_z = it;
 		}

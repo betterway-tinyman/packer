@@ -12,7 +12,7 @@ package bws.packer.socket
 	/**
 	 * A client socket connecting to CPP server.
 	 * 
-	 * @author Jeongho Nam
+	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	public class Client 
 		extends ServerConnector

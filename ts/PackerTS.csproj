@@ -69,7 +69,7 @@
     <TypeScriptCompile Include="Scripts\typings\threejs\three-vreffect.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\threejs\three.d.ts" />
     <TypeScriptCompile Include="src\samchon\SamchonFramework.d.ts" />
-    <TypeScriptCompile Include="src\std\std.d.ts" />
+    <TypeScriptCompile Include="src\std\typescript-stl.d.ts" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

@@ -135,7 +135,7 @@
 
 				// FETCH RESULT
 				let result: std.HashMap<string, WrapperGroup> = geneArray.getResult();
-				for (let it = result.begin(); !it.equals(result.end()); it = it.next())
+				for (let it = result.begin(); !it.equal_to(result.end()); it = it.next())
 					wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
 
 				// TRY TO REPACK
@@ -288,7 +288,7 @@
 				for (let j: number = 0; j < this.wrapperArray.size(); j++)
 				{
 					let myWrapper: Wrapper = this.wrapperArray.at(j);
-					if (wrapper.equals(myWrapper))
+					if (wrapper.equal_to(myWrapper))
 						continue;
 
 					let valid: boolean = true;

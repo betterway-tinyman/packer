@@ -41,7 +41,7 @@ declare namespace samchon.example.packer {
 }
 declare namespace samchon.protocol {
     /**
-     *
+     * @author Jeongho Nam <http://samchon.org>
      */
     abstract class EntityArray<Ety extends IEntity> extends std.Vector<Ety> {
         /**
@@ -77,11 +77,35 @@ declare namespace samchon.protocol {
          */
         key(): any;
         /**
-         * @inheritdoc
+         * <p> Whether have the item or not. </p>
+         *
+         * <p> Indicates whether a map has an item having the specified identifier. </p>
+         *
+         * @param key Key value of the element whose mapped value is accessed.
+         *
+         * @return Whether the map has an item having the specified identifier.
          */
         has(key: any): boolean;
         /**
-         * @inheritdoc
+         * <p> Count elements with a specific key. </p>
+         *
+         * <p> Searches the container for elements whose key is <i>key</i> and returns the number of elements found. </p>
+         *
+         * @param key Key value to be searched for.
+         *
+         * @return The number of elements in the container with a <i>key</i>.
+         */
+        count(key: any): number;
+        /**
+         * <p> Get an element </p>
+         *
+         * <p> Returns a reference to the mapped value of the element identified with <i>key</i>. </p>
+         *
+         * @param key Key value of the element whose mapped value is accessed.
+         *
+         * @throw exception out of range
+         *
+         * @return A reference object of the mapped value (_Ty)
          */
         get(key: string): Ety;
         /**
@@ -1060,7 +1084,7 @@ declare namespace samchon.library {
         /**
          * Container of listeners.
          */
-        protected listeners: std.HashMap<string, std.HashSet<std.Bind<EventListener, Object>>>;
+        protected listeners: std.HashMap<string, std.HashSet<std.Pair<EventListener, Object>>>;
         /**
          * Default Constructor.
          */

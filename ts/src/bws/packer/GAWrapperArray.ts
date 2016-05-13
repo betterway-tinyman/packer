@@ -82,7 +82,7 @@ namespace bws.packer
 			this.price = 0.0;
 			this.valid = true;
 
-			for (let it = this.result.begin(); !it.equals(this.result.end()); it = it.next())
+			for (let it = this.result.begin(); !it.equal_to(this.result.end()); it = it.next())
 			{
 				it.second.optimize();
 				this.price += it.second.getPrice();

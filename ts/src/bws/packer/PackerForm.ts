@@ -106,13 +106,10 @@
 		public toInstanceArray(): InstanceArray
 		{
 			let instanceArray: InstanceArray = new InstanceArray();
+
 			for (let i: number = 0; i < this.size(); i++)
 			{
 				let myInstances: InstanceArray = this.at(i).toInstanceArray();
-				//for (let j: number = 0; j < myInstances.size(); j++)
-				//	instanceArray.push_back(myInstances.at(j));
-
-
 				instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
 			}
 
