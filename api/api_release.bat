@@ -21,4 +21,4 @@ SET TS_SRC_DIR=../ts/src/
 SET TS_DEFINE_DIR=../ts/packages/
 
 ::DOCUMENTATE
-call typedoc --target ES5 --out "%RELEASE_DIR%ts" "%TS_SRC_DIR%" "%TS_DEFINE_DIR%" --mode file
+call typedoc --target ES5 --out "%RELEASE_DIR%ts" "%TS_SRC_DIR%" "%TS_DEFINE_DIR%" --mode file --includeDeclarations

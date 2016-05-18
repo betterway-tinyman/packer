@@ -69,7 +69,6 @@
 				client.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleServerFail);
 				client.addEventListener(Event.CLOSE, handleServerFail);
 				
-				trace(ip, port);
 				client.connect(ip, port);
 			}
 			
