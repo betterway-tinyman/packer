@@ -78,15 +78,15 @@ declare namespace boxologic {
     }
 }
 /**
- * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
- *
- * <ul>
- *	<li> Original Boxologic: https://github.com/exad/boxologic </li>
- * </ul>
- *
- * @author Bill Knechtel, <br>
- *		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
- */
+* <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
+*
+* <ul>
+*	<li> Original Boxologic: https://github.com/exad/boxologic </li>
+* </ul>
+*
+* @author Bill Knechtel, <br>
+*		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
+*/
 declare namespace boxologic {
     /**
      * <p> A facade class of boxologic. </p>

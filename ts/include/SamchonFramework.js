@@ -2633,6 +2633,8 @@ var samchon;
                         else
                             this.set(xmlList.getTag(), xmlList);
                     }
+                    else
+                        _super.prototype.push.call(this, items[i]);
                 }
                 return this.size();
             };

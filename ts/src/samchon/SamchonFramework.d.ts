@@ -1539,6 +1539,8 @@ declare namespace samchon.library {
          * @throw exception out of range
          */
         eraseProperty(key: string): void;
+        push<L extends string, U extends XMLList>(...args: std.Pair<L, U>[]): number;
+        push<L extends string, U extends XMLList>(...args: [L, U][]): number;
         push(...xmls: XML[]): number;
         push(...xmlLists: XMLList[]): number;
         addAllProperties(xml: XML): void;

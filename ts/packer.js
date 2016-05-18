@@ -67,15 +67,15 @@ var boxologic;
     boxologic.Box = Box;
 })(boxologic || (boxologic = {}));
 /**
- * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
- *
- * <ul>
- *	<li> Original Boxologic: https://github.com/exad/boxologic </li>
- * </ul>
- *
- * @author Bill Knechtel, <br>
- *		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
- */
+* <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
+*
+* <ul>
+*	<li> Original Boxologic: https://github.com/exad/boxologic </li>
+* </ul>
+*
+* @author Bill Knechtel, <br>
+*		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
+*/
 var boxologic;
 (function (boxologic) {
     /**
@@ -1320,7 +1320,7 @@ function main() {
     // TRACE PACKING RESULT
     ///////////////////////////
     var xml = result.toXML();
-    samchon.trace(xml);
+    console.log(xml.toString());
 }
 var bws;
 (function (bws) {
@@ -2827,3 +2827,4 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+//# sourceMappingURL=packer.js.map

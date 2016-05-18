@@ -10,9 +10,9 @@ mkdir "%RELEASE_DIR%"
 ::    C++ API DOCUMENTS
 :: ----------------------------------------------------------------
 ::DOCUMENTATE
-doxygen cpp.doxygen
+::doxygen cpp.doxygen
 
-rename "%RELEASE_DIR%html" cpp
+::rename "%RELEASE_DIR%html" cpp
 
 :: ----------------------------------------------------------------
 ::    TYPE_SCRIPT API DOCUMENT
@@ -22,3 +22,5 @@ SET TS_DEFINE_DIR=../ts/packages/
 
 ::DOCUMENTATE
 call typedoc --target ES5 --out "%RELEASE_DIR%ts" "%TS_SRC_DIR%" "%TS_DEFINE_DIR%" --mode file --includeDeclarations
+
+pause

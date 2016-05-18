@@ -99,5 +99,5 @@ function main(): void
 	// TRACE PACKING RESULT
 	///////////////////////////
 	let xml: samchon.library.XML = result.toXML();
-	samchon.trace(xml);
+	console.log(xml.toString());
 }
