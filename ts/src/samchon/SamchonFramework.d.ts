@@ -16,27 +16,535 @@ declare namespace samchon {
      */
     function trace(...args: any[]): void;
 }
-declare namespace samchon.example.xml {
-    function main(): void;
+declare namespace samchon.library {
+    /**
+     * An event class.
+     *
+     * <ul>
+     *  <li> Comments from - https://developer.mozilla.org/en-US/docs/Web/API/Event/ </li>
+     * </ul>
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class BasicEvent implements Event {
+        /**
+         * @inheritdoc
+         */
+        static NONE: number;
+        NONE: number;
+        /**
+         * @inheritdoc
+         */
+        static CAPTURING_PHASE: number;
+        CAPTURING_PHASE: number;
+        /**
+         * @inheritdoc
+         */
+        static AT_TARGET: number;
+        AT_TARGET: number;
+        /**
+         * @inheritdoc
+         */
+        static BUBBLING_PHASE: number;
+        BUBBLING_PHASE: number;
+        private type_;
+        private target_;
+        private currentTarget_;
+        protected trusted_: boolean;
+        protected bubbles_: boolean;
+        protected cancelable_: boolean;
+        protected defaultPrevented_: boolean;
+        protected cancelBubble_: boolean;
+        private timeStamp_;
+        constructor(type: string, bubbles?: boolean, cancelable?: boolean);
+        /**
+         * @inheritdoc
+         */
+        initEvent(type: string, bubbles: boolean, cancelable: boolean): void;
+        /**
+         * @inheritdoc
+         */
+        preventDefault(): void;
+        /**
+         * @inheritdoc
+         */
+        stopImmediatePropagation(): void;
+        /**
+         * @inheritdoc
+         */
+        stopPropagation(): void;
+        /**
+         * @inheritdoc
+         */
+        type: string;
+        /**
+         * @inheritdoc
+         */
+        target: IEventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        currentTarget: IEventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        isTrusted: boolean;
+        /**
+         * @inheritdoc
+         */
+        bubbles: boolean;
+        /**
+         * @inheritdoc
+         */
+        cancelable: boolean;
+        /**
+         * @inheritdoc
+         */
+        eventPhase: number;
+        /**
+         * @inheritdoc
+         */
+        defaultPrevented: boolean;
+        /**
+         * @inheritdoc
+         */
+        srcElement: Element;
+        /**
+         * @inheritdoc
+         */
+        cancelBubble: boolean;
+        /**
+         * @inheritdoc
+         */
+        timeStamp: number;
+        /**
+         * Don't know what it is.
+         */
+        returnValue: boolean;
+    }
+    class ProgressEvent extends BasicEvent {
+        static PROGRESS: string;
+        protected numerator_: number;
+        protected denominator_: number;
+        constructor(type: string, numerator: number, denominator: number);
+        numerator: number;
+        denominator: number;
+    }
 }
-declare namespace samchon.example.packer {
-    interface Instance extends protocol.IEntity {
+declare namespace samchon.library {
+    /**
+     * <p> Case generator. </p>
+     *
+     * <p> CaseGenerator is an abstract case generator using like a matrix. </p>
+     * <ul>
+     *  <li> nTTr(n^r) -> CombinedPermutationGenerator </li>
+     *  <li> nPr -> PermutationGenerator </li>
+     *  <li> n! -> FactorialGenerator </li>
+     * </ul>
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    abstract class CaseGenerator {
         /**
-         * Get name.
+         * <p> Size, the number of all cases. </p>
          */
-        getName(): string;
+        protected size_: number;
         /**
-         * Get price.
+         * <p> N, size of the candidates. </p>
          */
-        getPrice(): number;
+        protected n_: number;
         /**
-         * Get volume.
+         * <p> R, size of elements of each case. </p>
          */
-        getVolume(): number;
+        protected r_: number;
         /**
-         * Get weight.
+         * <p> Construct from size of N and R. </p>
+         *
+         * @param n Size of candidates.
+         * @param r Size of elements of each case.
          */
-        getWeight(): number;
+        constructor(n: number, r: number);
+        /**
+         * <p> Get size of all cases. </p>
+         *
+         * @return Get a number of the all cases.
+         */
+        size(): number;
+        /**
+         * <p> Get size of the N. </p>
+         */
+        n(): number;
+        /**
+         * <p> Get size of the R. </p>
+         */
+        r(): number;
+        /**
+         * <p> Get index'th case. </p>
+         *
+         * @param index Index number
+         * @return The row of the index'th in combined permuation case
+         */
+        abstract at(index: number): Array<number>;
+    }
+    /**
+     * <p> A combined-permutation case generator. </p>
+     * <p> <sub>n</sub>TT<sub>r</sub> </p>
+     *
+     * @inheritdoc
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class CombinedPermutationGenerator extends CaseGenerator {
+        /**
+         * <p> An array using for dividing each element index. </p>
+         */
+        private dividerArray;
+        /**
+         * <p> Construct from size of N and R. </p>
+         *
+         * @param n Size of candidates.
+         * @param r Size of elements of each case.
+         */
+        constructor(n: number, r: number);
+        at(index: number): Array<number>;
+    }
+    /**
+     * <p> A permutation case generator. </p>
+     * <p> nPr </p>
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     * @inheritdoc
+     */
+    class PermuationGenerator extends CaseGenerator {
+        /**
+         * <p> Construct from size of N and R. </p>
+         *
+         * @param n Size of candidates.
+         * @param r Size of elements of each case.
+         */
+        constructor(n: number, r: number);
+        /**
+         * @inheritdoc
+         */
+        at(index: number): Array<number>;
+    }
+    class FactorialGenerator extends PermuationGenerator {
+        /**
+         * Construct from factorial size N.
+         *
+         * @param n Factoria size N.
+         */
+        constructor(n: number);
+    }
+}
+declare namespace samchon.library {
+    class CollectionEvent<T> extends BasicEvent {
+        private first_;
+        private last_;
+        constructor(type: string, first: std.Iterator<T>, last: std.Iterator<T>);
+        container: ICollection<T>;
+        first: std.Iterator<T>;
+        last: std.Iterator<T>;
+        static ADDED: string;
+        static REMOVED: string;
+    }
+    interface ICollection<T> extends std.base.IContainer<T>, IEventDispatcher {
+    }
+    class ArrayCollection<T> extends std.Vector<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.VectorIterator<T>, last: std.VectorIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.VectorIterator<T>, last: std.VectorIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class DequeCollection<T> extends std.Deque<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.DequeIterator<T>, last: std.DequeIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.DequeIterator<T>, last: std.DequeIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class ListCollection<T> extends std.List<T> implements IEventDispatcher {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.ListIterator<T>, last: std.ListIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.ListIterator<T>, last: std.ListIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class HashSetCollection<T> extends std.HashSet<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class HashMultiSetCollection<T> extends std.HashMultiSet<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class TreeSetCollection<T> extends std.TreeSet<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class TreeMultiSetCollection<T> extends std.TreeMultiSet<T> implements ICollection<T> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class HashMapCollection<Key, T> extends std.HashMap<Key, T> implements ICollection<std.Pair<Key, T>> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class HashMultiMapCollection<Key, T> extends std.HashMultiMap<Key, T> implements ICollection<std.Pair<Key, T>> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class TreeMapCollection<Key, T> extends std.TreeMap<Key, T> implements ICollection<std.Pair<Key, T>> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+    }
+    class TreeMultiMapCollection<Key, T> extends std.TreeMultiMap<Key, T> implements ICollection<std.Pair<Key, T>> {
+        private eventDispatcher;
+        /**
+         * @inheritdoc
+         */
+        protected handle_insert(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        protected handle_erase(first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
+        /**
+         * @inheritdoc
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * @inheritdoc
+         */
+        dispatchEvent(event: Event): boolean;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
     }
 }
 declare namespace samchon.protocol {
@@ -131,443 +639,6 @@ declare namespace samchon.protocol {
          * @inheritdoc
          */
         toXML(): library.XML;
-    }
-}
-declare namespace samchon.example.packer {
-    /**
-     * <p> A packer planning the best packaging. </p>
-     * <p> Retrieves the solution of packaging by combination permuation and factorial case. </p>
-     *
-     * <h4> Warning. </h4>
-     * <p> Be careful about number of products and wrappers. </p>
-     * <p> The time complexity of Packer overs O(m^n). Elapsed time of calculation increases enourmously.
-     * Do not use Packer if the digits of number of products or wrappers overs 2. </p>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    class Packer extends protocol.EntityArray<WrapperArray> {
-        /**
-         * <p> Product(s) to package in some Wrapper(s). </p>
-         */
-        protected productArray: ProductArray;
-        /**
-         * <p> Construct from an argument. </p>
-         */
-        constructor(obj?: any);
-        protected createChild(xml: library.XML): WrapperArray;
-        /**
-         * <p> Find the best packaging method. </p>
-         */
-        optimize(start?: number, size?: number): void;
-        /**
-         * <p> Calculate price of the wrappers. </p>
-         */
-        calcPrice(): number;
-        TAG(): string;
-        CHILD_TAG(): string;
-        static main(): void;
-    }
-}
-declare namespace samchon.protocol {
-    /**
-     * <p> An entity, a standard data class. </p>
-     *
-     * <p> Entity is a class for standardization of expression method using on network I/O by XML. If
-     * Invoke is a standard message protocol of Samchon Framework which must be kept, Entity is a
-     * recommended semi-protocol of message for expressing a data class. Following the semi-protocol
-     * Entity is not imposed but encouraged. </p>
-     *
-     * <p> As we could get advantages from standardization of message for network I/O with Invoke,
-     * we can get additional advantage from standardizing expression method of data class with Entity.
-     * We do not need to know a part of network communication. Thus, with the Entity, we can only
-     * concentrate on entity's own logics and relationships between another entities. Entity does not
-     * need to how network communications are being done. </p>
-     *
-     * <p> I say repeatedly. Expression method of Entity is recommended, but not imposed. It's a semi
-     * protocol for network I/O but not a essential protocol must be kept. The expression method of
-     * Entity, using on network I/O, is expressed by XML string. </p>
-     *
-     * <p> If your own network system has a critical performance issue on communication data class,
-     * it would be better to using binary communication (with ByteArray).
-     * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    abstract class Entity implements IEntity {
-        /**
-         * <p> Default Constructor. </p>
-         */
-        constructor();
-        construct(xml: library.XML): void;
-        key(): any;
-        abstract TAG(): string;
-        toXML(): library.XML;
-    }
-}
-declare namespace samchon.example.packer {
-    class Product extends protocol.Entity implements Instance {
-        protected name: string;
-        protected price: number;
-        protected volume: number;
-        protected weight: number;
-        /**
-         * Default Constructor.
-         */
-        constructor();
-        /**
-         * Construct from members.
-         *
-         * @param name Name of the Product.
-         * @param price Price of the Product.
-         * @param volume Volume of the Product.
-         * @param weight Weight of the Product.
-         */
-        constructor(name: string, price: number, volume: number, weight: number);
-        getName(): string;
-        getPrice(): number;
-        getVolume(): number;
-        getWeight(): number;
-        TAG(): string;
-    }
-}
-declare namespace samchon.example.packer {
-    class ProductArray extends protocol.EntityArray<Product> {
-        /**
-         * Default Constructor.
-         */
-        constructor();
-        protected createChild(xml: library.XML): Product;
-        TAG(): string;
-        CHILD_TAG(): string;
-    }
-}
-declare namespace samchon.example.packer {
-    class Wrapper extends ProductArray implements Instance {
-        protected name: string;
-        protected price: number;
-        protected volume: number;
-        protected weight: number;
-        /**
-         * Default Constructor.
-         */
-        constructor();
-        /**
-         * Copy Constructor.
-         *
-         * @param wrapper A Wrapper to copy
-         */
-        constructor(wrapper: Wrapper);
-        /**
-         * Construct from members.
-         *
-         * @param name Name of the Wrapper.
-         * @param price Price of the Wrapper.
-         * @param volume Volume of the Wrapper.
-         * @param weight Weight of the Wrapper.
-         */
-        constructor(name: string, price: number, volume: number, weight: number);
-        protected createChild(xml: library.XML): Product;
-        tryInsert(product: Product): boolean;
-        getName(): string;
-        getPrice(): number;
-        getVolume(): number;
-        getWeight(): number;
-        TAG(): string;
-    }
-}
-declare namespace samchon.example.packer {
-    class WrapperArray extends protocol.EntityArray<Wrapper> {
-        /**
-         * <p> A list for reserved Product(s). </p>
-         */
-        private reserved;
-        /**
-         * <p> A sample wrapper used to copy. </p>
-         */
-        private sample;
-        /**
-         * <p> Construct from a sample wrapper. </p>
-         *
-         * @param sample A sample wrapper used to copy wrappers.
-         */
-        constructor(sample?: Wrapper);
-        construct(xml: library.XML): void;
-        protected createChild(xml: library.XML): Wrapper;
-        /**
-         * <p> Try to insert a product into reserved list. </p>
-         *
-         * <p> If the Product's volume and weight is equal or less than the Wrapper categorized so that enable to
-         * insert in a Wrapper, reserve the Product and returns <i>true</i>. If not, does not reserve and just
-         * return <i>false</i>. </p>
-         *
-         * @return Whether the Product's volume and weight is equal or less than the Wrapper.
-         */
-        tryInsert(product: Product): boolean;
-        /**
-         * <p> Optimize to retrieve the best solution. </p>
-         *
-         * <p> Retrieves the best solution of packaging in level of WrapperArray. </p>
-         * <p> Shuffles sequence of reserved Product(s) by samchon::library::FactorialGenerator and insert the reserved
-         * Products(s) following the sequence creating Wrapper(s) as needed. Between the sequences from FactorialGenerator,
-         * retrieve and determine the best solution. </p>
-         *
-         * <h4> Note. </h4>
-         * <p> Sequence of inserting Product can affeact to numbers of Wrapper(s) to be used. </p>
-         * <p> It's the reason why even WrapperArray has the optimize() method. </p>
-         */
-        optimize(): void;
-        /**
-         * <p> Calculate price of the Wrapper(s). </p>
-         *
-         * <p> Calculates price of all wrappers'. The price does not contain inserted products'. </p>
-         */
-        calcPrice(): number;
-        /**
-         * <p> Get sample. </p>
-         */
-        getSample(): Wrapper;
-        TAG(): string;
-        CHILD_TAG(): string;
-        toXML(): library.XML;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * An event class.
-     *
-     * <ul>
-     *  <li> Comments from - https://developer.mozilla.org/en-US/docs/Web/API/Event/ </li>
-     * </ul>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    class BasicEvent implements Event {
-        /**
-         *  No event is being processed at this time.
-         */
-        static NONE: number;
-        NONE: number;
-        /**
-         * The event is being propagated through the target's ancestor objects. This process starts with the Window,
-         * then Document, then the HTMLHtmlElement, and so on through the elements until the target's parent is reached.
-         * Event listeners registered for capture mode when EventTarget.addEventListener() was called are triggered
-         * during this phase.
-         */
-        static CAPTURING_PHASE: number;
-        CAPTURING_PHASE: number;
-        /**
-         * The event has arrived at the event's target. Event listeners registered for this phase are called at this
-         * time. If Event.bubbles is false, processing the event is finished after this phase is complete.
-         */
-        static AT_TARGET: number;
-        AT_TARGET: number;
-        /**
-         * The event is propagating back up through the target's ancestors in reverse order, starting with the parent,
-         * and eventually reaching the containing Window. This is known as bubbling, and occurs only if Event.bubbles
-         * is true. Event listeners registered for this phase are triggered during this process.
-         */
-        static BUBBLING_PHASE: number;
-        BUBBLING_PHASE: number;
-        private type_;
-        private target_;
-        private currentTarget_;
-        protected trusted_: boolean;
-        protected bubbles_: boolean;
-        protected cancelable_: boolean;
-        protected defaultPrevented_: boolean;
-        protected cancelBubble_: boolean;
-        private timeStamp_;
-        constructor(type: string, bubbles?: boolean, cancelable?: boolean);
-        /**
-         * Initializes the value of an Event created. If the event has already being dispatched, this method does nothing.
-         */
-        initEvent(type: string, bubbles: boolean, cancelable: boolean): void;
-        /**
-         * Cancels the event (if it is cancelable).
-         */
-        preventDefault(): void;
-        /**
-         * For this particular event, no other listener will be called. Neither those attached on the same element,
-         * nor those attached on elements which will be traversed later (in capture phase, for instance).
-         */
-        stopImmediatePropagation(): void;
-        /**
-         * Stops the propagation of events further along in the DOM.
-         */
-        stopPropagation(): void;
-        /**
-         * The name of the event (case-insensitive).
-         */
-        type: string;
-        /**
-         * A reference to the target to which the event was originally dispatched.
-         */
-        target: EventTarget;
-        /**
-         * A reference to the currently registered target for the event.
-         */
-        currentTarget: EventTarget;
-        /**
-         * A proprietary alias for the standard Event.target property. It is specific to old versions of
-         * Microsoft Internet Explorer.
-         */
-        srcElement: Element;
-        /**
-         * Indicates whether or not the event was initiated by the browser (after a user click for instance) or
-         * by a script (using an event creation method, like event.initEvent).
-         */
-        isTrusted: boolean;
-        /**
-         * A boolean indicating whether the event bubbles up through the DOM or not.
-         */
-        bubbles: boolean;
-        /**
-         * A boolean indicating whether the event is cancelable.
-         */
-        cancelable: boolean;
-        /**
-         * Indicates which phase of the event flow is currently being evaluated.
-         */
-        eventPhase: number;
-        /**
-         * Returns a boolean indicating whether or not event.preventDefault() was called on the event.
-         */
-        defaultPrevented: boolean;
-        /**
-         * Indicates if event bubbling for this event has been canceled or not. It is set to false by default, allowing
-         * the event to bubble up the DOM, if it is a bubbleable event. Setting this property to true stops the event
-         * from bubbling up the DOM. Not all events are allowed to bubble up the DOM.
-         */
-        cancelBubble: boolean;
-        /**
-         * The time that the event was created.
-         */
-        timeStamp: number;
-        /**
-         * Don't know what it is.
-         */
-        returnValue: boolean;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * <p> Case generator. </p>
-     *
-     * <p> CaseGenerator is an abstract case generator using like a matrix. </p>
-     * <ul>
-     *  <li> nTTr(n^r) -> CombinedPermutationGenerator </li>
-     *  <li> nPr -> PermutationGenerator </li>
-     *  <li> n! -> FactorialGenerator </li>
-     * </ul>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    abstract class CaseGenerator {
-        /**
-         * <p> Size, the number of all cases. </p>
-         */
-        protected size_: number;
-        /**
-         * <p> N, size of the candidates. </p>
-         */
-        protected n_: number;
-        /**
-         * <p> R, size of elements of each case. </p>
-         */
-        protected r_: number;
-        /**
-         * <p> Construct from size of N and R. </p>
-         *
-         * @param n Size of candidates.
-         * @param r Size of elements of each case.
-         */
-        constructor(n: number, r: number);
-        /**
-         * <p> Get size of all cases. </p>
-         *
-         * @return Get a number of the all cases.
-         */
-        size(): number;
-        /**
-         * <p> Get size of the N. </p>
-         */
-        n(): number;
-        /**
-         * <p> Get size of the R. </p>
-         */
-        r(): number;
-        /**
-         * <p> Get index'th case. </p>
-         *
-         * @param index Index number
-         * @return The row of the index'th in combined permuation case
-         */
-        abstract at(index: number): Array<number>;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * <p> A combined-permutation case generator. </p>
-     * <p> <sub>n</sub>TT<sub>r</sub> </p>
-     *
-     * @inheritdoc
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    class CombinedPermutationGenerator extends CaseGenerator {
-        /**
-         * <p> An array using for dividing each element index. </p>
-         */
-        private dividerArray;
-        /**
-         * <p> Construct from size of N and R. </p>
-         *
-         * @param n Size of candidates.
-         * @param r Size of elements of each case.
-         */
-        constructor(n: number, r: number);
-        at(index: number): Array<number>;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * <p> A permutation case generator. </p>
-     * <p> nPr </p>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     * @inheritdoc
-     */
-    class PermuationGenerator extends CaseGenerator {
-        /**
-         * <p> Construct from size of N and R. </p>
-         *
-         * @param n Size of candidates.
-         * @param r Size of elements of each case.
-         */
-        constructor(n: number, r: number);
-        /**
-         * @inheritdoc
-         */
-        at(index: number): Array<number>;
-    }
-}
-declare namespace samchon.library {
-    class FactorialGenerator extends PermuationGenerator {
-        /**
-         * Construct from factorial size N.
-         *
-         * @param n Factoria size N.
-         */
-        constructor(n: number);
-    }
-}
-declare namespace samchon.library {
-    class ProgressEvent extends BasicEvent {
-        static PROGRESS: string;
-        protected numerator_: number;
-        protected denominator_: number;
-        constructor(type: string, numerator: number, denominator: number);
-        numerator: number;
-        denominator: number;
     }
 }
 declare namespace samchon.protocol {
@@ -708,6 +779,42 @@ declare namespace samchon.protocol {
         replyData(invoke: Invoke): void;
         TAG(): string;
         CHILD_TAG(): string;
+    }
+}
+declare namespace samchon.protocol {
+    /**
+     * <p> An entity, a standard data class. </p>
+     *
+     * <p> Entity is a class for standardization of expression method using on network I/O by XML. If
+     * Invoke is a standard message protocol of Samchon Framework which must be kept, Entity is a
+     * recommended semi-protocol of message for expressing a data class. Following the semi-protocol
+     * Entity is not imposed but encouraged. </p>
+     *
+     * <p> As we could get advantages from standardization of message for network I/O with Invoke,
+     * we can get additional advantage from standardizing expression method of data class with Entity.
+     * We do not need to know a part of network communication. Thus, with the Entity, we can only
+     * concentrate on entity's own logics and relationships between another entities. Entity does not
+     * need to how network communications are being done. </p>
+     *
+     * <p> I say repeatedly. Expression method of Entity is recommended, but not imposed. It's a semi
+     * protocol for network I/O but not a essential protocol must be kept. The expression method of
+     * Entity, using on network I/O, is expressed by XML string. </p>
+     *
+     * <p> If your own network system has a critical performance issue on communication data class,
+     * it would be better to using binary communication (with ByteArray).
+     * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    abstract class Entity implements IEntity {
+        /**
+         * <p> Default Constructor. </p>
+         */
+        constructor();
+        construct(xml: library.XML): void;
+        key(): any;
+        abstract TAG(): string;
+        toXML(): library.XML;
     }
 }
 declare namespace samchon.protocol {
@@ -1033,6 +1140,108 @@ declare namespace samchon.protocol.slave {
 }
 declare namespace samchon.library {
     /**
+     * <p> The IEventDispatcher interface defines methods for adding or removing event listeners, checks
+     * whether specific types of event listeners are registered, and dispatches events. </p>
+     *
+     * <p> Event targets are an important part of the Flash�� Player and Adobe AIR event model. The event
+     * target serves as the focal point for how events flow through the display list hierarchy. When an
+     * event such as a mouse click or a keypress occurs, an event object is dispatched into the event flow
+     * from the root of the display list. The event object makes a round-trip journey to the event target,
+     * which is conceptually divided into three phases: the capture phase includes the journey from the
+     * root to the last node before the event target's node; the target phase includes only the event
+     * target node; and the bubbling phase includes any subsequent nodes encountered on the return trip to
+     * the root of the display list. </p>
+     *
+     * <p> In general, the easiest way for a user-defined class to gain event dispatching capabilities is
+     * to extend EventDispatcher. If this is impossible (that is, if the class is already extending another
+     * class), you can instead implement the IEventDispatcher interface, create an EventDispatcher member,
+     * and write simple hooks to route calls into the aggregated EventDispatcher. </p>
+     *
+     * <ul>
+     *  <li> Made by AS3 - http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events/IEventDispatcher.html
+     * </ul>
+     *
+     * @see EventDispatcher
+     * @author Migrated by Jeongho Nam <http://samchon.org>
+     */
+    interface IEventDispatcher {
+        /**
+         * <p> Checks whether the EventDispatcher object has any listeners registered for a specific type
+         * of event. This allows you to determine where an EventDispatcher object has altered handling of
+         * an event type in the event flow hierarchy. To determine whether a specific event type actually
+         * triggers an event listener, use willTrigger(). </p>
+         *
+         * <p> The difference between hasEventListener() and willTrigger() is that hasEventListener()
+         * examines only the object to which it belongs, whereas willTrigger() examines the entire event
+         * flow for the event specified by the type parameter. </p>
+         *
+         * @param type The type of event.
+         */
+        hasEventListener(type: string): boolean;
+        /**
+         * <p> Dispatches an event into the event flow. </p>
+         * <p> The event target is the EventDispatcher object upon which the dispatchEvent() method is called. </p>
+         *
+         * @param event The Event object that is dispatched into the event flow. If the event is being
+         *			  redispatched, a clone of the event is created automatically. After an event is
+         *			  dispatched, its target property cannot be changed, so you must create a new copy
+         *			  of the event for redispatching to work.
+         */
+        dispatchEvent(event: BasicEvent): boolean;
+        /**
+         * <p> Registers an event listener object with an EventDispatcher object so that the listener
+         * receives notification of an event. You can register event listeners on all nodes in the display
+         * list for a specific type of event, phase, and priority.
+         *
+         * <p> After you successfully register an event listener, you cannot change its priority through
+         * additional calls to addEventListener(). To change a listener's priority, you must first call
+         * removeEventListener(). Then you can register the listener again with the new priority level. </p>
+         *
+         * <p> Keep in mind that after the listener is registered, subsequent calls to addEventListener()
+         * with a different type or useCapture value result in the creation of a separate listener
+         * registration. For example, if you first register a listener with useCapture set to true,
+         * it listens only during the capture phase. If you call addEventListener() again using the same
+         * listener object, but with useCapture set to false, you have two separate listeners: one that
+         * listens during the capture phase and another that listens during the target and bubbling phases. </p>
+         *
+         * <p> You cannot register an event listener for only the target phase or the bubbling phase.
+         * Those phases are coupled during registration because bubbling applies only to the ancestors of
+         * the target node. </p>
+         *
+         * <p> If you no longer need an event listener, remove it by calling removeEventListener(), or
+         * memory problems could result. Event listeners are not automatically removed from memory because
+         * the garbage collector does not remove the listener as long as the dispatching object exists
+         * (unless the useWeakReference parameter is set to true). </p>
+         *
+         * <p> Copying an EventDispatcher instance does not copy the event listeners attached to it. (If
+         * your newly created node needs an event listener, you must attach the listener after creating
+         * the node.) However, if you move an EventDispatcher instance, the event listeners attached to
+         * it move along with it. </p>
+         *
+         * <p> If the event listener is being registered on a node while an event is also being processed
+         * on this node, the event listener is not triggered during the current phase but may be triggered
+         * during a later phase in the event flow, such as the bubbling phase. </p>
+         *
+         * <p> If an event listener is removed from a node while an event is being processed on the node,
+         * it is still triggered by the current actions. After it is removed, the event listener is never
+         * invoked again (unless it is registered again for future processing). </p>
+         *
+         * @param event The type of event.
+         * @param listener The listener function that processes the event.
+         *				 This function must accept an Event object as its only parameter and must return
+         *				 nothing.
+         */
+        addEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * Removes a listener from the EventDispatcher object. If there is no matching listener registered
+         * with the EventDispatcher object, a call to this method has no effect.
+         *
+         * @param type The type of event.
+         * @param listener The listener object to remove.
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg: Object): void;
+    }
+    /**
      * <p> Registers an event listener object with an EventDispatcher object so that the listener
      * receives notification of an event. You can register event listeners on all nodes in the display
      * list for a specific type of event, phase, and priority. </p>
@@ -1111,110 +1320,6 @@ declare namespace samchon.library {
          * @inheritdoc
          */
         removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * <p> The IEventDispatcher interface defines methods for adding or removing event listeners, checks
-     * whether specific types of event listeners are registered, and dispatches events. </p>
-     *
-     * <p> Event targets are an important part of the Flash® Player and Adobe AIR event model. The event
-     * target serves as the focal point for how events flow through the display list hierarchy. When an
-     * event such as a mouse click or a keypress occurs, an event object is dispatched into the event flow
-     * from the root of the display list. The event object makes a round-trip journey to the event target,
-     * which is conceptually divided into three phases: the capture phase includes the journey from the
-     * root to the last node before the event target's node; the target phase includes only the event
-     * target node; and the bubbling phase includes any subsequent nodes encountered on the return trip to
-     * the root of the display list. </p>
-     *
-     * <p> In general, the easiest way for a user-defined class to gain event dispatching capabilities is
-     * to extend EventDispatcher. If this is impossible (that is, if the class is already extending another
-     * class), you can instead implement the IEventDispatcher interface, create an EventDispatcher member,
-     * and write simple hooks to route calls into the aggregated EventDispatcher. </p>
-     *
-     * <ul>
-     *  <li> Made by AS3 - http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events/IEventDispatcher.html
-     * </ul>
-     *
-     * @see EventDispatcher
-     * @author Migrated by Jeongho Nam <http://samchon.org>
-     */
-    interface IEventDispatcher {
-        /**
-         * <p> Checks whether the EventDispatcher object has any listeners registered for a specific type
-         * of event. This allows you to determine where an EventDispatcher object has altered handling of
-         * an event type in the event flow hierarchy. To determine whether a specific event type actually
-         * triggers an event listener, use willTrigger(). </p>
-         *
-         * <p> The difference between hasEventListener() and willTrigger() is that hasEventListener()
-         * examines only the object to which it belongs, whereas willTrigger() examines the entire event
-         * flow for the event specified by the type parameter. </p>
-         *
-         * @param type The type of event.
-         */
-        hasEventListener(type: string): boolean;
-        /**
-         * <p> Dispatches an event into the event flow. </p>
-         * <p> The event target is the EventDispatcher object upon which the dispatchEvent() method is called. </p>
-         *
-         * @param event The Event object that is dispatched into the event flow. If the event is being
-         *			  redispatched, a clone of the event is created automatically. After an event is
-         *			  dispatched, its target property cannot be changed, so you must create a new copy
-         *			  of the event for redispatching to work.
-         */
-        dispatchEvent(event: Event): boolean;
-        /**
-         * <p> Registers an event listener object with an EventDispatcher object so that the listener
-         * receives notification of an event. You can register event listeners on all nodes in the display
-         * list for a specific type of event, phase, and priority.
-         *
-         * <p> After you successfully register an event listener, you cannot change its priority through
-         * additional calls to addEventListener(). To change a listener's priority, you must first call
-         * removeEventListener(). Then you can register the listener again with the new priority level. </p>
-         *
-         * <p> Keep in mind that after the listener is registered, subsequent calls to addEventListener()
-         * with a different type or useCapture value result in the creation of a separate listener
-         * registration. For example, if you first register a listener with useCapture set to true,
-         * it listens only during the capture phase. If you call addEventListener() again using the same
-         * listener object, but with useCapture set to false, you have two separate listeners: one that
-         * listens during the capture phase and another that listens during the target and bubbling phases. </p>
-         *
-         * <p> You cannot register an event listener for only the target phase or the bubbling phase.
-         * Those phases are coupled during registration because bubbling applies only to the ancestors of
-         * the target node. </p>
-         *
-         * <p> If you no longer need an event listener, remove it by calling removeEventListener(), or
-         * memory problems could result. Event listeners are not automatically removed from memory because
-         * the garbage collector does not remove the listener as long as the dispatching object exists
-         * (unless the useWeakReference parameter is set to true). </p>
-         *
-         * <p> Copying an EventDispatcher instance does not copy the event listeners attached to it. (If
-         * your newly created node needs an event listener, you must attach the listener after creating
-         * the node.) However, if you move an EventDispatcher instance, the event listeners attached to
-         * it move along with it. </p>
-         *
-         * <p> If the event listener is being registered on a node while an event is also being processed
-         * on this node, the event listener is not triggered during the current phase but may be triggered
-         * during a later phase in the event flow, such as the bubbling phase. </p>
-         *
-         * <p> If an event listener is removed from a node while an event is being processed on the node,
-         * it is still triggered by the current actions. After it is removed, the event listener is never
-         * invoked again (unless it is registered again for future processing). </p>
-         *
-         * @param event The type of event.
-         * @param listener The listener function that processes the event.
-         *				 This function must accept an Event object as its only parameter and must return
-         *				 nothing.
-         */
-        addEventListener(type: string, listener: EventListener, thisArg: Object): void;
-        /**
-         * Removes a listener from the EventDispatcher object. If there is no matching listener registered
-         * with the EventDispatcher object, a call to this method has no effect.
-         *
-         * @param type The type of event.
-         * @param listener The listener object to remove.
-         */
-        removeEventListener(type: string, listener: EventListener, thisArg: Object): void;
     }
 }
 declare namespace samchon.library {
@@ -1345,32 +1450,6 @@ declare namespace samchon.library {
          * @param str Target string to replace.
          */
         static removeHTMLSpaces(str: string): string;
-    }
-}
-declare namespace samchon.library {
-    /**
-     * <p> List of XML(s) having same tag. </p>
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    class XMLList extends std.Vector<XML> {
-        /**
-         * <p> Default Constructor. </p>
-         */
-        constructor();
-        getTag(): string;
-        /**
-         * <p> Convert XMLList to string. </p>
-         *
-         * @param level Level(depth) of the XMLList.
-         */
-        toString(level?: number): string;
-        /**
-         * <p> Convert XMLList to HTML string. </p>
-         *
-         * @param level Level(depth) of the XMLList.
-         */
-        toHTML(level?: number): string;
     }
 }
 declare namespace samchon.library {
@@ -1700,6 +1779,30 @@ declare namespace samchon.library {
         toString(level?: number): string;
         /**
          * <p> Convert the XML to HTML string. </p>
+         */
+        toHTML(level?: number): string;
+    }
+    /**
+     * <p> List of XML(s) having same tag. </p>
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class XMLList extends std.Vector<XML> {
+        /**
+         * <p> Default Constructor. </p>
+         */
+        constructor();
+        getTag(): string;
+        /**
+         * <p> Convert XMLList to string. </p>
+         *
+         * @param level Level(depth) of the XMLList.
+         */
+        toString(level?: number): string;
+        /**
+         * <p> Convert XMLList to HTML string. </p>
+         *
+         * @param level Level(depth) of the XMLList.
          */
         toHTML(level?: number): string;
     }

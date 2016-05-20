@@ -113,7 +113,7 @@ namespace boxologic
 		 * @see Scrapped
 		 * @see scrap_list
 		 */
-		private scrap_min_z: std.base.Iterator<Scrap>;
+		private scrap_min_z: std.Iterator<Scrap>;
 
 		/* -----------------------------------------------------------
 			VARIABLES FOR ITERATIONS

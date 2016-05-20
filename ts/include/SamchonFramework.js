@@ -50,20 +50,1093 @@ var samchon;
 })(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
-    var example;
-    (function (example) {
-        var xml;
-        (function (xml_1) {
-            function main() {
-                var textArea = document.getElementById("textArea");
-                var str = textArea.textContent;
-                var xml = new samchon.library.XML(str);
-                samchon.trace(xml.toString());
-                samchon.trace(new samchon.library.XML(xml.toString()).toString());
+    var library;
+    (function (library) {
+        /**
+         * An event class.
+         *
+         * <ul>
+         *  <li> Comments from - https://developer.mozilla.org/en-US/docs/Web/API/Event/ </li>
+         * </ul>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var BasicEvent = (function () {
+            /* -------------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------------- */
+            function BasicEvent(type, bubbles, cancelable) {
+                if (bubbles === void 0) { bubbles = false; }
+                if (cancelable === void 0) { cancelable = false; }
+                this.type_ = type.toLowerCase();
+                this.target_ = null;
+                this.currentTarget_ = null;
+                this.trusted_ = false;
+                this.bubbles_ = bubbles;
+                this.cancelable_ = cancelable;
+                this.defaultPrevented_ = false;
+                this.cancelBubble_ = false;
+                this.timeStamp_ = new Date();
             }
-            xml_1.main = main;
-        })(xml = example.xml || (example.xml = {}));
-    })(example = samchon.example || (samchon.example = {}));
+            Object.defineProperty(BasicEvent, "NONE", {
+                /* -------------------------------------------------------------------
+                    STATIC CONSTS
+                ------------------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                get: function () { return 0; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "NONE", {
+                get: function () { return 0; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent, "CAPTURING_PHASE", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () { return Event.CAPTURING_PHASE; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "CAPTURING_PHASE", {
+                get: function () { return Event.CAPTURING_PHASE; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent, "AT_TARGET", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () { return Event.AT_TARGET; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "AT_TARGET", {
+                get: function () { return Event.AT_TARGET; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent, "BUBBLING_PHASE", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () { return Event.BUBBLING_PHASE; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "BUBBLING_PHASE", {
+                get: function () { return Event.BUBBLING_PHASE; },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * @inheritdoc
+             */
+            BasicEvent.prototype.initEvent = function (type, bubbles, cancelable) {
+                this.type_ = type.toLowerCase();
+                this.bubbles_ = bubbles;
+                this.cancelable_ = cancelable;
+            };
+            /* -------------------------------------------------------------------
+                ACTIONS ON PROGRESS
+            ------------------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            BasicEvent.prototype.preventDefault = function () {
+            };
+            /**
+             * @inheritdoc
+             */
+            BasicEvent.prototype.stopImmediatePropagation = function () {
+            };
+            /**
+             * @inheritdoc
+             */
+            BasicEvent.prototype.stopPropagation = function () {
+            };
+            Object.defineProperty(BasicEvent.prototype, "type", {
+                /* -------------------------------------------------------------------
+                    GETTERS
+                ------------------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.type_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "target", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.target_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "currentTarget", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.currentTarget_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "isTrusted", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.isTrusted;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "bubbles", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.bubbles_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "cancelable", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.cancelable_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "eventPhase", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.NONE;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "defaultPrevented", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.defaultPrevented_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "srcElement", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "cancelBubble", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.cancelBubble_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "timeStamp", {
+                /**
+                 * @inheritdoc
+                 */
+                get: function () {
+                    return this.timeStamp_.getTime();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BasicEvent.prototype, "returnValue", {
+                /**
+                 * Don't know what it is.
+                 */
+                get: function () {
+                    return false;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return BasicEvent;
+        }());
+        library.BasicEvent = BasicEvent;
+        var ProgressEvent = (function (_super) {
+            __extends(ProgressEvent, _super);
+            function ProgressEvent(type, numerator, denominator) {
+                _super.call(this, type);
+                this.numerator_ = numerator;
+                this.denominator_ = denominator;
+            }
+            Object.defineProperty(ProgressEvent, "PROGRESS", {
+                get: function () { return "progress"; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ProgressEvent.prototype, "numerator", {
+                get: function () {
+                    return this.numerator_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ProgressEvent.prototype, "denominator", {
+                get: function () {
+                    return this.denominator_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return ProgressEvent;
+        }(BasicEvent));
+        library.ProgressEvent = ProgressEvent;
+    })(library = samchon.library || (samchon.library = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var library;
+    (function (library) {
+        /**
+         * <p> Case generator. </p>
+         *
+         * <p> CaseGenerator is an abstract case generator using like a matrix. </p>
+         * <ul>
+         *  <li> nTTr(n^r) -> CombinedPermutationGenerator </li>
+         *  <li> nPr -> PermutationGenerator </li>
+         *  <li> n! -> FactorialGenerator </li>
+         * </ul>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var CaseGenerator = (function () {
+            /* ---------------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------------- */
+            /**
+             * <p> Construct from size of N and R. </p>
+             *
+             * @param n Size of candidates.
+             * @param r Size of elements of each case.
+             */
+            function CaseGenerator(n, r) {
+                this.n_ = n;
+                this.r_ = r;
+            }
+            /* ---------------------------------------------------------------
+                ACCESSORS
+            --------------------------------------------------------------- */
+            /**
+             * <p> Get size of all cases. </p>
+             *
+             * @return Get a number of the all cases.
+             */
+            CaseGenerator.prototype.size = function () {
+                return this.size_;
+            };
+            /**
+             * <p> Get size of the N. </p>
+             */
+            CaseGenerator.prototype.n = function () {
+                return this.n_;
+            };
+            /**
+             * <p> Get size of the R. </p>
+             */
+            CaseGenerator.prototype.r = function () {
+                return this.r_;
+            };
+            return CaseGenerator;
+        }());
+        library.CaseGenerator = CaseGenerator;
+        /**
+         * <p> A combined-permutation case generator. </p>
+         * <p> <sub>n</sub>TT<sub>r</sub> </p>
+         *
+         * @inheritdoc
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var CombinedPermutationGenerator = (function (_super) {
+            __extends(CombinedPermutationGenerator, _super);
+            /* ---------------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------------- */
+            /**
+             * <p> Construct from size of N and R. </p>
+             *
+             * @param n Size of candidates.
+             * @param r Size of elements of each case.
+             */
+            function CombinedPermutationGenerator(n, r) {
+                _super.call(this, n, r);
+                this.size_ = Math.pow(n, r);
+                this.dividerArray = new Array();
+                for (var i = 0; i < r; i++) {
+                    var x = r - (i + 1);
+                    var val = Math.pow(n, x);
+                    this.dividerArray.push(val);
+                }
+            }
+            CombinedPermutationGenerator.prototype.at = function (index) {
+                var row = new Array();
+                for (var i = 0; i < this.r_; i++) {
+                    var val = Math.floor(index / this.dividerArray[i]) % this.n_;
+                    row.push(val);
+                }
+                return row;
+            };
+            return CombinedPermutationGenerator;
+        }(CaseGenerator));
+        library.CombinedPermutationGenerator = CombinedPermutationGenerator;
+        /**
+         * <p> A permutation case generator. </p>
+         * <p> nPr </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         * @inheritdoc
+         */
+        var PermuationGenerator = (function (_super) {
+            __extends(PermuationGenerator, _super);
+            /* ---------------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------------- */
+            /**
+             * <p> Construct from size of N and R. </p>
+             *
+             * @param n Size of candidates.
+             * @param r Size of elements of each case.
+             */
+            function PermuationGenerator(n, r) {
+                _super.call(this, n, r);
+                this.size_ = n;
+                for (var i = n - 1; i > n - r; i--)
+                    this.size_ *= i;
+            }
+            /**
+             * @inheritdoc
+             */
+            PermuationGenerator.prototype.at = function (index) {
+                var atoms = new Array();
+                for (var i = 0; i < this.n_; i++)
+                    atoms.push(i);
+                var row = new Array();
+                for (var i = 0; i < this.r_; i++) {
+                    var item = index % atoms.length;
+                    index = Math.floor(index / atoms.length);
+                    row.push(atoms[item]);
+                    atoms.splice(item, 1);
+                }
+                return row;
+            };
+            return PermuationGenerator;
+        }(CaseGenerator));
+        library.PermuationGenerator = PermuationGenerator;
+        var FactorialGenerator = (function (_super) {
+            __extends(FactorialGenerator, _super);
+            /**
+             * Construct from factorial size N.
+             *
+             * @param n Factoria size N.
+             */
+            function FactorialGenerator(n) {
+                _super.call(this, n, n);
+            }
+            return FactorialGenerator;
+        }(PermuationGenerator));
+        library.FactorialGenerator = FactorialGenerator;
+    })(library = samchon.library || (samchon.library = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var library;
+    (function (library) {
+        var CollectionEvent = (function (_super) {
+            __extends(CollectionEvent, _super);
+            function CollectionEvent(type, first, last) {
+                _super.call(this, type, false, true);
+                this.first_ = first;
+                this.last_ = last;
+            }
+            Object.defineProperty(CollectionEvent.prototype, "container", {
+                get: function () {
+                    return this.target;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(CollectionEvent.prototype, "first", {
+                get: function () {
+                    return this.first_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(CollectionEvent.prototype, "last", {
+                get: function () {
+                    return this.last_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(CollectionEvent, "ADDED", {
+                get: function () {
+                    return "inserted";
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(CollectionEvent, "REMOVED", {
+                get: function () {
+                    return "removed";
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return CollectionEvent;
+        }(library.BasicEvent));
+        library.CollectionEvent = CollectionEvent;
+        /* =============================================================
+            LINEAR COLLECTIONS
+        ============================================================= */
+        var ArrayCollection = (function (_super) {
+            __extends(ArrayCollection, _super);
+            function ArrayCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            ArrayCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return ArrayCollection;
+        }(std.Vector));
+        library.ArrayCollection = ArrayCollection;
+        var DequeCollection = (function (_super) {
+            __extends(DequeCollection, _super);
+            function DequeCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            DequeCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return DequeCollection;
+        }(std.Deque));
+        library.DequeCollection = DequeCollection;
+        var ListCollection = (function (_super) {
+            __extends(ListCollection, _super);
+            function ListCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            ListCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return ListCollection;
+        }(std.List));
+        library.ListCollection = ListCollection;
+        /* =============================================================
+            SET COLLECTIONS
+                - HASH_SET
+                - TREE_SET
+        ============================================================= */
+        var HashSetCollection = (function (_super) {
+            __extends(HashSetCollection, _super);
+            function HashSetCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashSetCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return HashSetCollection;
+        }(std.HashSet));
+        library.HashSetCollection = HashSetCollection;
+        var HashMultiSetCollection = (function (_super) {
+            __extends(HashMultiSetCollection, _super);
+            function HashMultiSetCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiSetCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return HashMultiSetCollection;
+        }(std.HashMultiSet));
+        library.HashMultiSetCollection = HashMultiSetCollection;
+        var TreeSetCollection = (function (_super) {
+            __extends(TreeSetCollection, _super);
+            function TreeSetCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeSetCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return TreeSetCollection;
+        }(std.TreeSet));
+        library.TreeSetCollection = TreeSetCollection;
+        var TreeMultiSetCollection = (function (_super) {
+            __extends(TreeMultiSetCollection, _super);
+            function TreeMultiSetCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.REMOVED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiSetCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return TreeMultiSetCollection;
+        }(std.TreeMultiSet));
+        library.TreeMultiSetCollection = TreeMultiSetCollection;
+        /* =============================================================
+            MAP COLLECTIONS
+                - HASH_MAP
+                - TREE_MAP
+        ============================================================= */
+        var HashMapCollection = (function (_super) {
+            __extends(HashMapCollection, _super);
+            function HashMapCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMapCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return HashMapCollection;
+        }(std.HashMap));
+        library.HashMapCollection = HashMapCollection;
+        var HashMultiMapCollection = (function (_super) {
+            __extends(HashMultiMapCollection, _super);
+            function HashMultiMapCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            HashMultiMapCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return HashMultiMapCollection;
+        }(std.HashMultiMap));
+        library.HashMultiMapCollection = HashMultiMapCollection;
+        var TreeMapCollection = (function (_super) {
+            __extends(TreeMapCollection, _super);
+            function TreeMapCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMapCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return TreeMapCollection;
+        }(std.TreeMap));
+        library.TreeMapCollection = TreeMapCollection;
+        var TreeMultiMapCollection = (function (_super) {
+            __extends(TreeMultiMapCollection, _super);
+            function TreeMultiMapCollection() {
+                _super.apply(this, arguments);
+                this.eventDispatcher = new library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.handle_insert = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.handle_erase = function (first, last) {
+                var event = new CollectionEvent(CollectionEvent.ADDED, first, last);
+                this.dispatchEvent(event);
+            };
+            /* ---------------------------------------------------------
+                I_EVENT_DISPATCHER'S MEMBERS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.hasEventListener = function (type) {
+                return this.eventDispatcher.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.dispatchEvent = function (event) {
+                return this.eventDispatcher.dispatchEvent(event);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.addEventListener(type, listener, thisArg);
+            };
+            /**
+             * @inheritdoc
+             */
+            TreeMultiMapCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.eventDispatcher.removeEventListener(type, listener, thisArg);
+            };
+            return TreeMultiMapCollection;
+        }(std.TreeMultiMap));
+        library.TreeMultiMapCollection = TreeMultiMapCollection;
+    })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
@@ -206,963 +1279,6 @@ var samchon;
         }(std.Vector));
         protocol.EntityArray = EntityArray;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../protocol/EntityArray.ts" />
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var packer;
-        (function (packer_1) {
-            /**
-             * <p> A packer planning the best packaging. </p>
-             * <p> Retrieves the solution of packaging by combination permuation and factorial case. </p>
-             *
-             * <h4> Warning. </h4>
-             * <p> Be careful about number of products and wrappers. </p>
-             * <p> The time complexity of Packer overs O(m^n). Elapsed time of calculation increases enourmously.
-             * Do not use Packer if the digits of number of products or wrappers overs 2. </p>
-             *
-             * @author Jeongho Nam <http://samchon.org>
-             */
-            var Packer = (function (_super) {
-                __extends(Packer, _super);
-                /* --------------------------------------------------------------------
-                    CONSTRUCTORS
-                -------------------------------------------------------------------- */
-                /**
-                 * <p> Construct from an argument. </p>
-                 */
-                function Packer(obj) {
-                    if (obj === void 0) { obj = null; }
-                    _super.call(this);
-                    if (obj == null) {
-                        this.productArray = new packer_1.ProductArray();
-                        return;
-                    }
-                    if (obj instanceof packer_1.ProductArray) {
-                        this.productArray = obj;
-                    }
-                    else if (obj instanceof Packer) {
-                        var packer_2 = obj;
-                        this.productArray = packer_2.productArray;
-                        for (var i = 0; i < packer_2.size(); i++)
-                            this.push(new packer_1.WrapperArray(packer_2.at(i).getSample()));
-                    }
-                    else
-                        throw "invalid argument";
-                }
-                Packer.prototype.createChild = function (xml) {
-                    return new packer_1.WrapperArray();
-                };
-                /* --------------------------------------------------------------------
-                    CALCULATORS
-                -------------------------------------------------------------------- */
-                /**
-                 * <p> Find the best packaging method. </p>
-                 */
-                Packer.prototype.optimize = function (start, size) {
-                    if (start === void 0) { start = 0; }
-                    if (size === void 0) { size = -1; }
-                    if (this.size() == 0 || this.productArray.size() == 0)
-                        return;
-                    var caseGenerator = new samchon.library.CombinedPermutationGenerator(this.size(), this.productArray.size());
-                    var minPacker = null;
-                    //ADJUST END INDEX
-                    if (size == -1 || start + size > caseGenerator.size())
-                        size = caseGenerator.size() - start;
-                    //FIND THE BEST SOLUTION
-                    for (var i = start; i < start + size; i++) {
-                        var packer_3 = new Packer(this);
-                        var row = caseGenerator.at(i);
-                        var validity = true;
-                        for (var j = 0; j < row.length; j++) {
-                            var product = this.productArray.at(j);
-                            var wrapperArray = packer_3.at(row[j]);
-                            if (wrapperArray.tryInsert(product) == false) {
-                                validity = false;
-                                break;
-                            }
-                        }
-                        if (validity == false)
-                            continue;
-                        //OPTIMIZE ALL WRAPPERS IN A PACKER
-                        for (var j = 0; j < packer_3.size(); j++)
-                            packer_3.at(j).optimize();
-                        if (minPacker == null || packer_3.calcPrice() < minPacker.calcPrice())
-                            minPacker = packer_3;
-                    }
-                    //REPLACE TO MIN_PACKER
-                    this.splice(0, this.size());
-                    for (var i = 0; i < minPacker.size(); i++)
-                        this.push(minPacker.at(i));
-                };
-                /**
-                 * <p> Calculate price of the wrappers. </p>
-                 */
-                Packer.prototype.calcPrice = function () {
-                    var price = 0;
-                    for (var i = 0; i < this.size(); i++)
-                        price += this.at(i).calcPrice();
-                    return price;
-                };
-                /* --------------------------------------------------------------------
-                    EXPORTERS
-                -------------------------------------------------------------------- */
-                Packer.prototype.TAG = function () {
-                    return "packer";
-                };
-                Packer.prototype.CHILD_TAG = function () {
-                    return "wrapperArray";
-                };
-                /* --------------------------------------------------------------------
-                    STATIC MAIN
-                -------------------------------------------------------------------- */
-                Packer.main = function () {
-                    var productArray = new packer_1.ProductArray();
-                    productArray.push(new packer_1.Product("Eraser", 500, 10, 70), new packer_1.Product("Pencil", 400, 30, 35), new packer_1.Product("Pencil", 400, 30, 35), 
-                    //new Product("Pencil", 400, 30, 35),
-                    //new Product("Book", 8000, 150, 300),
-                    //new Product("Book", 8000, 150, 300),
-                    //new Product("Drink", 1000, 75, 250),
-                    //new Product("Umbrella", 4000, 200, 1000),
-                    new packer_1.Product("Notebook-PC", 800000, 150, 850), new packer_1.Product("Tablet-PC", 600000, 120, 450));
-                    var xml = productArray.toXML();
-                    productArray.clear();
-                    productArray.construct(xml);
-                    var packer = new Packer(productArray);
-                    packer.push(new packer_1.WrapperArray(new packer_1.Wrapper("Large", 100, 200, 1000)), new packer_1.WrapperArray(new packer_1.Wrapper("Medium", 70, 150, 500)), new packer_1.WrapperArray(new packer_1.Wrapper("Small", 50, 100, 250)));
-                    packer.optimize();
-                    samchon.trace(packer.toXML().toString());
-                };
-                return Packer;
-            }(samchon.protocol.EntityArray));
-            packer_1.Packer = Packer;
-        })(packer = example.packer || (example.packer = {}));
-    })(example = samchon.example || (samchon.example = {}));
-})(samchon || (samchon = {}));
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        /**
-         * <p> An entity, a standard data class. </p>
-         *
-         * <p> Entity is a class for standardization of expression method using on network I/O by XML. If
-         * Invoke is a standard message protocol of Samchon Framework which must be kept, Entity is a
-         * recommended semi-protocol of message for expressing a data class. Following the semi-protocol
-         * Entity is not imposed but encouraged. </p>
-         *
-         * <p> As we could get advantages from standardization of message for network I/O with Invoke,
-         * we can get additional advantage from standardizing expression method of data class with Entity.
-         * We do not need to know a part of network communication. Thus, with the Entity, we can only
-         * concentrate on entity's own logics and relationships between another entities. Entity does not
-         * need to how network communications are being done. </p>
-         *
-         * <p> I say repeatedly. Expression method of Entity is recommended, but not imposed. It's a semi
-         * protocol for network I/O but not a essential protocol must be kept. The expression method of
-         * Entity, using on network I/O, is expressed by XML string. </p>
-         *
-         * <p> If your own network system has a critical performance issue on communication data class,
-         * it would be better to using binary communication (with ByteArray).
-         * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var Entity = (function () {
-            /**
-             * <p> Default Constructor. </p>
-             */
-            function Entity() {
-                //NOTHING
-            }
-            Entity.prototype.construct = function (xml) {
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next())
-                    if (this.hasOwnProperty(v_it.first) == true)
-                        if (typeof this[v_it.first] == "number")
-                            this[v_it.first] = parseFloat(v_it.second);
-                        else if (typeof this[v_it.first] == "string")
-                            this[v_it.first] = v_it.second;
-                // MEMBER ENTITIES
-                //for (let e_it = xml.begin(); e_it.equal_to(xml.end()) != true; e_it = e_it.next())
-                //{
-                //	if (this.hasOwnProperty(e_it.first) == true 
-                //		&& e_it.second.size() == 1 
-                //		&& (this[e_it.first] instanceof Entity || this[e_it.first] instanceof EntityArray)
-                //		&& this[e_it.first] != null)
-                //	{
-                //		let entity: IEntity = this[e_it.first];
-                //		let e_xml: library.XML = e_it.second.at(0);
-                //		if (entity == null)
-                //			continue;
-                //		entity.construct(e_xml);
-                //	}
-                //}
-            };
-            Entity.prototype.key = function () { return ""; };
-            Entity.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string" &&
-                        (typeof this[key] == "string" || typeof this[key] == "number")) {
-                        xml.setProperty(key, this[key]);
-                    }
-                return xml;
-            };
-            return Entity;
-        }());
-        protocol.Entity = Entity;
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../protocol/Entity.ts" />
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var packer;
-        (function (packer) {
-            var Product = (function (_super) {
-                __extends(Product, _super);
-                function Product(name, price, volume, weight) {
-                    if (name === void 0) { name = ""; }
-                    if (price === void 0) { price = 0; }
-                    if (volume === void 0) { volume = 0; }
-                    if (weight === void 0) { weight = 0; }
-                    _super.call(this);
-                    this.name = name;
-                    this.price = price;
-                    this.volume = volume;
-                    this.weight = weight;
-                }
-                /* --------------------------------------------------------------------
-                    GETTERS
-                -------------------------------------------------------------------- */
-                Product.prototype.getName = function () {
-                    return this.name;
-                };
-                Product.prototype.getPrice = function () {
-                    return this.price;
-                };
-                Product.prototype.getVolume = function () {
-                    return this.volume;
-                };
-                Product.prototype.getWeight = function () {
-                    return this.weight;
-                };
-                /* --------------------------------------------------------------------
-                    EXPORTERS
-                -------------------------------------------------------------------- */
-                Product.prototype.TAG = function () {
-                    return "product";
-                };
-                return Product;
-            }(samchon.protocol.Entity));
-            packer.Product = Product;
-        })(packer = example.packer || (example.packer = {}));
-    })(example = samchon.example || (samchon.example = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../protocol/EntityArray.ts" />
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var packer;
-        (function (packer) {
-            var ProductArray = (function (_super) {
-                __extends(ProductArray, _super);
-                /* ------------------------------------------------------------------
-                    CONSTRUCTORS
-                ------------------------------------------------------------------ */
-                /**
-                 * Default Constructor.
-                 */
-                function ProductArray() {
-                    _super.call(this);
-                }
-                ProductArray.prototype.createChild = function (xml) {
-                    return new packer.Product();
-                };
-                /* ------------------------------------------------------------------
-                    EXPORTERS
-                ------------------------------------------------------------------ */
-                ProductArray.prototype.TAG = function () {
-                    return "productArray";
-                };
-                ProductArray.prototype.CHILD_TAG = function () {
-                    return "product";
-                };
-                return ProductArray;
-            }(samchon.protocol.EntityArray));
-            packer.ProductArray = ProductArray;
-        })(packer = example.packer || (example.packer = {}));
-    })(example = samchon.example || (samchon.example = {}));
-})(samchon || (samchon = {}));
-/// <reference path="ProductArray.ts" />
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var packer;
-        (function (packer) {
-            var Wrapper = (function (_super) {
-                __extends(Wrapper, _super);
-                function Wrapper() {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i - 0] = arguments[_i];
-                    }
-                    _super.call(this);
-                    if (args.length == 1 && args[0] instanceof Wrapper) {
-                        var wrapper = args[0];
-                        this.name = wrapper.name;
-                        this.price = wrapper.price;
-                        this.volume = wrapper.volume;
-                        this.weight = wrapper.weight;
-                    }
-                    else if (args.length == 4) {
-                        this.name = args[0];
-                        this.price = args[1];
-                        this.volume = args[2];
-                        this.weight = args[3];
-                    }
-                }
-                Wrapper.prototype.createChild = function (xml) {
-                    return new packer.Product();
-                };
-                /* --------------------------------------------------------------------
-                    OPERATORS
-                -------------------------------------------------------------------- */
-                Wrapper.prototype.tryInsert = function (product) {
-                    var volume = 0;
-                    var weight = 0;
-                    for (var i = 0; i < this.size(); i++) {
-                        volume += this.at(i).getVolume();
-                        weight += this.at(i).getWeight();
-                    }
-                    if (product.getVolume() + volume > this.volume ||
-                        product.getWeight() + weight > this.weight) {
-                        return false;
-                    }
-                    this.push(product);
-                    return true;
-                };
-                /* --------------------------------------------------------------------
-                    GETTERS
-                -------------------------------------------------------------------- */
-                Wrapper.prototype.getName = function () {
-                    return this.name;
-                };
-                Wrapper.prototype.getPrice = function () {
-                    return this.price;
-                };
-                Wrapper.prototype.getVolume = function () {
-                    return this.volume;
-                };
-                Wrapper.prototype.getWeight = function () {
-                    return this.weight;
-                };
-                /* --------------------------------------------------------------------
-                    EXPORTERS
-                -------------------------------------------------------------------- */
-                Wrapper.prototype.TAG = function () {
-                    return "wrapper";
-                };
-                return Wrapper;
-            }(packer.ProductArray));
-            packer.Wrapper = Wrapper;
-        })(packer = example.packer || (example.packer = {}));
-    })(example = samchon.example || (samchon.example = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../protocol/EntityArray.ts" />
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var packer;
-        (function (packer) {
-            var WrapperArray = (function (_super) {
-                __extends(WrapperArray, _super);
-                /* --------------------------------------------------------------------
-                    CONSTRUCTORS
-                -------------------------------------------------------------------- */
-                /**
-                 * <p> Construct from a sample wrapper. </p>
-                 *
-                 * @param sample A sample wrapper used to copy wrappers.
-                 */
-                function WrapperArray(sample) {
-                    if (sample === void 0) { sample = null; }
-                    _super.call(this);
-                    this.sample = sample;
-                    this.reserved = new Array();
-                }
-                WrapperArray.prototype.construct = function (xml) {
-                    _super.prototype.construct.call(this, xml);
-                    this.sample = new packer.Wrapper();
-                    this.sample.construct(xml);
-                };
-                WrapperArray.prototype.createChild = function (xml) {
-                    return new packer.Wrapper();
-                };
-                /* --------------------------------------------------------------------
-                    OPERATORS
-                -------------------------------------------------------------------- */
-                /**
-                 * <p> Try to insert a product into reserved list. </p>
-                 *
-                 * <p> If the Product's volume and weight is equal or less than the Wrapper categorized so that enable to
-                 * insert in a Wrapper, reserve the Product and returns <i>true</i>. If not, does not reserve and just
-                 * return <i>false</i>. </p>
-                 *
-                 * @return Whether the Product's volume and weight is equal or less than the Wrapper.
-                 */
-                WrapperArray.prototype.tryInsert = function (product) {
-                    if (product.getVolume() > this.sample.getVolume() ||
-                        product.getWeight() > this.sample.getWeight()) {
-                        return false;
-                    }
-                    this.reserved.push(product);
-                    return true;
-                };
-                /**
-                 * <p> Optimize to retrieve the best solution. </p>
-                 *
-                 * <p> Retrieves the best solution of packaging in level of WrapperArray. </p>
-                 * <p> Shuffles sequence of reserved Product(s) by samchon::library::FactorialGenerator and insert the reserved
-                 * Products(s) following the sequence creating Wrapper(s) as needed. Between the sequences from FactorialGenerator,
-                 * retrieve and determine the best solution. </p>
-                 *
-                 * <h4> Note. </h4>
-                 * <p> Sequence of inserting Product can affeact to numbers of Wrapper(s) to be used. </p>
-                 * <p> It's the reason why even WrapperArray has the optimize() method. </p>
-                 */
-                WrapperArray.prototype.optimize = function () {
-                    if (this.reserved.length == 0)
-                        return;
-                    var factorial = new samchon.library.FactorialGenerator(this.reserved.length);
-                    var minWrapperArray;
-                    for (var i = 0; i < factorial.size(); i++) {
-                        var wrapperArray = new WrapperArray(this.sample);
-                        var row = factorial.at(i);
-                        for (var j = 0; j < row.length; j++) {
-                            var product = this.reserved[row[j]];
-                            if (wrapperArray.size() == 0 ||
-                                wrapperArray.at(wrapperArray.size() - 1).tryInsert(product) == false) {
-                                var wrapper = new packer.Wrapper(this.sample);
-                                wrapper.tryInsert(product);
-                                wrapperArray.push(wrapper);
-                            }
-                        }
-                        if (minWrapperArray == null ||
-                            wrapperArray.calcPrice() < minWrapperArray.calcPrice()) {
-                            minWrapperArray = wrapperArray;
-                        }
-                    }
-                    //REPLACE TO MIN_WRAPPER_ARRAY
-                    this.splice(0, this.size());
-                    for (var i = 0; i < minWrapperArray.size(); i++)
-                        this.push(minWrapperArray.at(i));
-                };
-                /* --------------------------------------------------------------------
-                    GETTERS
-                -------------------------------------------------------------------- */
-                /**
-                 * <p> Calculate price of the Wrapper(s). </p>
-                 *
-                 * <p> Calculates price of all wrappers'. The price does not contain inserted products'. </p>
-                 */
-                WrapperArray.prototype.calcPrice = function () {
-                    return this.sample.getPrice() * this.size();
-                };
-                /**
-                 * <p> Get sample. </p>
-                 */
-                WrapperArray.prototype.getSample = function () {
-                    return this.sample;
-                };
-                /* --------------------------------------------------------------------
-                    EXPORTERS
-                -------------------------------------------------------------------- */
-                WrapperArray.prototype.TAG = function () {
-                    return "wrapperArray";
-                };
-                WrapperArray.prototype.CHILD_TAG = function () {
-                    return "wrapper";
-                };
-                WrapperArray.prototype.toXML = function () {
-                    var xml = _super.prototype.toXML.call(this);
-                    xml.addAllProperties(this.sample.toXML());
-                    return xml;
-                };
-                return WrapperArray;
-            }(samchon.protocol.EntityArray));
-            packer.WrapperArray = WrapperArray;
-        })(packer = example.packer || (example.packer = {}));
-    })(example = samchon.example || (samchon.example = {}));
-})(samchon || (samchon = {}));
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        /**
-         * An event class.
-         *
-         * <ul>
-         *  <li> Comments from - https://developer.mozilla.org/en-US/docs/Web/API/Event/ </li>
-         * </ul>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var BasicEvent = (function () {
-            /* -------------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------------- */
-            function BasicEvent(type, bubbles, cancelable) {
-                if (bubbles === void 0) { bubbles = false; }
-                if (cancelable === void 0) { cancelable = false; }
-                this.type_ = type.toLowerCase();
-                this.target_ = null;
-                this.currentTarget_ = null;
-                this.trusted_ = false;
-                this.bubbles_ = bubbles;
-                this.cancelable_ = cancelable;
-                this.defaultPrevented_ = false;
-                this.cancelBubble_ = false;
-                this.timeStamp_ = new Date();
-            }
-            Object.defineProperty(BasicEvent, "NONE", {
-                /* -------------------------------------------------------------------
-                    STATIC CONSTS
-                ------------------------------------------------------------------- */
-                /**
-                 *  No event is being processed at this time.
-                 */
-                get: function () { return 0; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "NONE", {
-                get: function () { return 0; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent, "CAPTURING_PHASE", {
-                /**
-                 * The event is being propagated through the target's ancestor objects. This process starts with the Window,
-                 * then Document, then the HTMLHtmlElement, and so on through the elements until the target's parent is reached.
-                 * Event listeners registered for capture mode when EventTarget.addEventListener() was called are triggered
-                 * during this phase.
-                 */
-                get: function () { return Event.CAPTURING_PHASE; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "CAPTURING_PHASE", {
-                get: function () { return Event.CAPTURING_PHASE; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent, "AT_TARGET", {
-                /**
-                 * The event has arrived at the event's target. Event listeners registered for this phase are called at this
-                 * time. If Event.bubbles is false, processing the event is finished after this phase is complete.
-                 */
-                get: function () { return Event.AT_TARGET; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "AT_TARGET", {
-                get: function () { return Event.AT_TARGET; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent, "BUBBLING_PHASE", {
-                /**
-                 * The event is propagating back up through the target's ancestors in reverse order, starting with the parent,
-                 * and eventually reaching the containing Window. This is known as bubbling, and occurs only if Event.bubbles
-                 * is true. Event listeners registered for this phase are triggered during this process.
-                 */
-                get: function () { return Event.BUBBLING_PHASE; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "BUBBLING_PHASE", {
-                get: function () { return Event.BUBBLING_PHASE; },
-                enumerable: true,
-                configurable: true
-            });
-            /**
-             * Initializes the value of an Event created. If the event has already being dispatched, this method does nothing.
-             */
-            BasicEvent.prototype.initEvent = function (type, bubbles, cancelable) {
-                this.type_ = type.toLowerCase();
-                this.bubbles_ = bubbles;
-                this.cancelable_ = cancelable;
-            };
-            /* -------------------------------------------------------------------
-                ACTIONS ON PROGRESS
-            ------------------------------------------------------------------- */
-            /**
-             * Cancels the event (if it is cancelable).
-             */
-            BasicEvent.prototype.preventDefault = function () {
-            };
-            /**
-             * For this particular event, no other listener will be called. Neither those attached on the same element,
-             * nor those attached on elements which will be traversed later (in capture phase, for instance).
-             */
-            BasicEvent.prototype.stopImmediatePropagation = function () {
-            };
-            /**
-             * Stops the propagation of events further along in the DOM.
-             */
-            BasicEvent.prototype.stopPropagation = function () {
-            };
-            Object.defineProperty(BasicEvent.prototype, "type", {
-                /* -------------------------------------------------------------------
-                    GETTERS
-                ------------------------------------------------------------------- */
-                /**
-                 * The name of the event (case-insensitive).
-                 */
-                get: function () {
-                    return this.type_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "target", {
-                /**
-                 * A reference to the target to which the event was originally dispatched.
-                 */
-                get: function () {
-                    return this.target_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "currentTarget", {
-                /**
-                 * A reference to the currently registered target for the event.
-                 */
-                get: function () {
-                    return this.currentTarget_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "srcElement", {
-                /**
-                 * A proprietary alias for the standard Event.target property. It is specific to old versions of
-                 * Microsoft Internet Explorer.
-                 */
-                get: function () {
-                    return this.target_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "isTrusted", {
-                /**
-                 * Indicates whether or not the event was initiated by the browser (after a user click for instance) or
-                 * by a script (using an event creation method, like event.initEvent).
-                 */
-                get: function () {
-                    return this.isTrusted;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "bubbles", {
-                /**
-                 * A boolean indicating whether the event bubbles up through the DOM or not.
-                 */
-                get: function () {
-                    return this.bubbles_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "cancelable", {
-                /**
-                 * A boolean indicating whether the event is cancelable.
-                 */
-                get: function () {
-                    return this.cancelable_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "eventPhase", {
-                /**
-                 * Indicates which phase of the event flow is currently being evaluated.
-                 */
-                get: function () {
-                    return this.NONE;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "defaultPrevented", {
-                /**
-                 * Returns a boolean indicating whether or not event.preventDefault() was called on the event.
-                 */
-                get: function () {
-                    return this.defaultPrevented_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "cancelBubble", {
-                /**
-                 * Indicates if event bubbling for this event has been canceled or not. It is set to false by default, allowing
-                 * the event to bubble up the DOM, if it is a bubbleable event. Setting this property to true stops the event
-                 * from bubbling up the DOM. Not all events are allowed to bubble up the DOM.
-                 */
-                get: function () {
-                    return this.cancelBubble_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "timeStamp", {
-                /**
-                 * The time that the event was created.
-                 */
-                get: function () {
-                    return this.timeStamp_.getTime();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BasicEvent.prototype, "returnValue", {
-                /**
-                 * Don't know what it is.
-                 */
-                get: function () {
-                    return false;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return BasicEvent;
-        }());
-        library.BasicEvent = BasicEvent;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        /**
-         * <p> Case generator. </p>
-         *
-         * <p> CaseGenerator is an abstract case generator using like a matrix. </p>
-         * <ul>
-         *  <li> nTTr(n^r) -> CombinedPermutationGenerator </li>
-         *  <li> nPr -> PermutationGenerator </li>
-         *  <li> n! -> FactorialGenerator </li>
-         * </ul>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var CaseGenerator = (function () {
-            /* ---------------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------------- */
-            /**
-             * <p> Construct from size of N and R. </p>
-             *
-             * @param n Size of candidates.
-             * @param r Size of elements of each case.
-             */
-            function CaseGenerator(n, r) {
-                this.n_ = n;
-                this.r_ = r;
-            }
-            /* ---------------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------------- */
-            /**
-             * <p> Get size of all cases. </p>
-             *
-             * @return Get a number of the all cases.
-             */
-            CaseGenerator.prototype.size = function () {
-                return this.size_;
-            };
-            /**
-             * <p> Get size of the N. </p>
-             */
-            CaseGenerator.prototype.n = function () {
-                return this.n_;
-            };
-            /**
-             * <p> Get size of the R. </p>
-             */
-            CaseGenerator.prototype.r = function () {
-                return this.r_;
-            };
-            return CaseGenerator;
-        }());
-        library.CaseGenerator = CaseGenerator;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-/// <reference path="CaseGenerator.ts" />
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        /**
-         * <p> A combined-permutation case generator. </p>
-         * <p> <sub>n</sub>TT<sub>r</sub> </p>
-         *
-         * @inheritdoc
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var CombinedPermutationGenerator = (function (_super) {
-            __extends(CombinedPermutationGenerator, _super);
-            /* ---------------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------------- */
-            /**
-             * <p> Construct from size of N and R. </p>
-             *
-             * @param n Size of candidates.
-             * @param r Size of elements of each case.
-             */
-            function CombinedPermutationGenerator(n, r) {
-                _super.call(this, n, r);
-                this.size_ = Math.pow(n, r);
-                this.dividerArray = new Array();
-                for (var i = 0; i < r; i++) {
-                    var x = r - (i + 1);
-                    var val = Math.pow(n, x);
-                    this.dividerArray.push(val);
-                }
-            }
-            CombinedPermutationGenerator.prototype.at = function (index) {
-                var row = new Array();
-                for (var i = 0; i < this.r_; i++) {
-                    var val = Math.floor(index / this.dividerArray[i]) % this.n_;
-                    row.push(val);
-                }
-                return row;
-            };
-            return CombinedPermutationGenerator;
-        }(library.CaseGenerator));
-        library.CombinedPermutationGenerator = CombinedPermutationGenerator;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-/// <reference path="CaseGenerator.ts" />
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        /**
-         * <p> A permutation case generator. </p>
-         * <p> nPr </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         * @inheritdoc
-         */
-        var PermuationGenerator = (function (_super) {
-            __extends(PermuationGenerator, _super);
-            /* ---------------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------------- */
-            /**
-             * <p> Construct from size of N and R. </p>
-             *
-             * @param n Size of candidates.
-             * @param r Size of elements of each case.
-             */
-            function PermuationGenerator(n, r) {
-                _super.call(this, n, r);
-                this.size_ = n;
-                for (var i = n - 1; i > n - r; i--)
-                    this.size_ *= i;
-            }
-            /**
-             * @inheritdoc
-             */
-            PermuationGenerator.prototype.at = function (index) {
-                var atoms = new Array();
-                for (var i = 0; i < this.n_; i++)
-                    atoms.push(i);
-                var row = new Array();
-                for (var i = 0; i < this.r_; i++) {
-                    var item = index % atoms.length;
-                    index = Math.floor(index / atoms.length);
-                    row.push(atoms[item]);
-                    atoms.splice(item, 1);
-                }
-                return row;
-            };
-            return PermuationGenerator;
-        }(library.CaseGenerator));
-        library.PermuationGenerator = PermuationGenerator;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-/// <reference path="PermutationGenerator.ts" />
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        var FactorialGenerator = (function (_super) {
-            __extends(FactorialGenerator, _super);
-            /**
-             * Construct from factorial size N.
-             *
-             * @param n Factoria size N.
-             */
-            function FactorialGenerator(n) {
-                _super.call(this, n, n);
-            }
-            return FactorialGenerator;
-        }(library.PermuationGenerator));
-        library.FactorialGenerator = FactorialGenerator;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-/// <reference path="BasicEvent.ts" />
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        var ProgressEvent = (function (_super) {
-            __extends(ProgressEvent, _super);
-            function ProgressEvent(type, numerator, denominator) {
-                _super.call(this, type);
-                this.numerator_ = numerator;
-                this.denominator_ = denominator;
-            }
-            Object.defineProperty(ProgressEvent, "PROGRESS", {
-                get: function () { return "progress"; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ProgressEvent.prototype, "numerator", {
-                get: function () {
-                    return this.numerator_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ProgressEvent.prototype, "denominator", {
-                get: function () {
-                    return this.denominator_;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return ProgressEvent;
-        }(library.BasicEvent));
-        library.ProgressEvent = ProgressEvent;
-    })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
 /// <reference path="EntityArray.ts" />
 var samchon;
@@ -1379,7 +1495,84 @@ var samchon;
         protocol.ExternalSystemArray = ExternalSystemArray;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
-/// <referece path="Entity.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        /**
+         * <p> An entity, a standard data class. </p>
+         *
+         * <p> Entity is a class for standardization of expression method using on network I/O by XML. If
+         * Invoke is a standard message protocol of Samchon Framework which must be kept, Entity is a
+         * recommended semi-protocol of message for expressing a data class. Following the semi-protocol
+         * Entity is not imposed but encouraged. </p>
+         *
+         * <p> As we could get advantages from standardization of message for network I/O with Invoke,
+         * we can get additional advantage from standardizing expression method of data class with Entity.
+         * We do not need to know a part of network communication. Thus, with the Entity, we can only
+         * concentrate on entity's own logics and relationships between another entities. Entity does not
+         * need to how network communications are being done. </p>
+         *
+         * <p> I say repeatedly. Expression method of Entity is recommended, but not imposed. It's a semi
+         * protocol for network I/O but not a essential protocol must be kept. The expression method of
+         * Entity, using on network I/O, is expressed by XML string. </p>
+         *
+         * <p> If your own network system has a critical performance issue on communication data class,
+         * it would be better to using binary communication (with ByteArray).
+         * Don't worry about the problem! Invoke also provides methods for binary data (ByteArray). </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var Entity = (function () {
+            /**
+             * <p> Default Constructor. </p>
+             */
+            function Entity() {
+                //NOTHING
+            }
+            Entity.prototype.construct = function (xml) {
+                // MEMBER VARIABLES; ATOMIC
+                var propertyMap = xml.getPropertyMap();
+                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next())
+                    if (this.hasOwnProperty(v_it.first) == true)
+                        if (typeof this[v_it.first] == "number")
+                            this[v_it.first] = parseFloat(v_it.second);
+                        else if (typeof this[v_it.first] == "string")
+                            this[v_it.first] = v_it.second;
+                // MEMBER ENTITIES
+                //for (let e_it = xml.begin(); e_it.equal_to(xml.end()) != true; e_it = e_it.next())
+                //{
+                //	if (this.hasOwnProperty(e_it.first) == true 
+                //		&& e_it.second.size() == 1 
+                //		&& (this[e_it.first] instanceof Entity || this[e_it.first] instanceof EntityArray)
+                //		&& this[e_it.first] != null)
+                //	{
+                //		let entity: IEntity = this[e_it.first];
+                //		let e_xml: library.XML = e_it.second.at(0);
+                //		if (entity == null)
+                //			continue;
+                //		entity.construct(e_xml);
+                //	}
+                //}
+            };
+            Entity.prototype.key = function () { return ""; };
+            Entity.prototype.toXML = function () {
+                var xml = new samchon.library.XML();
+                xml.setTag(this.TAG());
+                // MEMBERS
+                for (var key in this)
+                    if (typeof key == "string" &&
+                        (typeof this[key] == "string" || typeof this[key] == "number")) {
+                        xml.setProperty(key, this[key]);
+                    }
+                return xml;
+            };
+            return Entity;
+        }());
+        protocol.Entity = Entity;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="Entity.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
@@ -2258,58 +2451,6 @@ var samchon;
     var library;
     (function (library) {
         /**
-         * <p> List of XML(s) having same tag. </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var XMLList = (function (_super) {
-            __extends(XMLList, _super);
-            /**
-             * <p> Default Constructor. </p>
-             */
-            function XMLList() {
-                _super.call(this);
-            }
-            XMLList.prototype.getTag = function () {
-                if (this.size() == 0)
-                    return null;
-                else
-                    return this.at(0).getTag();
-            };
-            /**
-             * <p> Convert XMLList to string. </p>
-             *
-             * @param level Level(depth) of the XMLList.
-             */
-            XMLList.prototype.toString = function (level) {
-                if (level === void 0) { level = 0; }
-                var str = "";
-                for (var i = 0; i < this.size(); i++)
-                    str += this.at(i).toString(level) + "\n";
-                return str;
-            };
-            /**
-             * <p> Convert XMLList to HTML string. </p>
-             *
-             * @param level Level(depth) of the XMLList.
-             */
-            XMLList.prototype.toHTML = function (level) {
-                if (level === void 0) { level = 0; }
-                var str = "";
-                for (var i = 0; i < this.size(); i++)
-                    str += this.at(i).toHTML(level) + "<br>\n";
-                return str;
-            };
-            return XMLList;
-        }(std.Vector));
-        library.XMLList = XMLList;
-    })(library = samchon.library || (samchon.library = {}));
-})(samchon || (samchon = {}));
-var samchon;
-(function (samchon) {
-    var library;
-    (function (library) {
-        /**
          * <p> XML is a class representing a tree structued xml objects. </p>
          * <p> The XML class provides methods and properties for working with XML objects. </p>
          *
@@ -2507,7 +2648,7 @@ var samchon;
                         if (this.has(xml.tag) == true)
                             xmlList = this.get(xml.tag);
                         else {
-                            xmlList = new library.XMLList();
+                            xmlList = new XMLList();
                             this.set(xml.tag, xmlList);
                         }
                         xmlList.push(xml);
@@ -2617,12 +2758,12 @@ var samchon;
                         if (this.has(xml.tag) == true)
                             this.get(xml.tag).push(xml);
                         else {
-                            var xmlList = new library.XMLList();
+                            var xmlList = new XMLList();
                             xmlList.push(xml);
                             this.set(xml.tag, xmlList);
                         }
                     }
-                    else if (items[i] instanceof library.XMLList) {
+                    else if (items[i] instanceof XMLList) {
                         var xmlList = items[i];
                         if (xmlList.empty() == true)
                             continue;
@@ -2902,6 +3043,52 @@ var samchon;
             return XML;
         }(std.HashMap));
         library.XML = XML;
+        /**
+         * <p> List of XML(s) having same tag. </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var XMLList = (function (_super) {
+            __extends(XMLList, _super);
+            /**
+             * <p> Default Constructor. </p>
+             */
+            function XMLList() {
+                _super.call(this);
+            }
+            XMLList.prototype.getTag = function () {
+                if (this.size() == 0)
+                    return null;
+                else
+                    return this.at(0).getTag();
+            };
+            /**
+             * <p> Convert XMLList to string. </p>
+             *
+             * @param level Level(depth) of the XMLList.
+             */
+            XMLList.prototype.toString = function (level) {
+                if (level === void 0) { level = 0; }
+                var str = "";
+                for (var i = 0; i < this.size(); i++)
+                    str += this.at(i).toString(level) + "\n";
+                return str;
+            };
+            /**
+             * <p> Convert XMLList to HTML string. </p>
+             *
+             * @param level Level(depth) of the XMLList.
+             */
+            XMLList.prototype.toHTML = function (level) {
+                if (level === void 0) { level = 0; }
+                var str = "";
+                for (var i = 0; i < this.size(); i++)
+                    str += this.at(i).toHTML(level) + "<br>\n";
+                return str;
+            };
+            return XMLList;
+        }(std.Vector));
+        library.XMLList = XMLList;
     })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
 /// <reference path="EntityArray.ts" />
