@@ -46,10 +46,6 @@ Temporary Items
 #	CPP: VISUAL STUDIO
 # ======================================================
 #IN NORMAL CASE
-[Rr]elease/
-[Dd]ebug/
-x86/
-x64/
 .vs/
 *.sdf
 *.opensdf
@@ -69,8 +65,7 @@ x64/
 *.unsuccessfulbuild
 ipch/
 
-!*.dll
-*.exe
+cpp/Packer/x64
 
 # ======================================================
 #	FLEX - FLASH BUILDER
