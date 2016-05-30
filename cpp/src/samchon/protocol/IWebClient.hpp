@@ -1,34 +1,68 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/protocol/IWebClientBase.hpp>
+#include <samchon/protocol/IClient.hpp>
 
+namespace boost
+{
+namespace system
+{
+	class error_code;
+};
+};
 namespace samchon
 {
 namespace protocol
 {
-	template<ENUM_DIRECTION _Direction>
-	class IWebClient
-		: public IWebClientBase
+		/**
+		 * @brief An interface for a web-client.
+		 *
+		 * @details
+		 * <p> IWebClient is a IClient following web-socket protocol. </p>
+		 *
+		 * \par [Inherited]
+		 *		@copydetails protocol::IClient
+		 */
+	class SAMCHON_FRAMEWORK_API IWebClient
+		: public virtual IClient
 	{
-	private:
-		typedef IWebClientBase super;
+	protected:
+		typedef IClient super;
 
 	public:
-		IWebClient()
-			: super()
-		{
-		};
+		/* -----------------------------------------------------------------------
+			CONSTRUCTORS
+		----------------------------------------------------------------------- */
+		/**
+		 * @brief Default Constructor.
+		 */
+		IWebClient();
 		virtual ~IWebClient() = default;
 
 	protected:
-		virtual auto DIRECTION() const -> ENUM_DIRECTION final
-		{
-			return _Direction;
-		};
-	};
+		virtual auto isServer() const -> bool;
 
-	SAMCHON_FRAMEWORK_EXTERN template class SAMCHON_FRAMEWORK_API IWebClient<SERVER>;
-	SAMCHON_FRAMEWORK_EXTERN template class SAMCHON_FRAMEWORK_API IWebClient<CLIENT>;
+	public:
+		/* -----------------------------------------------------------------------
+			LISTEN MESSAGE
+		----------------------------------------------------------------------- */
+		virtual void listen() override;
+
+	private:
+		auto listen_string(size_t) -> std::shared_ptr<Invoke>;
+		void listen_binary(size_t, std::shared_ptr<Invoke> &);
+
+		/* -----------------------------------------------------------------------
+			SEND MESSAGE
+		----------------------------------------------------------------------- */
+	public:
+		virtual void sendData(std::shared_ptr<Invoke>) override;
+
+	private:
+		void send_header(unsigned char, size_t);
+
+		void send_string(const std::string &);
+		void send_binary(const ByteArray &);
+	};
 };
 };

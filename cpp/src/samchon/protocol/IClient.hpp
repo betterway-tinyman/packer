@@ -67,16 +67,14 @@ namespace protocol
 		/**
 		 * @brief Buffer size of network I/O
 		 */
-		virtual auto BUFFER_SIZE() const->size_t;
-
-	private:
-
+		virtual auto BUFFER_SIZE() const -> size_t;
 
 	public:
 		/**
 		 * @brief Default Constructor
 		 */
 		IClient();
+
 		virtual ~IClient();
 
 		/**
@@ -112,8 +110,8 @@ namespace protocol
 		virtual void _replyData(std::shared_ptr<Invoke>);
 
 	private:
-		void handleString(ByteArray &, std::string &, std::shared_ptr<Invoke> &, size_t);
-		void handleBinary(ByteArray &, std::string &, std::shared_ptr<Invoke> &, size_t);
+		void handle_string(ByteArray &, std::string &, std::shared_ptr<Invoke> &, size_t);
+		void handle_binary(ByteArray &, std::string &, std::shared_ptr<Invoke> &, size_t);
 	};
 };
 };

@@ -80,7 +80,7 @@ namespace library
 		/**
 		 * @brief Get name
 		 */
-		auto getName() const -> std::string;
+		auto get_name() const -> std::string;
 
 		/**
 		 * @brief Get comment

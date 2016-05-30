@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 namespace samchon
 {
@@ -39,7 +38,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Event
+	class Event
 	{
 	public:
 		enum : int
@@ -68,18 +67,28 @@ namespace library
 		 * @param source Source of the event; who made the event
 		 * @param type Type of the event
 		 */
-		Event(EventDispatcher*, int);
+		Event(EventDispatcher *source, int type)
+		{
+			this->source = source;
+			this->type = type;
+		};
 		virtual ~Event() = default;
 
 		/**
 		 * @brief Get source of the Event
 		 */
-		auto getSource() const->EventDispatcher*;
+		auto getSource() const -> EventDispatcher*
+		{
+			return source;
+		};
 
 		/**
 		 * @brief Get type of the Event
 		 */
-		auto getType() const -> int;
+		auto getType() const -> int
+		{
+			return type;
+		};
 	};
 };
 };

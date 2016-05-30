@@ -1,9 +1,8 @@
 #pragma once
 #include <samchon/protocol/Entity.hpp>
 #include <samchon/protocol/IEntityGroup.hpp>
-#include <vector>
 
-#include <samchon/library/XML.hpp>
+#include <vector>
 #include <memory>
 
 namespace samchon
@@ -50,15 +49,16 @@ namespace protocol
 		: public virtual Entity, public std::vector<T>, //CLASSES
 		public virtual IEntityGroup //INTERFACE
 	{
-	protected:
-		typedef Entity super;
+	public:
+		typedef std::vector<T> container_type;
 		typedef T entity_type;
 
 	public:
-		/**
-		 * @brief Default Constructor
-		 */
-		EntityArray() {};
+		/* ------------------------------------------------------------------------------------
+			CONSTRUCTORS
+		------------------------------------------------------------------------------------ */
+		using container_type::container_type;
+
 		virtual ~EntityArray() = default;
 
 		/**
@@ -88,6 +88,111 @@ namespace protocol
 				at(i).construct(xmlList->at(i));
 		}
 
+		/* ------------------------------------------------------------------------------------
+			MODIFIERS
+		------------------------------------------------------------------------------------ */
+		using container_type::erase;
+
+		void erase(const std::string &key)
+		{
+			std::remove_if
+			(
+				begin(), end()
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity.key() == key;
+				}
+			);
+		};
+
+		/* ------------------------------------------------------------------------------------
+			GETTERS
+		------------------------------------------------------------------------------------ */
+		/**
+		 * @brief Indicates whether a container has an object having the specified identifier. </p>
+		 *
+		 * @param key An identifier of an Entity
+		 * @return If there's the object then true, otherwise false
+		 */
+		auto has(const std::string &key) const -> bool
+		{
+			return std::any_of
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity.key() == key;
+				}
+			);
+		};
+
+		/**
+		 * @brief Count elements with a specific key.
+		 * @details Searches the container for elements whose key is <i>key</i> and returns the number of elements found.
+		 *
+		 * @return The number of elements in the container with a <i>key</i>.
+		 */
+		auto count(const std::string &key) const -> size_t
+		{
+			return std::count_if
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity.key() == key;
+				}
+			);
+		};
+
+		/**
+		 * @brief Access the element by specified identifier(key).
+		 *
+		 * @param key the identifier of the element wants to access
+		 * @return The element having the key, or throw exception if there is none.
+		 */
+		auto get(const std::string &key) -> typename container_type::value_type&
+		{
+			auto it = std::find_if
+				(
+					begin(), end(),
+					[key](const container_type::value_type &entity) -> bool
+					{
+						return entity.key() == key;
+					}
+				);
+
+			if (it == end())
+				throw std::out_of_range("out of range");
+
+			return *it;
+		};
+
+		/**
+		 * @brief Access the const element by specified identifier(key).
+		 *
+		 * @param key the identifier of the element wants to access
+		 * @return The const element having the key, or throw exception if there is none.
+		 */
+		auto get(const std::string &key) const -> const typename container_type::value_type&
+		{
+			auto it = std::find_if
+				(
+					begin(), end(),
+					[key](const container_type::value_type &entity) -> bool
+					{
+						return entity.key() == key;
+					}
+				);
+
+			if (it == end())
+				throw std::out_of_range("out of range");
+
+			return *it;
+		};
+
+		/* ------------------------------------------------------------------------------------
+			EXPORTERS
+		------------------------------------------------------------------------------------ */
 		/**
 		 * @brief Get an XML object represents the EntityArray
 		 *

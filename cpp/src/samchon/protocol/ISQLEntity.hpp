@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <string>
 #include <memory>
@@ -29,13 +28,9 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API ISQLEntity
+	class ISQLEntity
 	{
 	public:
-		/**
-		 * @brief Default Constructor.
-		 */
-		ISQLEntity();
 		virtual ~ISQLEntity() = default;
 
 		/**
@@ -50,7 +45,7 @@ namespace protocol
 		 *
 		 * @param stmt SQLStatement storing data of the Entity
 		 */
-		virtual void load(std::shared_ptr<library::SQLStatement> stmt);
+		virtual void load(std::shared_ptr<library::SQLStatement> stmt) {};
 
 		/**
 		 * @brief Archive data of entity to DB
@@ -63,7 +58,7 @@ namespace protocol
 		 *
 		 * @param stmt SQLStatement would store data of the Entity
 		 */
-		virtual void archive(std::shared_ptr<library::SQLStatement> stmt);
+		virtual void archive(std::shared_ptr<library::SQLStatement> stmt) {};
 
 		/**
 		 * @brief Get a sql-statement string represents the entity.
@@ -77,7 +72,10 @@ namespace protocol
 		 *
 		 * @return SQL storing record(s) to temporary table of a Procedure
 		 */
-		virtual auto toSQL() const->std::string;
+		virtual auto toSQL() const -> std::string
+		{
+			return "";
+		};
 	};
 };
 };

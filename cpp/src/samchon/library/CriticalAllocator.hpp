@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <samchon/library/RWMutex.hpp>
 
@@ -56,7 +57,7 @@ namespace library
 		/**
 		 * @brief A rw_mutex for handling concurrency
 		 */
-		RWMutex mtx;
+		RWMutex rw_mutex;
 
 	public:
 		/**
@@ -69,11 +70,11 @@ namespace library
 		 */
 		auto getMutex() -> RWMutex&
 		{
-			return mtx;
+			return rw_mutex;
 		};
 		auto getMutex() const -> const RWMutex&
 		{
-			return mtx;
+			return rw_mutex;
 		};
 
 		/* ---------------------------------------------------------------
@@ -103,7 +104,7 @@ namespace library
 		template<class _U, class... _Args>
 		void construct(_U *ptr, _Args&&... args)
 		{
-			UniqueWriteLock uk(mtx);
+			UniqueWriteLock uk(rw_mutex);
 
 			super::construct(ptr, args);
 		};
@@ -128,7 +129,7 @@ namespace library
 		template<class _U>
 		void destroy(_U *ptr)
 		{
-			UniqueWriteLock uk(mtx);
+			UniqueWriteLock uk(rw_mutex);
 
 			super::destroy(ptr);
 		};
@@ -167,7 +168,7 @@ namespace library
 		 */
 		auto allocate(size_type n, std::allocator<void>::const_pointer hint = NULL) -> pointer
 		{
-			UniqueWriteLock uk(mtx);
+			UniqueWriteLock uk(rw_mutex);
 
 			super::allocate(n, hint);
 		};
@@ -195,7 +196,7 @@ namespace library
 		 */
 		void deallocate(pointer ptr, size_type size)
 		{
-			UniqueWriteLock uk(mtx);
+			UniqueWriteLock uk(rw_mutex);
 
 			super::deallocate(ptr, size);
 		};

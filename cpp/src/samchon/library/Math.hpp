@@ -1,6 +1,7 @@
 #pragma once
-#include <samchon/API.hpp>
 
+#include <cmath>
+#include <random>
 #include <map>
 #include <samchon/IndexPair.hpp>
 
@@ -20,7 +21,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Math
+	class Math
 	{
 	public:
 		/* ========================================================
@@ -33,7 +34,10 @@ namespace library
 		 * A mathematical constant for the base of natural logarithms,
 		 * expressed as e. The approximate value of e is 2.71828182845905.
 		 */
-		static const double E;
+		static auto E() -> double
+		{
+			return exp(1.0);
+		};
 
 		/**
 		 * @brief ¥ð, Number Pi
@@ -42,7 +46,10 @@ namespace library
 		 * A mathematical constant for the ratio of the circumference of a circle to
 		 * its diameter, expressed as pi, with a value of 3.141592653589793.
 		 */
-		static const double PI;
+		static auto PI() -> double
+		{
+			return 3.141592653589793;
+		}
 
 		/**
 		 * @brief log<sub>e</sub>2
@@ -51,7 +58,10 @@ namespace library
 		 * A mathematical constant for the natural logarithm of 2, expressed as
 		 * log<sub>e</sub>2, with an approximate value of 0.6931471805599453.
 		 */
-		static const double LN2;
+		static auto LN2() -> double
+		{
+			return 1.0 / log2(E());
+		}
 
 		/**
 		 * @brief log<sub>e</sub>10
@@ -60,7 +70,10 @@ namespace library
 		 * A mathematical constant for the natural logarithm of 10, expressed as
 		 * log<sub>e</sub>10, with an approximate value of 2.302585092994046.
 		 */
-		static const double LN10;
+		static auto LN10() -> double
+		{
+			return 1.0 / log10(E());
+		}
 
 		/**
 		 * @brief log<sub>2</sub>e
@@ -69,7 +82,10 @@ namespace library
 		 * A mathematical constant for the base-2 logarithm of the constant e,
 		 * expressed as log<sub>2</sub>e, with an approximate value of 1.442695040888963387.
 		 */
-		static const double LOG2E;
+		static auto LOG2E() -> double
+		{
+			return log2(E());
+		}
 
 		/**
 		 * @brief log<sub>10</sub>e
@@ -80,8 +96,10 @@ namespace library
 		 * The Math.log() method computes the natural logarithm of a number.
 		 * Multiply the result of Math.log() by Math.LOG10E to obtain the base-10 logarithm.
 		 */
-		static const double LOG10E;
-
+		static auto LOG10E() -> double
+		{
+			return log10(E());
+		}
 
 		/**
 		 * @brief Squart root of 0.5
@@ -90,7 +108,10 @@ namespace library
 		 * A mathematical constant for the square root of one-half,
 		 * with an approximate value of 0.7071067811865476.
 		 */
-		static const double SQRT1_2;
+		static auto SQRT1_2() -> double
+		{
+			return sqrt(.5);
+		}
 
 		/**
 		 * @brief Squart root of 2
@@ -99,7 +120,10 @@ namespace library
 		 * A mathematical constant for the square root of 2,
 		 * with an approximate value of 1.4142135623730951.
 		 */
-		static const double SQRT2;
+		static auto SQRT2() -> double
+		{
+			return sqrt(2.0);
+		}
 
 		/* ========================================================
 			RANDOM
@@ -110,7 +134,13 @@ namespace library
 		 * @details Returns a random value following uniform distribution
 		 * @return The random value
 		 */
-		static auto random() -> double;
+		static auto random() -> double
+		{
+			static std::random_device device;
+			static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+
+			return distribution(device);
+		};
 
 		/* ========================================================
 			PIE
@@ -118,12 +148,18 @@ namespace library
 		/**
 		 * @brief Convert degree to radian
 		 */
-		static auto degree_to_radian(double) -> double;
+		static auto degree_to_radian(double val) -> double
+		{
+			return val * PI() / 180.0;
+		}
 
 		/**
 		 * @brief Convert radian to degree
 		 */
-		static auto radian_to_degree(double) -> double;
+		static auto radian_to_degree(double val) -> double
+		{
+			return val * 180.0 / PI();
+		}
 
 		/* ========================================================
 			STATISTICS

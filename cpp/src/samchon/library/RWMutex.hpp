@@ -1,12 +1,9 @@
 #pragma once
-#include <samchon/API.hpp>
 
-namespace std
-{
-	template <typename T> struct atomic;
-	class condition_variable;
-	class mutex;
-};
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
+
 namespace samchon
 {
 namespace library
@@ -30,25 +27,27 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API RWMutex
+	class RWMutex
 	{
 	private:
 		//Status variables
-		std::atomic<size_t> *readingCount;
-		std::atomic<bool> *isWriting;
-		std::mutex *minusMtx;
+		size_t reading;
+		bool writing;
 
 		//Lockers
-		std::condition_variable *cv;
-		std::mutex *readMtx;
-		std::mutex *writeMtx;
+		std::condition_variable cv;
+		std::mutex read_mtx;
+		std::mutex write_mtx;
 
 	public:
 		/**
 		 * @brief Default Constructor
 		 */
-		RWMutex();
-		~RWMutex();
+		RWMutex()
+		{
+			reading = 0;
+			writing = false;
+		};
 
 		/**
 		 * @brief Lock on read
@@ -62,7 +61,15 @@ namespace library
 		 *
 		 * @warning You've to call read_unlock when the reading work is terminated.
 		 */
-		void readLock() const;
+		void readLock() const
+		{
+			std::unique_lock<std::mutex> uk((std::mutex&)read_mtx);
+
+			while (writing == true)
+				((std::condition_variable&)cv).wait(uk);
+
+			((size_t&)reading)++;
+		};
 
 		/**
 		 * @brief Unlock of read
@@ -73,7 +80,14 @@ namespace library
 		 * <p> When write_lock had done after read_lock, it continues by read_unlock
 		 * if the reading count was 1 (read_unlock makes the count to be zero). </p>
 		 */
-		void readUnlock() const;
+		void readUnlock() const
+		{
+			std::unique_lock<std::mutex> uk((std::mutex&)read_mtx);
+
+			//차감 전 이미 0 (과도한 readUnlock 수행) 은 안 됨
+			if (reading != 0 && --((size_t&)reading) == 0)
+				((std::condition_variable&)cv).notify_all();
+		};
 
 		/**
 		 * @brief Lock on writing
@@ -88,12 +102,27 @@ namespace library
 		 *
 		 * @note You've to call write_unlock when writing work was terminated.
 		 */
-		void writeLock();
+		void writeLock()
+		{
+			std::unique_lock<std::mutex> uk(read_mtx);
+			while (reading > 0)
+				cv.wait(uk);
+			uk.unlock();
+
+			write_mtx.lock();
+			writing = true;
+		};
 
 		/**
 		 * @brief Unlock on writing
 		 */
-		void writeUnlock();
+		void writeUnlock()
+		{
+			writing = false;
+			write_mtx.unlock();
+
+			cv.notify_all();
+		};
 	};
 };
 };

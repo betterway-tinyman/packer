@@ -1,12 +1,11 @@
 #pragma once
-#include <samchon/API.hpp>
+
+#include <samchon/library/RWMutex.hpp>
 
 namespace samchon
 {
 namespace library
 {
-	class RWMutex;
-
 	/**
 	 * @brief Unique lock for writing
 	 *
@@ -38,18 +37,18 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API UniqueWriteLock
+	class UniqueWriteLock
 	{
 	private:
 		/**
 		 * @brief Managed mutex
 		 */
-		RWMutex *mtx;
+		RWMutex *rw_mutex;
 
 		/**
 		 * @brief Whether the mutex was locked by UniqueLock
 		 */
-		bool isLocked;
+		bool locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -58,10 +57,17 @@ namespace library
 		/**
 		 * @brief Construct from mutex
 		 *
-		 * @param mtx Mutex to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param rw_mutex Mutex to manage
+		 * @param lock Whether to lock directly or not
 		 */
-		UniqueWriteLock(RWMutex &, bool = true);
+		UniqueWriteLock(RWMutex &rw_mutex, bool lock = true)
+		{
+			this->rw_mutex = &rw_mutex;
+			this->locked = false;
+
+			if (lock == true)
+				this->lock();
+		};
 
 		/**
 		 * @brief Prohibited Copy Constructor
@@ -78,9 +84,18 @@ namespace library
 		/**
 		 * @brief Move Constructor
 		 *
-		 * @param An object to move
+		 * @param obj An object to move
 		 */
-		UniqueWriteLock(UniqueWriteLock&&);
+		UniqueWriteLock(UniqueWriteLock &&obj)
+		{
+			//MOVE
+			this->rw_mutex = obj.rw_mutex;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.rw_mutex = nullptr;
+			obj.locked = false;
+		};
 
 		/**
 		 * @brief Destructor
@@ -88,7 +103,11 @@ namespace library
 		 * @details
 		 * If write lock has done by the UniqueLock, unlock it
 		 */
-		~UniqueWriteLock();
+		~UniqueWriteLock()
+		{
+			if (locked == true)
+				rw_mutex->writeUnlock();
+		};
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -96,12 +115,26 @@ namespace library
 		/**
 		 * @copydoc RWMutex::writeLock()
 		 */
-		void lock();
+		void lock()
+		{
+			if (locked == true)
+				return;
+
+			rw_mutex->writeLock();
+			locked = true;
+		};
 
 		/**
 		 * @copydoc RWMutex::writeUnlock()
 		 */
-		void unlock();
+		void unlock()
+		{
+			if (locked == false)
+				return;
+
+			rw_mutex->writeUnlock();
+			locked = false;
+		};
 
 		/**
 		 * @copydoc RWMutex::tryLock()

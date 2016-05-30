@@ -1,4 +1,5 @@
 #pragma once
+
 #include <utility>
 
 namespace samchon
@@ -78,7 +79,7 @@ namespace samchon
 		 *
 		 * @return Index of the pair
 		 */
-		auto getIndex() const -> size_t
+		auto get_index() const -> size_t
 		{
 			return first;
 		};

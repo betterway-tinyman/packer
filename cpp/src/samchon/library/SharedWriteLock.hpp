@@ -1,17 +1,12 @@
 #pragma once
-#include <samchon/API.hpp>
 
-namespace std
-{
-	template <typename T>
-	struct atomic;
-};
+#include <atomic>
+#include <samchon/library/RWMutex.hpp>
+
 namespace samchon
 {
 namespace library
 {
-	class RWMutex;
-
 	/**
 	 * @brief Shared lock from a RWMutex.
 	 *
@@ -47,13 +42,13 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API SharedWriteLock
+	class SharedWriteLock
 	{
 	private:
 		/**
 		 * @brief Managed RWMutex
 		 */
-		RWMutex *semaphore;
+		RWMutex *rw_mutex;
 
 		/**
 		 * @brief Referencing count sharing same RWMutex.
@@ -63,7 +58,7 @@ namespace library
 		/**
 		 * @brief Whether the mutex was locked by SharedWriteLock
 		 */
-		std::atomic<bool> *isLocked;
+		std::atomic<bool> *locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -72,25 +67,61 @@ namespace library
 		/**
 		 * @brief Construct from RWMutex
 		 *
-		 * @param semaphore RWMutex to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param rw_mutex RWMutex to manage
+		 * @param lock Whether to lock directly or not
 		 */
-		SharedWriteLock(RWMutex &, bool = true);
+		SharedWriteLock(RWMutex &rw_mutex, bool lock = true)
+		{
+			this->rw_mutex = &rw_mutex;
+			this->reference = new std::atomic<size_t>(0);
+			this->locked = new std::atomic<bool>(false);
+
+			if (lock == true)
+				this->lock();
+		};
 
 		/**
 		 * @brief Copy Constructor
 		 */
-		SharedWriteLock(const SharedWriteLock &);
+		SharedWriteLock(const SharedWriteLock &obj)
+		{
+			obj.reference->operator++();
+
+			this->rw_mutex = obj.rw_mutex;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+		};
 
 		/**
 		 * @brief Move Constructor
 		 */
-		SharedWriteLock(SharedWriteLock&&);
+		SharedWriteLock(SharedWriteLock &&obj)
+		{
+			//MOVE
+			this->rw_mutex = obj.rw_mutex;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.rw_mutex = nullptr;
+			obj.reference = nullptr;
+			obj.locked = nullptr;
+		};
 
 		/**
 		 * @brief Default Destructor
 		 */
-		~SharedWriteLock();
+		~SharedWriteLock()
+		{
+			if (reference == nullptr || reference->operator--() > 0)
+				return;
+
+			if (locked->load() == true)
+				rw_mutex->writeUnlock();
+
+			delete reference;
+			delete locked;
+		};
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -98,12 +129,26 @@ namespace library
 		/**
 		 * @copydoc RWMutex::writeLock()
 		 */
-		void lock();
+		void lock()
+		{
+			if (locked->load() == true)
+				return;
+
+			rw_mutex->writeLock();
+			locked->store(true);
+		};
 
 		/**
 		 * @copydoc RWMutex::writeUnlock()
 		 */
-		void unlock();
+		void unlock()
+		{
+			if (locked->load() == false)
+				return;
+
+			rw_mutex->writeUnlock();
+			locked->store(false);
+		};
 
 		/**
 		 * @copydoc RWMutex::tryAcquire()

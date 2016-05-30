@@ -1,7 +1,7 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/Map.hpp>
+#include <samchon/TreeMap.hpp>
 #include <samchon/SmartPointer.hpp>
 #include <samchon/protocol/IProtocol.hpp>
 
@@ -54,14 +54,14 @@ namespace service
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API User
-		: private Map<size_t, SmartPointer<Client>>,
+		: private TreeMap<size_t, SmartPointer<Client>>,
 		public IProtocol
 	{
 		friend class Server;
 		friend class Client;
 
 	private:
-		typedef Map<size_t, SmartPointer<Client>> super;
+		typedef TreeMap<size_t, SmartPointer<Client>> super;
 
 	private:
 		/* =========================================================
@@ -151,7 +151,7 @@ namespace service
 		 *		<td>-1</td>
 		 *		<td>
 		 *			<p> Banned member </p>
-		 *			<p> The -1 level member is banished by manager or policy </p>
+		 *			<p> The -1 level member is banished by manager or policy_ </p>
 		 *		</td>
 		 *	<tr>
 		 *		<td>0</td>
@@ -165,14 +165,14 @@ namespace service
 		 *		<td>
 		 *			<p> Unconfired member </p>
 		 *			<p> The member have applied to the join,
-		 *			but the join was not confirmed by manager or policy yet. </p>
+		 *			but the join was not confirmed by manager or policy_ yet. </p>
 		 *		</td>
 		 *	</tr>
 		 *	<tr>
 		 *		<td>2</td>
 		 *		<td>
 		 *			<p> Confirmed member </p>
-		 *			<p> The member have joined and have already confirmed by manager or policy </p>
+		 *			<p> The member have joined and have already confirmed by manager or policy_ </p>
 		 *		</td>
 		 *	</tr>
 		 *	<tr>

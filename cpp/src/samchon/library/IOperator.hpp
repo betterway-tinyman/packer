@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 /**
  * @brief Macro writing writing inline method of comparison operators

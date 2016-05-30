@@ -51,7 +51,7 @@ namespace master
 		/**
 		 * @brief A structure of parameters for genetic algorithm
 		 */
-		struct library::GAParameters gaParameters;
+		library::GAParameters gaParameters;
 
 	public:
 		/* ------------------------------------------------------------------

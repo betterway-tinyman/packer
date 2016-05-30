@@ -80,7 +80,7 @@ namespace master
 		/**
 		 * @brief Get index.
 		 */
-		inline auto getIndex() const->size_t;
+		inline auto get_index() const->size_t;
 
 		/**
 		 * @brief Get size.

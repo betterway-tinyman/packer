@@ -1,6 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/protocol/Entity.hpp>
 
 #include <sstream>
@@ -55,7 +53,7 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API InvokeParameter
+	class InvokeParameter
 		: public virtual Entity
 	{
 		friend class Invoke;
@@ -93,7 +91,7 @@ namespace protocol
 		/**
 		 * @brief A binary value if the type is "ByteArray"
 		 */
-		ByteArray byteArray;
+		ByteArray byte_array;
 
 	public:
 		/* ----------------------------------------------------------
@@ -102,7 +100,9 @@ namespace protocol
 		/**
 		 * @brief Default Constructor
 		 */
-		InvokeParameter();
+		InvokeParameter() : super()
+		{
+		};
 
 		/**
 		 * @brief Construct from arguments
@@ -118,7 +118,13 @@ namespace protocol
 		 * @param type Type of value in the InvokeParameter
 		 * @param value A value capsuled by a string
 		 */
-		InvokeParameter(const std::string &, const std::string &, const std::string &);
+		InvokeParameter(const std::string &name, const std::string &type, const std::string &val)
+			: super()
+		{
+			this->name = name;
+			this->type = type;
+			this->str = val;
+		};
 
 		/**
 		 * @brief Construct with its name and a value
@@ -162,25 +168,69 @@ namespace protocol
 			construct_by_varadic_template(val);
 		};
 
-		InvokeParameter(const std::string &, const char*);
+		InvokeParameter(const std::string &name, const char *ptr)
+		{
+			this->name = name;
+			this->type = "string";
+
+			this->str = ptr;
+		};
 
 		//MOVE CONSTRUCTORS
 		/**
 		 * @brief Construct from the name and a moved string
 		 */
-		InvokeParameter(const std::string &, std::string &&);
+		InvokeParameter(const std::string &name, std::string &&str)
+		{
+			this->name = name;
+			this->type = "string";
+
+			this->str = move(str);
+		};
 
 		/**
 		 * @brief Construct from name and a moved ByteArray
 		 */
-		InvokeParameter(const std::string &, ByteArray &&);
+		InvokeParameter(const std::string &name, ByteArray &&byte_array)
+		{
+			this->name = name;
+			this->type = "ByteArray";
+
+			this->byte_array = move(byte_array);
+		};
 
 		virtual ~InvokeParameter() = default;
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			if (xml->hasProperty("name") == true)
+				this->name = xml->getProperty("name");
+			else
+				this->name = "";
 
-		auto reservedByteArraySize() const->size_t;
-		void setByteArray(ByteArray &&);
+			this->type = xml->getProperty("type");
+
+			if (type == "XML")
+				this->xml = xml->begin()->second->at(0);
+			else if (type == "ByteArray")
+			{
+				size_t size = xml->getValue<size_t>();
+
+				byte_array.reserve(size);
+			}
+			else
+				this->str = xml->getValue();
+		};
+
+		auto byteArrayCapacity() const -> size_t
+		{
+			return byte_array.capacity();
+		};
+
+		void setByteArray(ByteArray &&ba)
+		{
+			byte_array = move(ba);
+		};
 
 	protected:
 		template <typename T>
@@ -203,10 +253,10 @@ namespace protocol
 			this->type = "string";
 			this->str = wstr.str();
 		};
-		template<> void construct_by_varadic_template(const ByteArray &byteArray)
+		template<> void construct_by_varadic_template(const ByteArray &byte_array)
 		{
 			this->type = "ByteArray";
-			this->byteArray = byteArray;
+			this->byte_array = byte_array;
 		};
 
 		template<> void construct_by_varadic_template(const std::shared_ptr<library::XML> &xml)
@@ -219,17 +269,26 @@ namespace protocol
 		/* ----------------------------------------------------------
 			GETTERS
 		---------------------------------------------------------- */
-		virtual auto key() const->std::string override;
+		virtual auto key() const -> std::string override
+		{
+			return name;
+		};
 
 		/**
 		 * @brief Get name
 		 */
-		auto getName() const->std::string;
+		auto get_name() const->std::string
+		{
+			return name;
+		};
 
 		/**
 		 * @brief Get type
 		 */
-		auto getType() const->std::string;
+		auto getType() const->std::string
+		{
+			return type;
+		};
 
 		/**
 		 * @brief Get value
@@ -238,13 +297,9 @@ namespace protocol
 		 */
 		template<typename T> auto getValue() const -> T
 		{
-			std::stringstream sstream;
-			sstream << this->str;
+			double val = std::stod(str);
 
-			T val;
-			sstream >> val;
-
-			return val;
+			return (T)val;
 		};
 		template<> auto getValue() const -> std::string
 		{
@@ -260,14 +315,17 @@ namespace protocol
 		};
 		template<> auto getValue() const -> ByteArray
 		{
-			return byteArray;
+			return byte_array;
 		};
 
 		/**
 		 * @brief Get value as XML object
 		 * @details Same with getValue< std::shared_ptr<library::XML> >();
 		 */
-		auto getValueAsXML() const->std::shared_ptr<library::XML>;
+		auto getValueAsXML() const -> std::shared_ptr<library::XML>
+		{
+			return xml;
+		};
 
 		/**
 		 * @brief Reference value
@@ -281,7 +339,7 @@ namespace protocol
 		};
 		template<> auto referValue() const -> const ByteArray&
 		{
-			return byteArray;
+			return byte_array;
 		};
 
 		/**
@@ -289,28 +347,42 @@ namespace protocol
 		 *
 		 * @tparam _Ty Type of value to move
 		 */
-		template <typename T> auto moveValue()->T;
+		template <typename T> auto moveValue() -> T;
 		template<> auto moveValue() -> std::string
 		{
 			return move(str);
 		};
 		template<> auto moveValue() -> ByteArray
 		{
-			return move(byteArray);
+			return move(byte_array);
 		};
 
 	public:
 		/* ----------------------------------------------------------
 			EXPORTERS
 		---------------------------------------------------------- */
-		virtual auto TAG() const->std::string override;
+		virtual auto TAG() const -> std::string override
+		{
+			return "parameter";
+		};
 
-		virtual auto toXML() const->std::shared_ptr<library::XML> override;
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override
+		{
+			std::shared_ptr<library::XML> &xml = super::toXML();
 
-		/**
-		 * @brief Get a string of sql statement used to archive history log
-		 */
-		auto toSQL() const->std::string;
+			if (name.empty() == false)
+				xml->setProperty("name", name);
+			xml->setProperty("type", type);
+
+			if (type == "XML")
+				xml->push_back(this->xml);
+			else if (type == "ByteArray")
+				xml->setValue(byte_array.size());
+			else
+				xml->setValue(str);
+
+			return xml;
+		};
 	};
 };
 };

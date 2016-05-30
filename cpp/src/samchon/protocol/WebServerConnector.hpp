@@ -19,11 +19,11 @@ namespace protocol
 	 */
 	class SAMCHON_FRAMEWORK_API WebServerConnector
 		: public ServerConnector,
-		public virtual IWebClient<CLIENT>
+		public virtual IWebClient
 	{
 	private:
 		typedef ServerConnector super;
-		typedef IWebClient<CLIENT> web_super;
+		typedef IWebClient web_super;
 
 	public:
 		/**
@@ -36,6 +36,16 @@ namespace protocol
 		 * @brief Connect to a server following web-socket protoocol.
 		 */
 		virtual void connect() override;
+
+		virtual auto getPath() const -> std::string = 0;
+
+		virtual auto getSessionID() const -> std::string = 0;
+
+	protected:
+		virtual auto isServer() const -> bool;
+
+	private:
+		void handshake();
 	};
 };
 };

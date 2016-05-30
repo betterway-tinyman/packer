@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 namespace samchon
 {
@@ -21,7 +20,7 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API IEntityChain
+	class IEntityChain
 	{
 	protected:
 		/**
@@ -35,7 +34,10 @@ namespace protocol
 		 *
 		 * @param entity A related entity.
 		 */
-		IEntityChain(Entity*);
+		IEntityChain(Entity *entity) 
+		{
+			entity = this->entity;
+		};
 		virtual ~IEntityChain() = default;
 	};
 };

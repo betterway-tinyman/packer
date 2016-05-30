@@ -1,6 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/library/PermutationGenerator.hpp>
 
 namespace samchon
@@ -18,7 +16,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API FactorialGenerator
+	class FactorialGenerator
 		: public PermutationGenerator
 	{
 	private:
@@ -30,7 +28,10 @@ namespace library
 		 *
 		 * @param n Size of elements of each case to be arranged.
 		 */
-		FactorialGenerator(size_t size);
+		FactorialGenerator(size_t size)
+			: super(size, size)
+		{
+		};
 		virtual ~FactorialGenerator() = default;
 	};
 };

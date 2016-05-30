@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <vector>
 
@@ -22,7 +21,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API CaseGenerator
+	class CaseGenerator
 	{
 	protected:
 		/**
@@ -40,8 +39,6 @@ namespace library
 		 */
 		size_t size_;
 
-		std::vector<size_t> dividerArray;
-
 	public:
 		/* ----------------------------------------------------
 			CONSTRUCTORS
@@ -52,7 +49,11 @@ namespace library
 		 * @param n Size of candidates
 		 * @param r Size of elements of each case
 		 */
-		CaseGenerator(size_t n, size_t r);
+		CaseGenerator(size_t n, size_t r)
+		{
+			this->n_ = n;
+			this->r_ = r;
+		};
 		virtual ~CaseGenerator() = default;
 
 		/* ----------------------------------------------------
@@ -63,7 +64,10 @@ namespace library
 		 *
 		 * @return Get a number of the all cases
 		 */
-		auto size() const->size_t;
+		auto size() const -> size_t
+		{
+			return size_;
+		};
 
 		/**
 		 * @brief Get x'th case
@@ -75,17 +79,29 @@ namespace library
 		/**
 		 * @copy CaseGenerator::operator[]()
 		 */
-		auto at(size_t) const->std::vector<size_t>;
+		auto at(size_t index) const -> std::vector<size_t>
+		{
+			if (index > this->size())
+				throw std::out_of_range("index number overs number of cases.");
+
+			return operator[](index);
+		};
 
 		/**
 		 * @brief Get size of the N
 		 */
-		auto n() const->size_t;
+		auto n() const -> size_t
+		{
+			return n_;
+		};
 
 		/**
 		 * @brief Get size of the R
 		 */
-		auto r() const->size_t;
+		auto r() const -> size_t
+		{
+			return r_;
+		};
 
 	public:
 		/* ----------------------------------------------------
@@ -97,7 +113,15 @@ namespace library
 		 *
 		 * @return A matrix containing all cases.
 		 */
-		auto toMatrix() const->std::vector<std::vector<size_t>>;
+		auto toMatrix() const -> std::vector<std::vector<size_t>>
+		{
+			std::vector<std::vector<size_t>> matrix(size_, std::vector<std::size_t>(r_, 0));
+
+			for (size_t i = 0; i < size_; i++)
+				matrix[i] = operator[](i);
+
+			return matrix;
+		};
 	};
 };
 };

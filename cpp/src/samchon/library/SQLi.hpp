@@ -64,11 +64,6 @@ namespace library
 		 */
 		int port;
 
-		/**
-		 *
-		 */
-		virtual auto getErrorMessage(short type) const->std::string;
-
 	private:
 		/**
 		 * @brief Handler of DB-connector
@@ -85,6 +80,15 @@ namespace library
 		 */
 		std::mutex stmtMutex;
 
+		/**
+		 * @brief Had connected to DBMS.
+		 *
+		 * @details 
+		 * #connected is a flag variable for connection to DBMS. However, it doesn't mean the real-time
+		 * status. #connected only stores whether a connection was succeeded or not.
+		 */
+		bool connected;
+
 	public:
 		/**
 		 * @brief Construct from driver name and port
@@ -93,6 +97,7 @@ namespace library
 		 * @param port Port number of DBMS
 		 */
 		SQLi(const std::string &driver, int port);
+
 		virtual ~SQLi();
 
 		/**
@@ -116,6 +121,8 @@ namespace library
 		 */
 		virtual void disconnect();
 
+		auto isConnected() const -> bool;
+
 		/**
 		 * @brief Factory method for creating SQLStatement
 		 *
@@ -125,7 +132,15 @@ namespace library
 		 *
 		 * @return A SQLStatement matched for the domain SQLi
 		 */
-		virtual auto createStatement()->std::shared_ptr<SQLStatement>;
+		virtual auto createStatement() -> std::shared_ptr<SQLStatement>;
+
+	protected:
+		/**
+		 * @brief Get error message. 
+		 * 
+		 * @details Gets error message for throwing exception.
+		 */
+		virtual auto getErrorMessage(short type) const -> std::string;
 	};
 };
 };

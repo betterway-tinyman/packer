@@ -3,7 +3,7 @@
 
 #include <samchon/protocol/Entity.hpp>
 
-#include <samchon/library/Datetime.hpp>
+#include <samchon/library/Date.hpp>
 
 namespace samchon
 {
@@ -63,24 +63,24 @@ namespace protocol
 		 *
 		 * @details
 		 * <p> Means start time of a process handling the Invoke message. The start time not only
-		 * has ordinary arguments represented Datetime (year to seconds), but also has very precise
+		 * has ordinary arguments represented Date (year to seconds), but also has very precise
 		 * values under seconds, which is expressed as nano seconds (10^-9). </p>
 		 *
 		 * <p> The precise start time will be used to calculate elapsed time with end time. </p>
 		 */
-		library::Datetime startTime;
+		library::Date startTime;
 
 		/**
 		 * @brief End time of the history
 		 *
 		 * @details
 		 * <p> Means end time of a process handling the Invoke message. The end time not only
-		 * has ordinary arguments represented Datetime (year to seconds), but also has very precise
+		 * has ordinary arguments represented Date (year to seconds), but also has very precise
 		 * values under seconds, which is expressed as nano seconds (10^-9). </p>
 		 *
 		 * <p> The precise end time will be used to calculate elapsed time with start time. </p>
 		 */
-		library::Datetime endTime;
+		library::Date endTime;
 
 	public:
 		/* -----------------------------------------------------------------
@@ -132,12 +132,12 @@ namespace protocol
 		/**
 		 * @brief Get start time.
 		 */
-		auto getStartTime() const->library::Datetime;
+		auto getStartTime() const->library::Date;
 
 		/**
 		 * @brief Get end time.
 		 */
-		auto getEndTime() const->library::Datetime;
+		auto getEndTime() const->library::Date;
 
 		/**
 		 * @brief Get elapsed time.

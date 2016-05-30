@@ -1,15 +1,11 @@
 #pragma once
-#include <samchon/API.hpp>
 
-#include <vector>
-#include <memory>
+#include <samchon/protocol/Invoke.hpp>
 
 namespace samchon
 {
 namespace protocol
 {
-	class Invoke;
-
 	/**
 	 * @brief An interface of Invoke message chain
 	 *
@@ -28,13 +24,9 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API IProtocol
+	class IProtocol
 	{
 	public:
-		/**
-		 * @brief Default Constructor.
-		 */
-		IProtocol();
 		virtual ~IProtocol() = default;
 
 		/**
@@ -43,7 +35,7 @@ namespace protocol
 		 * @details Handles a replied Invoke message or shifts the responsibility to related chain.
 		 * @param invoke An Invoke message gotten from a network system
 		 */
-		virtual void replyData(std::shared_ptr<Invoke>) = NULL;
+		virtual void replyData(std::shared_ptr<Invoke>) = 0;
 
 		/**
 		 * @brief Send a message
@@ -51,7 +43,7 @@ namespace protocol
 		 * @details Sends Invoke message to a network system or shifts the responsibility to related chain.
 		 * @param invoke An Invoke message to send to a network system
 		 */
-		virtual void sendData(std::shared_ptr<Invoke>) = NULL;
+		virtual void sendData(std::shared_ptr<Invoke>) = 0;
 	};
 };
 };

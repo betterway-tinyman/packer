@@ -98,7 +98,7 @@ namespace packer
 		/**
 		 * @brief Get name
 		 */
-		auto getName() const -> string
+		auto get_name() const -> string
 		{
 			return name;
 		};

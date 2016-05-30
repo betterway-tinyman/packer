@@ -1,8 +1,6 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/protocol/SharedEntityArray.hpp>
-#include <samchon/protocol/InvokeParameter.hpp>
+#	include <samchon/protocol/InvokeParameter.hpp>
 
 namespace samchon
 {
@@ -12,7 +10,7 @@ namespace protocol
 	 * @brief Standard message of network I/O
 	 *
 	 * @details
-	 * <p> Invoke is a class used in network I/O in protocol package of Samchon Framework.  </p>
+	 * <p> Invoke is a class used in network I/O in protocol package of Samchon Framework. </p>
 	 *
 	 * <p> The Invoke message has an XML structure like the result screen of provided example in below. 
 	 * We can enjoy lots of benefits by the normalized and standardized message structure used in
@@ -44,7 +42,7 @@ namespace protocol
 	 * 		
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Invoke
+	class Invoke
 		: public SharedEntityArray<InvokeParameter>
 	{
 	private:
@@ -60,23 +58,34 @@ namespace protocol
 		/* --------------------------------------------------------------------
 			CONSTRUCTORS
 		-------------------------------------------------------------------- */
-		/**
-		 * @brief Default Constructor
-		 */
-		Invoke();
-		virtual ~Invoke() = default;
+		Invoke() : super()
+		{
+		};
 
 		/**
 		 * @brief Construct from a listener
 		 *
 		 * @param listener Represents who listens the Invoke message. Almost same with Function name
 		 */
-		Invoke(const std::string &listener);
+		Invoke(const std::string &listener)
+		{
+			this->listener = listener;
+		};
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual ~Invoke() = default;
+
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			listener = xml->getProperty("listener");
+
+			super::construct(xml);
+		};
 
 	protected:
-		virtual auto createChild(std::shared_ptr<library::XML>)->InvokeParameter* override;
+		virtual auto createChild(std::shared_ptr<library::XML>) -> InvokeParameter* override
+		{
+			return new InvokeParameter();
+		};
 
 		/* --------------------------------------------------------------------
 			VARIADIC CONSTRUCTORS
@@ -140,25 +149,38 @@ namespace protocol
 		/**
 		 * @brief Get listener
 		 */
-		auto getListener() const->std::string;
+		auto getListener() const -> std::string
+		{
+			return listener;
+		};
 
 		/**
 		 * @brief Set listener
 		 */
-		void setListener(const std::string &);
+		void setListener(const std::string  &val)
+		{
+			listener = val;
+		};
 
 		/* -----------------------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------------------- */
-		virtual auto TAG() const->std::string override;
-		virtual auto CHILD_TAG() const->std::string override;
+		virtual auto TAG() const->std::string override
+		{
+			return "invoke";
+		};
+		virtual auto CHILD_TAG() const->std::string override
+		{
+			return "parameter";
+		};
 
-		virtual auto toXML() const->std::shared_ptr<library::XML> override;
+		virtual auto toXML() const->std::shared_ptr<library::XML> override
+		{
+			std::shared_ptr<library::XML> &xml = super::toXML();
+			xml->setProperty("listener", listener);
 
-		/**
-		 * @brief Get a string of sql statement used to archive history log
-		 */
-		auto toSQL() const->std::string;
+			return xml;
+		};
 	};
 };
 };

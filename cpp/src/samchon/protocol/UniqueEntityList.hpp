@@ -1,6 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/protocol/EntityGroup.hpp>
 #include <list>
 

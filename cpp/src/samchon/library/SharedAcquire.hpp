@@ -1,17 +1,12 @@
 #pragma once
-#include <samchon/API.hpp>
 
-namespace std
-{
-	template <typename T>
-	struct atomic;
-};
+#include <atomic>
+#include <samchon/library/Semaphore.hpp>
+
 namespace samchon
 {
 namespace library
 {
-	class Semaphore;
-		
 	/**
 	 * @brief Shared acquire from a Semaphore.
 	 *
@@ -48,7 +43,7 @@ namespace library
 	 * 
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API SharedAcquire
+	class SharedAcquire
 	{
 	private:
 		/**
@@ -64,7 +59,7 @@ namespace library
 		/**
 		 * @brief Whether the mutex was locked by SharedAcquire
 		 */
-		std::atomic<bool> *isLocked;
+		std::atomic<bool> *locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -74,24 +69,60 @@ namespace library
 		 * @brief Construct from Semaphore
 		 *
 		 * @param semaphore Semaphore to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param lock Whether to lock directly or not
 		 */
-		SharedAcquire(Semaphore &, bool = true);
+		SharedAcquire(Semaphore &semaphore, bool lock = true)
+		{
+			this->semaphore = &semaphore;
+			this->reference = new std::atomic<size_t>(0);
+			this->locked = new std::atomic<bool>(false);
+
+			if (lock == true)
+				this->acquire();
+		};
 
 		/**
 		 * @brief Copy Constructor
 		 */
-		SharedAcquire(const SharedAcquire &);
+		SharedAcquire(const SharedAcquire &obj)
+		{
+			obj.reference->operator++();
+
+			this->semaphore = obj.semaphore;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+		};
 
 		/**
 		 * @brief Move Constructor
 		 */
-		SharedAcquire(SharedAcquire&&);
+		SharedAcquire(SharedAcquire &&obj)
+		{
+			//MOVE
+			this->semaphore = obj.semaphore;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.semaphore = nullptr;
+			obj.reference = nullptr;
+			obj.locked = nullptr;
+		};
 
 		/**
 		 * @brief Default Destructor
 		 */
-		~SharedAcquire();
+		~SharedAcquire()
+		{
+			if (reference == nullptr || reference->operator--() > 0)
+				return;
+
+			if (locked->load() == true)
+				semaphore->release();
+
+			delete reference;
+			delete locked;
+		};
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -99,12 +130,26 @@ namespace library
 		/**
 		 * @copydoc Semaphore::acquire()
 		 */
-		void acquire();
+		void acquire()
+		{
+			if (locked->load() == true)
+				return;
+
+			semaphore->acquire();
+			locked->store(true);
+		};
 
 		/**
 		 * @copydoc Semaphore::release()
 		 */
-		void release();
+		void release()
+		{
+			if (locked->load() == false)
+				return;
+
+			semaphore->release();
+			locked->store(false);
+		};
 
 		/**
 		 * @copydoc Semaphore::tryAcquire()

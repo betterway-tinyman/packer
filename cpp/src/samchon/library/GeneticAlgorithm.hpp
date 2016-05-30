@@ -1,4 +1,5 @@
 #pragma once
+
 #include <samchon/library/GAPopulation.hpp>
 
 #include <set>

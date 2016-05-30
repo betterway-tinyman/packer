@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <string>
 
@@ -29,9 +28,12 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API IEntityGroup
+	class IEntityGroup
 	{
-	protected:
+	public:
+		virtual ~IEntityGroup() = default;
+
+	public:
 		/**
 		* @brief A tag name of children
 		 *
@@ -42,13 +44,6 @@ namespace protocol
 		 * &lt;/TAG&gt; </p>
 		 */
 		virtual auto CHILD_TAG() const->std::string = 0;
-
-	public:
-		/**
-		 * @brief Default Constructor
-		 */
-		IEntityGroup();
-		virtual ~IEntityGroup() = default;
 	};
 };
 };

@@ -1,17 +1,12 @@
 #pragma once
-#include <samchon/API.hpp>
 
-namespace std
-{
-	template <typename T>
-	struct atomic;
-};
+#include <atomic>
+#include <samchon/library/RWMutex.hpp>
+
 namespace samchon
 {
 namespace library
 {
-	class RWMutex;
-
 	/**
 	 * @brief Shared lock from a RWMutex.
 	 *
@@ -47,13 +42,13 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API SharedReadLock
+	class SharedReadLock
 	{
 	private:
 		/**
 		 * @brief Managed RWMutex
 		 */
-		const RWMutex *semaphore;
+		const RWMutex *rw_mutex;
 
 		/**
 		 * @brief Referencing count sharing same RWMutex.
@@ -63,7 +58,7 @@ namespace library
 		/**
 		 * @brief Whether the mutex was locked by SharedReadLock
 		 */
-		std::atomic<bool> *isLocked;
+		std::atomic<bool> *locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -72,25 +67,61 @@ namespace library
 		/**
 		 * @brief Construct from RWMutex
 		 *
-		 * @param semaphore RWMutex to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param rw_mutex RWMutex to manage
+		 * @param lock Whether to lock directly or not
 		 */
-		SharedReadLock(const RWMutex &, bool = true);
+		SharedReadLock(const RWMutex &rw_mutex, bool lock = true)
+		{
+			this->rw_mutex = &rw_mutex;
+			this->reference = new std::atomic<size_t>(0);
+			this->locked = new std::atomic<bool>(false);
+
+			if (lock == true)
+				rw_mutex.readLock();
+		};
 
 		/**
 		 * @brief Copy Constructor
 		 */
-		SharedReadLock(const SharedReadLock &);
+		SharedReadLock(const SharedReadLock &obj)
+		{
+			obj.reference->operator++();
+
+			this->rw_mutex = obj.rw_mutex;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+		};
 
 		/**
 		 * @brief Move Constructor
 		 */
-		SharedReadLock(SharedReadLock&&);
+		SharedReadLock(SharedReadLock&&obj)
+		{
+			//MOVE
+			this->rw_mutex = obj.rw_mutex;
+			this->reference = obj.reference;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.rw_mutex = nullptr;
+			obj.reference = nullptr;
+			obj.locked = nullptr;
+		};
 
 		/**
 		 * @brief Default Destructor
 		 */
-		~SharedReadLock();
+		~SharedReadLock()
+		{
+			if (reference == nullptr || reference->operator--() > 0)
+				return;
+
+			if (locked->load() == true)
+				rw_mutex->readUnlock();
+
+			delete reference;
+			delete locked;
+		};
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -98,12 +129,26 @@ namespace library
 		/**
 		 * @copydoc RWMutex::readLock()
 		 */
-		void lock() const;
+		void lock() const
+		{
+			if (locked->load() == true)
+				return;
+
+			rw_mutex->readLock();
+			locked->store(true);
+		};
 
 		/**
 		 * @copydoc RWMutex::readUnlock()
 		 */
-		void unlock() const;
+		void unlock() const
+		{
+			if (locked->load() == false)
+				return;
+
+			rw_mutex->readUnlock();
+			locked->store(false);
+		};
 
 		/**
 		 * @copydoc RWMutex::tryAcquire()

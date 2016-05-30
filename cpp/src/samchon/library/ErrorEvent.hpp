@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <samchon/library/Event.hpp>
 
@@ -16,7 +15,7 @@ namespace library
 	 * \par [Inherited]
 	 *		@copydetails library::Event
 	 */
-	class SAMCHON_FRAMEWORK_API ErrorEvent
+	class ErrorEvent
 		: public Event
 	{
 	private:
@@ -48,13 +47,20 @@ namespace library
 		 * @param source Source of the event; who made the event
 		 * @param id An error-id
 		 */
-		ErrorEvent(EventDispatcher *, const std::string &);
+		ErrorEvent(EventDispatcher *source, const std::string &message)
+			: super(source, ErrorEvent::ERROR)
+		{
+			this->message = message;
+		};
 		virtual ~ErrorEvent() = default;
 
 		/**
 		 * @brief Get error-id
 		 */
-		auto getMessage() const->std::string;
+		auto getMessage() const -> std::string
+		{
+			return message;
+		};
 	};
 };
 };

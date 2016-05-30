@@ -1,5 +1,4 @@
 #pragma once
-
 #include <samchon/protocol/EntityGroup.hpp>
 #include <vector>
 

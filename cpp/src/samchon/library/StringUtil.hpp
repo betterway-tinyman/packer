@@ -1,11 +1,10 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <string>
-#include <samchon/WeakString.hpp>
-
 #include <iostream>
 #include <sstream>
+
+#include <samchon/WeakString.hpp>
 #include <samchon/IndexPair.hpp>
 #include <samchon/library/Math.hpp>
 
@@ -34,7 +33,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API StringUtil
+	class StringUtil
 	{
 	public:
 		/* ----------------------------------------------------------------------
@@ -103,8 +102,9 @@ namespace library
 
 			//replaceAll
 			std::string &to = toString(value);
-			return replaceAll(format, "{" + toString(index) + "}", to);
+			return replaceAll(format, "{" + std::to_string(index) + "}", to);
 		};
+
 		template <typename T> static auto _substituteSQL(const std::string &format, const T& value) -> std::string
 		{
 			std::vector<std::string> &parenthesisArray = betweens(format, "{", "}");
@@ -118,7 +118,7 @@ namespace library
 
 			//replaceAll
 			std::string &to = toSQL(value);
-			return replaceAll(format, "{" + toString(index) + "}", to);
+			return replaceAll(format, "{" + std::to_string(index) + "}", to);
 		};
 
 		/* ----------------------------------------------------------------------
@@ -127,12 +127,20 @@ namespace library
 		template <typename T>
 		static auto toString(const T &val) -> std::string
 		{
-			std::basic_stringstream<char> stream;
-			stream << val;
-
-			return stream.str();
+			return std::to_string(val);
 		};
-		template<> static auto toString(const WeakString &str) -> std::string;
+		template<> static auto toString(const std::string &str) -> std::string
+		{
+			return str;
+		};
+		template<> static auto toString(const WeakString &str) -> std::string
+		{
+			return str.str();
+		};
+		static auto toString(const char *ptr) -> std::string
+		{
+			return ptr;
+		};
 
 		template <typename T>
 		static auto toSQL(const T &val) -> std::string
@@ -140,16 +148,36 @@ namespace library
 			if (val == INT_MIN)
 				return "NULL";
 
-			std::basic_stringstream<char> stream;
-			stream << val;
-
-			return stream.str();
+			return std::to_string(val);
 		};
-		template<> static auto toSQL(const bool &flag) -> std::string;
-		template<> static auto toSQL(const char &val) -> std::string;
-		template<> static auto toSQL(const std::string &str) -> std::string;
-		template<> static auto toSQL(const WeakString &str) -> std::string;
-		static auto toSQL(const char *) -> std::string;
+		template<> static auto toSQL(const bool &flag) -> std::string
+		{
+			return std::to_string(flag);
+		};
+		template<> static auto toSQL(const char &val) -> std::string
+		{
+			return toSQL(std::string({ val }));
+		};
+		template<> static auto toSQL(const std::string &str) -> std::string
+		{
+			return toSQL(WeakString(str));
+		};
+		template<> static auto toSQL(const WeakString &wstr) -> std::string
+		{
+			if (wstr.empty() == true)
+				return "NULL";
+			else
+			{
+				if (wstr.find("'") != std::string::npos)
+					return "'" + wstr.replaceAll("'", "''") + "'";
+				else
+					return "'" + wstr.str() + "'";
+			}
+		};
+		static auto toSQL(const char *ptr) -> std::string
+		{
+			return toSQL(std::string(ptr));
+		};
 
 	public:
 		/* ----------------------------------------------------------------------
@@ -167,7 +195,24 @@ namespace library
 		 * @param str Target std::string to check
 		 * @return Whether the std::string can be converted to Number or not
 		 */
-		static auto isNumeric(const std::string &str) -> bool;
+		static auto isNumeric(const std::string &str) -> bool
+		{
+			try
+			{
+				stoi(str);
+				//stod( replaceAll(str, ",", "") );
+			}
+			catch (const std::exception &)
+			{
+				return false;
+			}
+			catch (...)
+			{
+				return false;
+			}
+
+			return true;
+		};
 
 		/**
 		 * @brief Number std::string to Number having ',' symbols
@@ -175,7 +220,12 @@ namespace library
 		 * @param str Target std::string you want to convert to Number
 		 * @return Number from std::string
 		 */
-		static auto toNumber(const std::string &str) -> double;
+		static auto toNumber(const std::string &str) -> double
+		{
+			std::string &numStr = replaceAll(str, ",", "");
+
+			return stod(numStr);
+		};
 
 		/**
 		 * @brief
@@ -188,7 +238,46 @@ namespace library
 		 * @param precision Target precision of roundoff
 		 * @return A string representing the number with roundoff and &quot;,&quot; symbols
 		 */
-		static auto numberFormat(double val, int precision = 2) -> std::string;
+		static auto numberFormat(double val, int precision = 2) -> std::string
+		{
+			//IF VALUE IS ZERO OR NULL
+			if (val == 0.0)
+				return "0";
+			else if (val == INT_MIN)
+				return "";
+
+			std::string str = "";
+
+			//SETTING
+			bool isNegative = (val < 0);
+			val = abs(val);
+
+			int cipher = (int)log10(val) + 1;
+
+			//PRECISION
+			if (val != (unsigned long long)val)
+			{
+				int pointValue = (int)round((val - (unsigned long long)val) * pow(10.0, (double)precision));
+				str = "." + std::to_string(pointValue);
+			}
+
+			//NATURAL NUMBER
+			for (int i = 0; i < cipher; i++)
+			{
+				int num = (int)((unsigned long long)val % (unsigned long long)pow(10.0, i + 1.0)); //TRUNCATE UPPER DIGIT VALUE
+				num = (int)(num / pow(10.0, (double)i));
+
+				str = (char)(num + '0') + str;
+				if ((i + 1) % 3 == 0 && i < cipher - 1)
+					str = "," + str;
+			}
+
+			//NEGATIVE NUMBER
+			if (isNegative == true)
+				str = "-" + str;
+
+			return str;
+		};
 
 		/**
 		 * @brief
@@ -199,7 +288,12 @@ namespace library
 		 * @param val A number wants to convert to percentage string
 		 * @param precision Target precision of roundoff
 		 */
-		static auto percentFormat(double val, int precision = 2) -> std::string;
+		static auto percentFormat(double val, int precision = 2) -> std::string
+		{
+			if (val == INT_MIN)
+				return "";
+			return numberFormat(val * 100, precision) + "%";
+		};
 
 		/**
 		 * @brief
@@ -216,7 +310,21 @@ namespace library
 		 * @param precision Target precision of roundoff
 		 * @return A colored string representing the number with roundoff and &quot;,&quot; symbols
 		 */
-		static auto colorNumberFormat(double value, int precision = 2, double delimiter = 0.0) -> std::string;
+		static auto colorNumberFormat(double value, int precision = 2, double delimiter = 0.0) -> std::string
+		{
+			std::string color;
+
+			if (value > delimiter)			color = "red";
+			else if (value == delimiter)	color = "black";
+			else							color = "blue";
+
+			return substitute
+			(
+				"<font color='{1}'>{2}</font>",
+				color,
+				numberFormat(value, precision)
+			);
+		};
 
 		/**
 		 * @brief Returns a percentage string converted from the number rounded off from specified precision with &quot;,&quot; symbols\n
@@ -226,7 +334,21 @@ namespace library
 		 * @param val A number wants to convert to percentage string
 		 * @param precision Target precision of roundoff
 		 */
-		static auto colorPercentFormat(double value, int precision = 2, double delimiter = 0.0) -> std::string;
+		static auto colorPercentFormat(double value, int precision = 2, double delimiter = 0.0) -> std::string
+		{
+			std::string color;
+
+			if (value > delimiter)			color = "red";
+			else if (value == delimiter)	color = "black";
+			else							color = "blue";
+
+			return substitute
+			(
+				"<font color='{1}'>{2}</font>",
+				color,
+				percentFormat(value, precision)
+			);
+		};
 
 		/* ----------------------------------------------------------------------
 			TRIM -> WITH LTRIM & RTRIM
@@ -239,7 +361,10 @@ namespace library
 		 * @param delims Designated character(s)
 		 * @return Updated string where designated characters was removed from the beginning and end
 		 */
-		static auto trim(const std::string &val, const std::vector<std::string> &delims) -> std::string;
+		static auto trim(const std::string &val, const std::vector<std::string> &delims) -> std::string
+		{
+			return WeakString(val).trim(delims).str();
+		};
 
 		/**
 		 * @brief Removes all designated characters from the beginning of the specified string
@@ -248,7 +373,10 @@ namespace library
 		 * @param delims Designated character(s)
 		 * @return Updated string where designated characters was removed from the beginning
 		 */
-		static auto ltrim(const std::string &val, const std::vector<std::string> &delims) -> std::string;
+		static auto ltrim(const std::string &val, const std::vector<std::string> &delims) -> std::string
+		{
+			return WeakString(val).ltrim(delims).str();
+		};
 
 		/**
 		 * @brief Removes all designated characters from the end of the specified string
@@ -257,15 +385,36 @@ namespace library
 		 * @param delims Designated character(s)
 		 * @return Updated string where designated characters was removed from the end
 		 */
-		static auto rtrim(const std::string &val, const std::vector<std::string> &delims) -> std::string;
+		static auto rtrim(const std::string &val, const std::vector<std::string> &delims) -> std::string
+		{
+			return WeakString(val).rtrim(delims).str();
+		};
 
-		static auto trim(const std::string &str) -> std::string;
-		static auto ltrim(const std::string &str) -> std::string;
-		static auto rtrim(const std::string &str) -> std::string;
+		static auto trim(const std::string &str) -> std::string
+		{
+			return WeakString(str).trim().str();
+		};
+		static auto ltrim(const std::string &str) -> std::string
+		{
+			return WeakString(str).ltrim().str();
+		};
+		static auto rtrim(const std::string &str) -> std::string
+		{
+			return WeakString(str).rtrim().str();
+		};
 
-		static auto trim(const std::string &str, const std::string &delim) -> std::string;
-		static auto ltrim(const std::string &str, const std::string &delim) -> std::string;
-		static auto rtrim(const std::string &str, const std::string &delim) -> std::string;
+		static auto trim(const std::string &str, const std::string &delim) -> std::string
+		{
+			return WeakString(str).trim(delim).str();
+		};
+		static auto ltrim(const std::string &str, const std::string &delim) -> std::string
+		{
+			return WeakString(str).ltrim(delim).str();
+		};
+		static auto rtrim(const std::string &str, const std::string &delim) -> std::string
+		{
+			return WeakString(str).rtrim(delim).str();
+		};
 
 		/* ----------------------------------------------------------------------
 			EXTRACTORS
@@ -286,7 +435,12 @@ namespace library
 		 * @return pair\<size_t := position, string := matched substring\>
 		 */
 		static auto finds(const std::string &str,
-			const std::vector<std::string> &delims, size_t startIndex = 0)->IndexPair<std::string>;
+			const std::vector<std::string> &delims, size_t startIndex = 0) -> IndexPair<std::string>
+		{
+			IndexPair<WeakString> &iPair = WeakString(str).finds(delims, startIndex);
+
+			return { iPair.get_index(), iPair.getValue().str() };
+		};
 
 		/**
 		 * @brief Finds last occurence in string
@@ -304,7 +458,12 @@ namespace library
 		 * @return pair\<size_t := position, string := matched substring\>
 		*/
 		static auto rfinds(const std::string &str,
-			const std::vector<std::string> &delims, size_t endIndex = SIZE_MAX)->IndexPair<std::string>;
+			const std::vector<std::string> &delims, size_t endIndex = SIZE_MAX) -> IndexPair<std::string>
+		{
+			IndexPair<WeakString> &iPair = WeakString(str).rfinds(delims, endIndex);
+
+			return { iPair.get_index(), iPair.getValue().str() };
+		};
 
 		/**
 		 * @brief Generates a substring
@@ -322,7 +481,10 @@ namespace library
 		 * @return Extracted string by specified index(es)
 		 */
 		static auto substring(const std::string &str,
-			size_t startIndex, size_t endIndex = SIZE_MAX) -> std::string;
+			size_t startIndex, size_t endIndex = SIZE_MAX) -> std::string
+		{
+			return WeakString(str).substring(startIndex, endIndex).str();
+		};
 
 		/**
 		 * @brief Generate a substring.
@@ -344,7 +506,10 @@ namespace library
 		 * @return substring by specified terms
 		 */
 		static auto between(const std::string &str,
-			const std::string &start = "", const std::string &end = "") -> std::string;
+			const std::string &start = "", const std::string &end = "") -> std::string
+		{
+			return WeakString(str).between(start, end).str();
+		};
 
 		//TAB
 		/**
@@ -354,7 +519,25 @@ namespace library
 		 * @param n The size of tab to be added for each line
 		 * @return A string added multiple tabs
 		 */
-		static auto addTab(const std::string &str, size_t n = 1) -> std::string;
+		static auto addTab(const std::string &str, size_t n = 1) -> std::string
+		{
+			std::vector<std::string> &lines = split(str, "\n");
+
+			std::string val;
+			std::string tab;
+			size_t i;
+
+			val.reserve(val.size() + lines.size());
+			tab.reserve(n);
+
+			for (i = 0; i < n; i++)
+				tab += "\t";
+
+			for (i = 0; i < lines.size(); i++)
+				val.append(tab + lines[i] + ((i == lines.size() - 1) ? "" : "\n"));
+
+			return val;
+		};
 
 		//MULTIPLE STRINGS
 		/**
@@ -365,7 +548,16 @@ namespace library
 		 * @param delim The pattern that specifies where to split this string
 		 * @return An array of substrings
 		 */
-		static auto split(const std::string &str, const std::string &delim) -> std::vector<std::string>;
+		static auto split(const std::string &str, const std::string &delim) -> std::vector<std::string>
+		{
+			std::vector<WeakString> &arr = WeakString(str).split(delim);
+
+			std::vector<std::string> resArray(arr.size());
+			for (size_t i = 0; i < arr.size(); i++)
+				resArray[i] = move(arr[i].str());
+
+			return resArray;
+		};
 
 		/**
 		 * @brief Generates substrings
@@ -389,7 +581,16 @@ namespace library
 			(
 				const std::string &str,
 				const std::string &start = "", const std::string &end = ""
-			) -> std::vector<std::string>;
+			) -> std::vector<std::string>
+		{
+			std::vector<WeakString> &arr = WeakString(str).betweens(start, end);
+
+			std::vector<std::string> resArray(arr.size());
+			for (size_t i = 0; i < arr.size(); i++)
+				resArray[i] = move(arr[i].str());
+
+			return resArray;
+		};
 
 		/* ----------------------------------------------------------------------
 			REPLACERS
@@ -401,7 +602,10 @@ namespace library
 		 * @param str Target string to convert uppercase to lowercase
 		 * @return A string converted to lowercase
 		 */
-		static auto toLowerCase(const std::string &str) -> std::string;
+		static auto toLowerCase(const std::string &str) -> std::string
+		{
+			return WeakString(str).toLowerCase();
+		};
 
 		/**
 		 * Returns a string all lowercase characters are converted to uppercase\n
@@ -409,7 +613,10 @@ namespace library
 		 * @param str Target string to convert lowercase to uppercase
 		 * @return A string converted to uppercase
 		 */
-		static auto toUpperCase(const std::string &str) -> std::string;
+		static auto yoUpperCase(const std::string &str) -> std::string
+		{
+			return WeakString(str).yoUpperCase();
+		};
 
 		/**
 		 * @brief Returns a string specified word is replaced
@@ -423,7 +630,10 @@ namespace library
 			(
 				const std::string &str, 
 				const std::string &before, const std::string &after
-			) -> std::string;
+			) -> std::string
+		{
+			return WeakString(str).replaceAll(before, after);
+		};
 
 		/**
 		 * @brief Returns a string specified words are replaced
@@ -433,14 +643,26 @@ namespace library
 		 * @return A string specified words are replaced
 		 */
 		static auto replaceAll(const std::string &str,
-			const std::vector<std::pair<std::string, std::string>> &pairs) -> std::string;
+			const std::vector<std::pair<std::string, std::string>> &pairs) -> std::string
+		{
+			return WeakString(str).replaceAll(pairs);
+		};
 
 		/**
 		 * @brief Replace all HTML spaces to a literal space.
 		 *
 		 * @param str Target string to replace.
 		 */
-		static auto removeHTMLSpaces(const std::string &) -> std::string;
+		static auto removeHTMLSpaces(const std::string &str) -> std::string
+		{
+			std::vector<std::pair<std::string, std::string>> pairs =
+			{
+				{ "&nbsp;", " " },
+				{ "\t", " " },
+				{ "  ", " " }
+			};
+			return replaceAll(str, pairs);
+		};
 	};
 };
 };

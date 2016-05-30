@@ -34,7 +34,7 @@ namespace service
 	 * be suitable for those. </p>
 	 *
 	 * @warning
-	 * <p> When changing the strategy, you've to careful about policy of each system or libraries. </p>
+	 * <p> When changing the strategy, you've to careful about policy_ of each system or libraries. </p>
 	 * <p> Followings are something to consider when adjusting MAC address for uniqueness. </p>
 	 *
 	 *	\li In server side and view of socket, boost::asio or candidate network i/o libary of stl

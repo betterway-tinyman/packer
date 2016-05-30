@@ -105,7 +105,7 @@ namespace tsp
 		----------------------------------------------------------- */
 		virtual auto key() const -> string override
 		{
-			return to_string(uid);
+			return std::to_string(uid);
 		};
 
 		/**

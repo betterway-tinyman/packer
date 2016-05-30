@@ -1,0 +1,61 @@
+﻿  Boxologic.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Generating Code...
+  Compiling...
+  WrapperGroup.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  WrapperArray.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Wrapper.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Wrap.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Server.cpp
+  Product.cpp
+  PackerForm.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Packer.cpp
+  PCKGeneticAlgorithm.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  InstanceFormArray.cpp
+  InstanceForm.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  InstanceArray.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Instance.cpp
+  GAWrapperArray.cpp
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::TAG' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(118): note: see declaration of 'bws::packer::Instance::TAG'
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\wrapper.hpp(163): warning C4250: 'bws::packer::Wrapper': inherits 'bws::packer::Instance::bws::packer::Instance::key' via dominance
+  d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\instance.hpp(75): note: see declaration of 'bws::packer::Instance::key'
+  Client.cpp
+  Generating Code...
+d:\onedrive\project\hiswill\packer\cpp\src\bws\packer\packer.cpp(138): warning C4715: 'bws::packer::Packer::optimize': not all control paths return a value
+  Packer.vcxproj -> D:\OneDrive\Project\HisWill\packer\cpp\x64\Debug\Packer.exe

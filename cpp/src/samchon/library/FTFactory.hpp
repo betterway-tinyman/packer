@@ -1,7 +1,7 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/Map.hpp>
+#include <samchon/TreeMap.hpp>
 #include <samchon/library/XML.hpp>
 
 namespace samchon
@@ -51,13 +51,13 @@ namespace library
 		std::string member;
 
 		/**
-		 * @brief Map of files
+		 * @brief TreeMap of files
 		 *
 		 * @details
 		 *	\li key: uid
 		 *	\li value: pointer of file
 		 */
-		Map<int, FTInstance*> instanceMap;
+		TreeMap<int, FTInstance*> instanceMap;
 
 	public:
 		/**

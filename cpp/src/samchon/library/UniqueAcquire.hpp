@@ -1,12 +1,11 @@
 #pragma once
-#include <samchon/API.hpp>
+
+#include <samchon/library/Semaphore.hpp>
 
 namespace samchon
 {
 namespace library
 {
-	class Semaphore;
-
 	/**
 	 * @brief Unique acquire from a Semaphore.
 	 *
@@ -38,7 +37,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API UniqueAcquire
+	class UniqueAcquire
 	{
 	private:
 		/**
@@ -49,7 +48,7 @@ namespace library
 		/**
 		 * @brief Whether the semaphore was acquired by the UniqueLock
 		 */
-		bool isLocked;
+		bool locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -59,9 +58,16 @@ namespace library
 		 * @brief Construct from semaphore
 		 *
 		 * @param semaphore Semaphore to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param lock Whether to lock directly or not
 		 */
-		UniqueAcquire(Semaphore &, bool = true);
+		UniqueAcquire(Semaphore &semaphore, bool lock = true)
+		{
+			this->semaphore = &semaphore;
+			this->locked = false;
+
+			if (lock == true)
+				this->acquire();
+		};
 
 		/**
 		 * @brief Prohibited Copy Constructor
@@ -73,20 +79,33 @@ namespace library
 		 *
 		 * @param obj Tried object to copy.
 		 */
-		UniqueAcquire(const UniqueAcquire &) = delete;
+		UniqueAcquire(const UniqueAcquire &obj) = delete;
 
 		/**
 		 * @brief Move Constructor
 		 *
-		 * @param An object to move
+		 * @param obj An object to move
 		 */
-		UniqueAcquire(UniqueAcquire&&);
+		UniqueAcquire(UniqueAcquire &&obj)
+		{
+			//MOVE
+			this->semaphore = obj.semaphore;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.semaphore = nullptr;
+			obj.locked = false;
+		};
 
 		/**
 		 * @brief Default Destructor
 		 * @details If read lock has done by the UniqueLock, unlock it
 		 */
-		~UniqueAcquire();
+		~UniqueAcquire()
+		{
+			if (locked)
+				semaphore->release();
+		};
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -94,12 +113,26 @@ namespace library
 		/**
 		 * @copydoc Semaphore::acquire()
 		 */
-		void acquire();
+		void acquire()
+		{
+			if (locked)
+				return;
+
+			semaphore->acquire();
+			locked = true;
+		};
 
 		/**
 		 * @copydoc Semaphore::release()
 		 */
-		void release();
+		void release()
+		{
+			if (locked == false)
+				return;
+
+			semaphore->release();
+			locked = false;
+		};
 
 		/**
 		 * @copydoc Semaphore::tryAcquire()

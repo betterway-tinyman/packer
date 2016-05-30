@@ -209,7 +209,7 @@ namespace packer
 		virtual auto toXML() const -> shared_ptr<XML> override
 		{
 			shared_ptr<XML> &xml = super::toXML();
-			xml->addAllProperty(sample->toXML());
+			xml->addAllProperties(sample->toXML());
 
 			return xml;
 		};
@@ -219,7 +219,7 @@ namespace packer
 		 */
 		auto toString() const -> string
 		{
-			string str = "Category - " + sample->getName() + "\n";
+			string str = "Category - " + sample->get_name() + "\n";
 			for (size_t i = 0; i < size(); i++)
 				str += at(i)->toString() + "\n";
 

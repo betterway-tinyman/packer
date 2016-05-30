@@ -45,8 +45,6 @@ namespace samchon
 				HANDSHAKE OF WEB-SOCKET
 			----------------------------------------------------------------------- */
 			auto handshake(Socket *socket) const -> bool;
-
-			auto calculateCertificationKey(const std::string &) const -> std::string;
 		};
 	};
 };

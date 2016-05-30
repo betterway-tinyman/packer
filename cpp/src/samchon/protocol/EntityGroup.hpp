@@ -2,6 +2,8 @@
 #include <samchon/protocol/Entity.hpp>
 #include <samchon/protocol/IEntityGroup.hpp>
 
+#include <algorithm>
+
 namespace samchon
 {
 namespace protocol
@@ -86,7 +88,7 @@ namespace protocol
 
 			std::shared_ptr<library::XMLList> &xmlList = xml->get(CHILD_TAG());
 
-			if (std::is_same<Container, std::vector<Container::value_type, Container::allocator_type>>::value == true)
+			if (std::is_same<container_type, std::vector<container_type::value_type, container_type::allocator_type>>::value == true)
 			{
 				//FOR RESERVE
 				assign(xmlList->size(), nullptr);
@@ -97,7 +99,7 @@ namespace protocol
 			{
 				std::shared_ptr<library::XML> &xmlElement = xmlList->at(i);
 
-				T *entity = createChild(xmlElement);
+				entity_type *entity = createChild(xmlElement);
 				if (entity != nullptr)
 				{
 					entity->construct(xmlList->at(i));
@@ -117,69 +119,109 @@ namespace protocol
 		 *
 		 * @return A new child Entity belongs to EntityGroup.
 		 */
-		virtual auto createChild(std::shared_ptr<library::XML>) -> T* = 0;
+		virtual auto createChild(std::shared_ptr<library::XML>) -> entity_type* = 0;
 
 	public:
 		/* ------------------------------------------------------------------------------------
 			MODIFIERS
 		------------------------------------------------------------------------------------ */
-		using Container::erase;
+		using container_type::erase;
 
 		void erase(const std::string &key)
 		{
-			for (Container::iterator it = begin(); it != end();)
-				if ((*it)->key() == key)
-					it = erase(it);
-				else
-					it++;
+			std::remove_if
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity->key() == key;
+				}
+			);
 		};
 
 		/* ------------------------------------------------------------------------------------
 			GETTERS
 		------------------------------------------------------------------------------------ */
 		/**
-		* @brief Indicates whether a container has an object having the specified identifier. </p>
-		*
-		* @param key An identifier of an Entity
-		* @return If there's the object then true, otherwise false
-		*/
+		 * @brief Indicates whether a container has an object having the specified identifier. </p>
+		 *
+		 * @param key An identifier of an Entity
+		 * @return If there's the object then true, otherwise false
+		 */
 		auto has(const std::string &key) const -> bool
 		{
-			for (auto it = begin(); it != end(); it++)
-				if ((*it)->key() == key)
-					return true;
-
-			return false;
+			return std::any_of
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity->key() == key;
+				}
+			);
 		};
 
 		/**
-		* @brief Access the element by specified identifier(key).
-		*
-		* @param key the identifier of the element wants to access
-		* @return The element having the key, or throw exception if there is none.
-		*/
-		auto get(const std::string &key) -> typename Container::value_type&
+		 * @brief Count elements with a specific key.
+		 * @details Searches the container for elements whose key is <i>key</i> and returns the number of elements found.
+		 *
+		 * @return The number of elements in the container with a <i>key</i>.
+		 */
+		auto count(const std::string &key) const -> size_t
 		{
-			for (auto it = begin(); it != end(); it++)
-				if ((*it)->key() == key)
-					return *it;
-
-			throw std::exception("out of range");
+			return std::count_if
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity->key() == key;
+				}
+			);
 		};
 
 		/**
-		* @brief Access the const element by specified identifier(key).
-		*
-		* @param key the identifier of the element wants to access
-		* @return The const element having the key, or throw exception if there is none.
-		*/
-		auto get(const std::string &key) const -> const typename Container::value_type&
+		 * @brief Access the element by specified identifier(key).
+		 *
+		 * @param key the identifier of the element wants to access
+		 * @return The element having the key, or throw exception if there is none.
+		 */
+		auto get(const std::string &key) -> typename container_type::value_type&
 		{
-			for (auto it = begin(); it != end(); it++)
-				if ((*it)->key() == key)
-					return *it;
+			auto it = std::find_if
+				(
+					begin(), end(),
+					[key](const container_type::value_type &entity) -> bool
+					{
+						return entity->key() == key;
+					}
+				);
 
-			throw std::exception("out of range");
+			if (it == end())
+				throw std::out_of_range("out of range");
+
+			return *it;
+		};
+
+		/**
+		 * @brief Access the const element by specified identifier(key).
+		 *
+		 * @param key the identifier of the element wants to access
+		 * @return The const element having the key, or throw exception if there is none.
+		 */
+		auto get(const std::string &key) const -> const typename container_type::value_type&
+		{
+			auto it = std::find_if
+				(
+					begin(), end(),
+					[key](const container_type::value_type &entity) -> bool
+					{
+						return entity->key() == key;
+					}
+				);
+
+			if (it == end())
+				throw std::out_of_range("out of range");
+
+			return *it;
 		};
 
 		/* ------------------------------------------------------------------------------------

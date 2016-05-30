@@ -51,18 +51,19 @@ namespace protocol
 		/**
 		 * @brief (optional) Server's IP
 		 */
-		virtual auto MY_IP() const->std::string;
+		virtual auto MY_IP() const -> std::string;
 
 		/**
 		 * @brief Port number of the server
 		 */
-		virtual auto PORT() const -> int = NULL;
+		virtual auto PORT() const -> int = 0;
 
 	public:
 		/**
 		 * @brief Default Constructor
 		 */
 		IServer();
+
 		virtual ~IServer();
 
 		/**

@@ -13,8 +13,8 @@ namespace library
 namespace protocol
 {
 	/**
-	 * @brief A flash policy server
-	 * @details FlashPolicyServer is a policy server replying cross-domain-policy to flash clients.
+	 * @brief A flash policy_ server
+	 * @details FlashPolicyServer is a policy_ server replying cross-domain-policy_ to flash clients.
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
@@ -22,35 +22,43 @@ namespace protocol
 	{
 	protected:
 		/**
-		 * @brief cross-domain-policy
+		 * @brief cross-domain-policy_
 		 */
-		std::shared_ptr<library::XML> policy;
+		std::shared_ptr<library::XML> policy_;
 
 	public:
 		/**
 		 * @brief Default constructor
 		 *
-		 * @details The cross-domain-policy is to accept all, any client.
+		 * @details The cross-domain-policy_ is to accept all, any client.
 		 */
 		FlashPolicyServer();
 
 		/**
-		 * @brief Construct from custom policy
+		 * @brief Construct from custom policy_
 		 *
-		 * @param policy Custom cross-domain-policy to adjust
+		 * @param policy_ Custom cross-domain-policy_ to adjust
 		 */
 		FlashPolicyServer(std::shared_ptr<library::XML>);
 
 		/**
 		 * @brief Open server
 		 */
-		void openServer();
+		void open();
+
+		/**
+		 * @brief Get policy.
+		 */
+		auto get_policy() const -> std::shared_ptr<library::XML>
+		{
+			return policy_;
+		};
 
 	private:
 		/**
 		 * @brief Accept client
 		 *
-		 * @details Accepts flash client and replies cross-domain-policy
+		 * @details Accepts flash client and replies cross-domain-policy_
 		 */
 		void accept(Socket *);
 	};

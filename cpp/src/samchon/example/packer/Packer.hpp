@@ -202,7 +202,7 @@ namespace packer
 		 */
 		auto toString() const -> string
 		{
-			string str = "$" + to_string(calcPrice()) + "\n";
+			string str = "$" + std::to_string(calcPrice()) + "\n";
 			for (size_t i = 0; i < size(); i++)
 				str += at(i)->toString() + "\n";
 

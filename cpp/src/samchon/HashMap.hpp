@@ -1,6 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <unordered_map>
 
 namespace samchon
@@ -194,7 +192,7 @@ namespace samchon
 
 			erase(it);
 
-			return std::move(val);
+			return val;
 		};
 	};
 };

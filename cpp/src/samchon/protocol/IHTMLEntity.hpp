@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <string>
 #include <sstream>
@@ -38,16 +37,12 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API IHTMLEntity
+	class IHTMLEntity
 	{
 	public:
 		/* ------------------------------------------------------------------------------------
 			CONSTRUCTORS
 		------------------------------------------------------------------------------------ */
-		/**
-		 * @brief Default Constructor.
-		 */
-		IHTMLEntity();
 		virtual ~IHTMLEntity() = default;
 
 		/* ------------------------------------------------------------------------------------

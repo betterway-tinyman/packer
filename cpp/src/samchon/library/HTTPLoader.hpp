@@ -33,7 +33,7 @@ namespace library
 		/**
 		 * @brief Cookies got from remote web server.
 		 */
-		static HashMap<std::string, std::string> cookieMap;
+		static HashMap<std::string, std::string> cookie_map;
 
 	public:
 		enum METHOD : int
@@ -78,7 +78,7 @@ namespace library
 		/**
 		 * @brief Get url.
 		 */
-		auto getURL() const->std::string;
+		auto getURL() const -> std::string;
 
 		/**
 		 * @brief Get method.
@@ -88,7 +88,7 @@ namespace library
 		/**
 		 * @brief Get cookie.
 		 */
-		auto getCookie(const std::string &) const->std::string;
+		auto getCookie(const std::string &) const -> std::string;
 
 		/* ------------------------------------------------------------
 			LOADERS

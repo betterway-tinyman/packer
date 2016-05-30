@@ -23,7 +23,7 @@ Server::Server()
 }
 void Server::open()
 {
-	thread(&FlashPolicyServer::openServer, flashPolicyServer.get()).detach();
+	thread(&FlashPolicyServer::open, flashPolicyServer.get()).detach();
 	super::open();
 }
 

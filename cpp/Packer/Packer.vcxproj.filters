@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\boxologic\Boxologic.cpp" />
+    <ClCompile Include="..\src\boxologic\Pallet.cpp" />
+    <ClCompile Include="..\src\bws\packer\Client.cpp" />
+    <ClCompile Include="..\src\bws\packer\GAWrapperArray.cpp" />
+    <ClCompile Include="..\src\bws\packer\Instance.cpp" />
+    <ClCompile Include="..\src\bws\packer\InstanceArray.cpp" />
+    <ClCompile Include="..\src\bws\packer\InstanceForm.cpp" />
+    <ClCompile Include="..\src\bws\packer\InstanceFormArray.cpp" />
+    <ClCompile Include="..\src\bws\packer\main.cpp" />
+    <ClCompile Include="..\src\bws\packer\Packer.cpp" />
+    <ClCompile Include="..\src\bws\packer\PackerForm.cpp" />
+    <ClCompile Include="..\src\bws\packer\PCKGeneticAlgorithm.cpp" />
+    <ClCompile Include="..\src\bws\packer\Product.cpp" />
+    <ClCompile Include="..\src\bws\packer\Server.cpp" />
+    <ClCompile Include="..\src\bws\packer\Wrap.cpp" />
+    <ClCompile Include="..\src\bws\packer\Wrapper.cpp" />
+    <ClCompile Include="..\src\bws\packer\WrapperArray.cpp" />
+    <ClCompile Include="..\src\bws\packer\WrapperGroup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\bws\packer\API.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\boxologic\Box.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\boxologic\Boxologic.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Client.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\GAWrapperArray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\boxologic\Instance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Instance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\InstanceForm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\InstanceFormArray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\InstanceArray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Packer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\PackerForm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\boxologic\Pallet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\PCKGeneticAlgorithm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Product.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Server.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Wrap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\Wrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\WrapperArray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\WrapperGroup.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bws\packer\WrapperVolume.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{e53fa7fd-e916-462f-9b7f-93d7b4dc02fd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

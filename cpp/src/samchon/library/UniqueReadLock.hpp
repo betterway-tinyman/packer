@@ -1,12 +1,11 @@
 #pragma once
-#include <samchon/API.hpp>
+
+#include <samchon/library/RWMutex.hpp>
 
 namespace samchon
 {
 namespace library
 {
-	class RWMutex;
-
 	/**
 	 * @brief Unique lock for reading
 	 *
@@ -36,18 +35,18 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API UniqueReadLock
+	class UniqueReadLock
 	{
 	private:
 		/**
 		 * @brief Managed mutex
 		 */
-		const RWMutex *mtx;
+		const RWMutex *rw_mutex;
 
 		/**
 		 * @brief Whether the mutex was locked by UniqueLock
 		 */
-		bool isLocked;
+		bool locked;
 
 	public:
 		/* -----------------------------------------------------------
@@ -56,10 +55,17 @@ namespace library
 		/**
 		 * @brief Construct from mutex
 		 *
-		 * @param mtx Mutex to manage
-		 * @param doLock Whether to lock directly or not
+		 * @param rw_mutex Mutex to manage
+		 * @param lock Whether to lock directly or not
 		 */
-		UniqueReadLock(const RWMutex &, bool = true);
+		UniqueReadLock(const RWMutex &rw_mutex, bool lock = true)
+		{
+			this->rw_mutex = &rw_mutex;
+			this->locked = false;
+
+			if (lock == true)
+				this->lock();
+		};
 
 		/**
 		 * @brief Prohibited Copy Constructor
@@ -76,15 +82,28 @@ namespace library
 		/**
 		 * @brief Move Constructor
 		 *
-		 * @param An object to move
+		 * @param obj An object to move
 		 */
-		UniqueReadLock(UniqueReadLock&&);
+		UniqueReadLock(UniqueReadLock &&obj)
+		{
+			//MOVE
+			this->rw_mutex = obj.rw_mutex;
+			this->locked = obj.locked;
+
+			//TRUNCATE
+			obj.rw_mutex = nullptr;
+			obj.locked = false;
+		};
 
 		/**
 		 * @brief Default Destructor
 		 * @details If read lock has done by the UniqueLock, unlock it
 		 */
-		~UniqueReadLock();
+		~UniqueReadLock()
+		{
+			if (locked == true)
+				rw_mutex->readUnlock();
+		}
 
 		/* -----------------------------------------------------------
 			LOCKERS
@@ -92,12 +111,26 @@ namespace library
 		/**
 		 * @copydoc RWMutex::readLock()
 		 */
-		void lock() const;
+		void lock() const
+		{
+			if (locked == true)
+				return;
+
+			rw_mutex->readLock();
+			(bool&)locked = true;
+		};
 
 		/**
 		 * @copydoc RWMutex::readUnlock()
 		 */
-		void unlock() const;
+		void unlock() const
+		{
+			if (locked == false)
+				return;
+
+			rw_mutex->readUnlock();
+			(bool&)locked = false;
+		};
 
 		/**
 		 * @copydoc RWMutex::tryReadLock()

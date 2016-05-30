@@ -1,11 +1,8 @@
 #pragma once
-#include <samchon/API.hpp>
 
-namespace std
-{
-	template <typename T> struct atomic;
-	class mutex;
-};
+#include <atomic>
+#include <mutex>
+
 namespace samchon
 {
 namespace library
@@ -48,14 +45,14 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Semaphore
+	class Semaphore
 	{
 	private:
 		/**
 		 * @brief The size
 		 * @details Permitted size of the semaphore
 		 */
-		size_t size_;
+		size_t capacity_;
 
 		/* ====================================================
 			VARIABLES FOR LOCK
@@ -63,14 +60,15 @@ namespace library
 		/**
 		 * @brief Acquired count
 		 */
-		size_t acquired;
-		std::mutex *countMtx;
+		size_t acquired_;
+
+		std::mutex count_mtx;
 
 		/**
 		 * @brief Locker
 		 * @details Manages lock and unlock of the semaphore
 		 */
-		std::mutex *mtx;
+		std::mutex mtx;
 
 	public:
 		/**
@@ -78,14 +76,22 @@ namespace library
 		 *
 		 * @param size The size of the semaphore to permit
 		 */
-		Semaphore(size_t = 2);
-		~Semaphore();
+		Semaphore(size_t capacity = 2)
+		{
+			this->acquired_ = 0;
+			this->capacity_ = capacity;
+		};
 
 		/**
 		 * @brief Set size
 		 * @details Set permitted size of the semaphore.
 		 */
-		void setSize(size_t);
+		void setCapacity(size_t val)
+		{
+			std::unique_lock<std::mutex> uk(count_mtx);
+
+			this->capacity_ = val;
+		};
 
 		/* ====================================================
 			GETTERS
@@ -96,12 +102,18 @@ namespace library
 		 *
 		 * @return The size of semaphore
 		 */
-		auto size() const->size_t;
+		auto capacity() const -> size_t
+		{
+			return capacity_;
+		};
 
 		/**
 		 * @brief Get acquired size.
 		 */
-		auto acquiredSize() const->size_t;
+		auto acquired() const -> size_t
+		{
+			return acquired_;
+		};
 
 		/* ====================================================
 			LOCKERS
@@ -114,7 +126,16 @@ namespace library
 		 * <p> If the count is over permitted size, wait until other admissions to be released. </p>
 		 *	\li Lock on mutex
 		 */
-		void acquire();
+		void acquire()
+		{
+			std::unique_lock<std::mutex> uk(count_mtx);
+
+			if (++acquired_ == capacity_)
+			{
+				uk.unlock();
+				mtx.lock();
+			}
+		};
 
 		/**
 		 * @brief Try to acquire admission
@@ -129,7 +150,20 @@ namespace library
 		 *
 		 * @return Whether succeded to acquire an admission or not
 		 */
-		auto tryAcquire() -> bool;
+		auto tryAcquire() -> bool
+		{
+			std::unique_lock<std::mutex> uk(count_mtx);
+
+			if (acquired_ == capacity_)
+				return false;
+			else
+			{
+				if (++acquired_ >= capacity_)
+					return mtx.try_lock();
+
+				return true;
+			}
+		};
 
 		/**
 		 * @brief Release an admission
@@ -138,7 +172,13 @@ namespace library
 		 * Releases an admission what you've acquired.
 		 * If the admission count was over the limited size, unlock the mutex.
 		 */
-		void release();
+		void release()
+		{
+			std::unique_lock<std::mutex> uk(count_mtx);
+
+			if (acquired_ != 0 && --acquired_ == capacity_ - 1)
+				mtx.unlock();
+		};
 	};
 };
 };

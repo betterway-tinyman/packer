@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <string>
 #include <memory>
@@ -45,7 +44,7 @@ namespace protocol
 	 * @see protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Entity
+	class Entity
 	{
 	public:
 		/**
@@ -56,10 +55,6 @@ namespace protocol
 		virtual auto TAG() const->std::string = 0;
 
 	public:
-		/**
-		 * @brief Default Constructor.
-		 */
-		Entity();
 		virtual ~Entity() = default;
 
 		/**
@@ -85,7 +80,10 @@ namespace protocol
 		 *
 		 * @return An identifier
 		 */
-		virtual auto key() const->std::string;
+		virtual auto key() const -> std::string
+		{
+			return "";
+		};
 
 		/**
 		 * @brief Get an XML object represents the Entity.
@@ -126,7 +124,13 @@ namespace protocol
 		 *
 		 * @return An XML object representing the Entity.
 		 */
-		virtual auto toXML() const->std::shared_ptr<library::XML>;
+		virtual auto toXML() const -> std::shared_ptr<library::XML>
+		{
+			auto xml = std::make_shared<library::XML>();
+			xml->setTag(this->TAG());
+
+			return xml;
+		}
 	};
 };
 };

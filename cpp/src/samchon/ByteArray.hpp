@@ -1,5 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
 
 #include <vector>
 #include <string>
@@ -27,7 +26,7 @@ namespace samchon
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API ByteArray
+	class ByteArray
 		: public std::vector<unsigned char>
 	{
 	private:
@@ -51,21 +50,42 @@ namespace samchon
 		/**
 		 * @brief Default Constructor
 		 */
-		ByteArray();
+		ByteArray() : super()
+		{
+			position = 0;
+		};
 
 		/**
 		 * @brief Copy Constructor
 		 */
-		ByteArray(const ByteArray &);
+		ByteArray(const ByteArray &obj) : super(obj)
+		{
+			position = 0;
+		};
 
 		/**
 		 * @brief Move Constructor
 		 */
-		ByteArray(ByteArray &&);
+		ByteArray(ByteArray &&obj) : super(move(obj))
+		{
+			position = 0;
+		};
 
-		auto operator=(const ByteArray &) -> ByteArray&;
+		auto operator=(const ByteArray &obj) -> ByteArray&
+		{
+			assign(obj.begin(), obj.end());
+			position = obj.position;
 
-		auto operator=(ByteArray &&) -> ByteArray&;
+			return *this;
+		};
+
+		auto operator=(ByteArray &&obj) -> ByteArray&
+		{
+			super::operator=(move(obj));
+			position = obj.position;
+
+			return *this;
+		};
 
 		/* --------------------------------------------------------------
 			POSITION
@@ -75,23 +95,32 @@ namespace samchon
 		 *
 		 * @details Get a position represents starting point of bytes to read
 		 */
-		auto getPosition() const -> size_t;
+		auto get_position() const -> size_t
+		{
+			return position;
+		};
 
 		/**
 		 * @brief Set poisition
 		 *
 		 * @details Set a position represents starting point of bytes to read
 		 */
-		void setPosition(size_t);
+		void set_position(size_t val)
+		{
+			position = val;
+		};
 
-		auto leftSize() const -> size_t;
+		auto left_size() const -> size_t
+		{
+			return this->size() - position;
+		};
 
 		/**
 		 * @brief Reverse byte ordering
 		 *
 		 * @details Creates a copy of data which of byte ordering is reversed.
 		 *	\li BIG_ENDIAN to SMALL_ENDIAN
-		 *	li SMALL_ENDIAN to BIG_ENDIAN
+		 *	\li SMALL_ENDIAN to BIG_ENDIAN
 		 */
 		template <typename T> static auto reverse(const T &val) -> T
 		{
@@ -175,9 +204,9 @@ namespace samchon
 			unsigned char *begin = (unsigned char*)str.data();
 			insert(end(), begin, begin + str.size());
 		};
-		template<> void write(const ByteArray &byteArray)
+		template<> void write(const ByteArray &byte_array)
 		{
-			insert(end(), byteArray.begin(), byteArray.end());
+			insert(end(), byte_array.begin(), byte_array.end());
 		};
 
 		/**
@@ -207,7 +236,10 @@ namespace samchon
 		 * 
 		 * @return ByteArray which is compressed
 		 */
-		auto compress() const -> ByteArray;
+		auto compress() const -> ByteArray
+		{
+			return{};
+		};
 
 		/**
 		 * @brief Decompress the binary data
@@ -218,6 +250,9 @@ namespace samchon
 		 * 
 		 * @return ByteArray that is decompressed
 		 */
-		auto decompress() const -> ByteArray;
+		auto decompress() const -> ByteArray
+		{
+			return{};
+		};
 	};
 };

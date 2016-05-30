@@ -68,6 +68,7 @@ public:
 		{
 			File("D:/cpp_class_diagram.pdf"),
 			File("D:/entity_relationship_diagram.pdf"),
+			File("D:/development_guide.pdf"),
 			File("D:/js_class_diagram.pdf"),
 			File("D:/sequence_diagram.pdf")
 		};
@@ -98,8 +99,18 @@ public:
 		if (invoke->getListener() != "getFile")
 			return;
 
+		std::shared_ptr<protocol::Invoke> send_invoke(new protocol::Invoke("saveFile"));
 		for (size_t i = 0; i < fileArray.size(); i++)
-			this->sendData(fileArray[i].toInvoke());
+		{
+			const File &file = fileArray[i];
+
+			send_invoke->emplace_back(new protocol::InvokeParameter(file.name + "." + file.extension, file.data));
+		}
+
+		this->sendData(send_invoke);
+
+		/*for (size_t i = 0; i < fileArray.size(); i++)
+			this->sendData(fileArray[i].toInvoke());*/
 	}
 };
 

@@ -789,6 +789,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 				}
@@ -857,6 +858,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 					else
@@ -950,6 +952,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 				}

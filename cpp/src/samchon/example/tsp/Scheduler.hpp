@@ -88,7 +88,6 @@ namespace tsp
 
 		virtual void construct(shared_ptr<XML> xml) override
 		{
-			super::construct(xml);
 			gaParameters.mutationRate = xml->getProperty<double>("mutationRate");
 			gaParameters.tournament = xml->getProperty<size_t>("tournament");
 			gaParameters.population = xml->getProperty<size_t>("population");

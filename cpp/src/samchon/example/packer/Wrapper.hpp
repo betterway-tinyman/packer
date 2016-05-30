@@ -120,7 +120,7 @@ namespace packer
 		virtual auto toXML() const -> shared_ptr<XML> override
 		{
 			shared_ptr<XML> &xml = super::toXML();
-			xml->addAllProperty(Instance::toXML());
+			xml->addAllProperties(Instance::toXML());
 
 			return xml;
 		};

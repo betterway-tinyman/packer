@@ -1,6 +1,4 @@
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/library/Event.hpp>
 
 namespace samchon
@@ -14,7 +12,7 @@ namespace library
 	 * \par [Inherited]
 	 * @copydetails library::Even
 	 */
-	class SAMCHON_FRAMEWORK_API ProgressEvent
+	class ProgressEvent
 		: public Event
 	{
 	private:
@@ -54,23 +52,37 @@ namespace library
 		 *
 		 * @throw exception denominator is zero
 		 */
-		ProgressEvent(EventDispatcher *, size_t, size_t);
+		ProgressEvent(EventDispatcher *source, size_t numerator, size_t denominator)
+			: super(source, ProgressEvent::PROGRESS)
+		{
+			this->numerator = numerator;
+			this->denominator = denominator;
+		};
 		virtual ~ProgressEvent() = default;
 
 		/**
 		 * @brief Get numerator, number of current progress
 		 */
-		auto getNumerator() const->size_t;
+		auto getNumerator() const -> size_t
+		{
+			return numerator;
+		};
 
 		/**
 		 * @brief Get denominator, number of total progress
 		 */
-		auto getDenominator() const->size_t;
+		auto getDenominator() const -> size_t
+		{
+			return denominator;
+		};
 
 		/**
 		 * @brief Get percentage of the progress
 		 */
-		auto getPercent() const -> double;
+		auto getPercent() const -> double
+		{
+			return numerator / (double)denominator;
+		};
 	};
 };
 };
