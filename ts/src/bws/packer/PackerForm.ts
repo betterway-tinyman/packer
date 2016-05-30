@@ -81,7 +81,7 @@
 		{
 			super();
 		}
-		protected createChild(xml: samchon.library.XML): InstanceForm
+		public createChild(xml: samchon.library.XML): InstanceForm
 		{
 			return new InstanceForm();
 		}

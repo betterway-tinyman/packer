@@ -17,7 +17,7 @@
 		/**
 		 * @inheritdoc
 		 */
-		protected createChild(xml: samchon.library.XML): Wrapper
+		public createChild(xml: samchon.library.XML): Wrapper
 		{
 			return new Wrapper();
 		}

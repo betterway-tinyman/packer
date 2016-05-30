@@ -22,7 +22,7 @@
 		/**
 		 * @inheritdoc
 		 */
-		protected createChild(xml: samchon.library.XML): Instance
+		public createChild(xml: samchon.library.XML): Instance
 		{
 			let type = xml.getProperty("type");
 			

@@ -116,7 +116,7 @@
 		/**
 		 * @inheritdoc
 		 */
-		protected createChild(xml: samchon.library.XML): Wrap
+		public createChild(xml: samchon.library.XML): Wrap
 		{
 			return new Wrap(this);
 		}
@@ -333,9 +333,9 @@
 			let xml: samchon.library.XML = super.toXML();
 
 			// WIDTH, HEIGHT AND LENGTH
-			xml.setProperty("width", this.width_);
-			xml.setProperty("height", this.height_);
-			xml.setProperty("length", this.length_);
+			xml.setProperty("width", this.width_ + "");
+			xml.setProperty("height", this.height_ + "");
+			xml.setProperty("length", this.length_ + "");
 			xml.eraseProperty("width_");
 			xml.eraseProperty("height_");
 			xml.eraseProperty("length_");
