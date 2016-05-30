@@ -485,6 +485,7 @@ var boxologic;
                             // CREATE A NEW NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
+                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                 }
@@ -536,6 +537,7 @@ var boxologic;
                             // CREATE A NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
+                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                     else {
@@ -604,6 +606,7 @@ var boxologic;
                             // CREATE NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
+                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                 }
@@ -1244,87 +1247,6 @@ var bws;
 var bws;
 (function (bws) {
     var packer;
-    (function (packer_1) {
-        var wrapperArray;
-        function main(str) {
-            ////////////////////////
-            // READ DATA
-            ////////////////////////
-            var packerForm = new packer_1.PackerForm();
-            var xml = new samchon.library.XML(str);
-            if (xml.getTag() == "invoke") {
-                var invoke_1 = new samchon.protocol.Invoke(xml);
-                packerForm.construct(invoke_1.at(0).getValue());
-            }
-            else
-                packerForm.construct(xml);
-            ////////////////////////
-            // CONSTRUCT PACKER AND RESULT
-            ////////////////////////
-            var packer = packerForm.toPacker();
-            wrapperArray = packer.optimize();
-            var invoke = new samchon.protocol.Invoke("setWrapperArray", wrapperArray.toXML());
-            ////////////////////////
-            // NOTIFY TO FLEX
-            ////////////////////////
-            var flex = document.getElementById("flex");
-            flex.sendData(invoke.toXML().toString());
-        }
-        packer_1.main = main;
-        function setWrapperArray(str) {
-            wrapperArray = new packer_1.WrapperArray();
-            wrapperArray.construct(new samchon.library.XML(str));
-        }
-        packer_1.setWrapperArray = setWrapperArray;
-        function drawWrapper(wrapperIndex, size) {
-            var wrapper = wrapperArray.at(wrapperIndex);
-            // CLEAR PREVIOUS CANVAS
-            var rightTD = document.getElementById("rightTD");
-            var div = document.createElement('div');
-            rightTD.removeChild(document.body.getElementsByTagName("div")[0]);
-            rightTD.appendChild(div);
-            // CREATE AND PRINT THE NEW CANVAS
-            div.appendChild(wrapper.toCanvas(size));
-        }
-        packer_1.drawWrapper = drawWrapper;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-function main() {
-    ///////////////////////////
-    // CONSTRUCT OBJECTS
-    ///////////////////////////
-    var wrapperArray = new bws.packer.WrapperArray();
-    var instanceArray = new bws.packer.InstanceArray();
-    // Wrappers
-    wrapperArray.push(new bws.packer.Wrapper("Large", 1000, 40, 40, 15, 0), new bws.packer.Wrapper("Medium", 700, 20, 20, 10, 0), new bws.packer.Wrapper("Small", 500, 15, 15, 8, 0));
-    ///////
-    // Each Instance is repeated #15
-    ///////
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Eraser", 1, 2, 5));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Book", 15, 30, 3));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Drink", 3, 3, 10));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Umbrella", 5, 5, 20));
-    // Wrappers also can be packed into another Wrapper.
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Notebook-Box", 2000, 30, 40, 4, 2));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Tablet-Box", 2500, 20, 28, 2, 0));
-    ///////////////////////////
-    // BEGINS PACKING
-    ///////////////////////////
-    // CONSTRUCT PACKER
-    var packer = new bws.packer.Packer(wrapperArray, instanceArray);
-    ///////
-    // PACK (OPTIMIZE)
-    var result = packer.optimize();
-    ///////
-    ///////////////////////////
-    // TRACE PACKING RESULT
-    ///////////////////////////
-    var xml = result.toXML();
-    samchon.trace(xml);
-}
-var bws;
-(function (bws) {
-    var packer;
     (function (packer) {
         /**
          * @brief Packer, a solver of 3d bin packing with multiple wrappers.
@@ -1582,7 +1504,7 @@ var bws;
 var bws;
 (function (bws) {
     var packer;
-    (function (packer_2) {
+    (function (packer_1) {
         /**
          * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
          *
@@ -1599,7 +1521,7 @@ var bws;
             function PackerForm() {
                 _super.call(this);
                 this.instanceFormArray = new InstanceFormArray();
-                this.wrapperArray = new packer_2.WrapperArray();
+                this.wrapperArray = new packer_1.WrapperArray();
             }
             PackerForm.prototype.construct = function (xml) {
                 this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
@@ -1625,12 +1547,12 @@ var bws;
                 return xml;
             };
             PackerForm.prototype.toPacker = function () {
-                var packer = new packer_2.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
+                var packer = new packer_1.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
                 return packer;
             };
             return PackerForm;
         }(samchon.protocol.Entity));
-        packer_2.PackerForm = PackerForm;
+        packer_1.PackerForm = PackerForm;
         /**
          * An array of {@link InstanceForm} objects.
          *
@@ -1665,7 +1587,7 @@ var bws;
              * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
              */
             InstanceFormArray.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
+                var instanceArray = new packer_1.InstanceArray();
                 for (var i = 0; i < this.size(); i++) {
                     var myInstances = this.at(i).toInstanceArray();
                     instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
@@ -1709,9 +1631,9 @@ var bws;
             };
             InstanceForm.prototype.createInstance = function (xml) {
                 if (xml.getProperty("type") == "product")
-                    return new packer_2.Product();
+                    return new packer_1.Product();
                 else
-                    return new packer_2.Wrapper();
+                    return new packer_1.Wrapper();
             };
             /* -----------------------------------------------------------
                 EXPORTERS
@@ -1736,7 +1658,7 @@ var bws;
              * @return An array of instance containing repeated {@link instance}.
              */
             InstanceForm.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
+                var instanceArray = new packer_1.InstanceArray();
                 instanceArray.assign(this.count, this.instance);
                 return instanceArray;
             };
@@ -2492,9 +2414,9 @@ var bws;
             Wrapper.prototype.toXML = function () {
                 var xml = _super.prototype.toXML.call(this);
                 // WIDTH, HEIGHT AND LENGTH
-                xml.setProperty("width", this.width_);
-                xml.setProperty("height", this.height_);
-                xml.setProperty("length", this.length_);
+                xml.setProperty("width", this.width_ + "");
+                xml.setProperty("height", this.height_ + "");
+                xml.setProperty("length", this.length_ + "");
                 xml.eraseProperty("width_");
                 xml.eraseProperty("height_");
                 xml.eraseProperty("length_");
@@ -2827,3 +2749,84 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer_2) {
+        var wrapperArray;
+        function main(str) {
+            ////////////////////////
+            // READ DATA
+            ////////////////////////
+            var packerForm = new packer_2.PackerForm();
+            var xml = new samchon.library.XML(str);
+            if (xml.getTag() == "invoke") {
+                var invoke_1 = new samchon.protocol.Invoke(xml);
+                packerForm.construct(invoke_1.at(0).getValue());
+            }
+            else
+                packerForm.construct(xml);
+            ////////////////////////
+            // CONSTRUCT PACKER AND RESULT
+            ////////////////////////
+            var packer = packerForm.toPacker();
+            wrapperArray = packer.optimize();
+            var invoke = new samchon.protocol.Invoke("setWrapperArray", wrapperArray.toXML());
+            ////////////////////////
+            // NOTIFY TO FLEX
+            ////////////////////////
+            var flex = document.getElementById("flex");
+            flex.sendData(invoke.toXML().toString());
+        }
+        packer_2.main = main;
+        function setWrapperArray(str) {
+            wrapperArray = new packer_2.WrapperArray();
+            wrapperArray.construct(new samchon.library.XML(str));
+        }
+        packer_2.setWrapperArray = setWrapperArray;
+        function drawWrapper(wrapperIndex, size) {
+            var wrapper = wrapperArray.at(wrapperIndex);
+            // CLEAR PREVIOUS CANVAS
+            var rightTD = document.getElementById("rightTD");
+            var div = document.createElement('div');
+            rightTD.removeChild(document.body.getElementsByTagName("div")[0]);
+            rightTD.appendChild(div);
+            // CREATE AND PRINT THE NEW CANVAS
+            div.appendChild(wrapper.toCanvas(size));
+        }
+        packer_2.drawWrapper = drawWrapper;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+function main() {
+    ///////////////////////////
+    // CONSTRUCT OBJECTS
+    ///////////////////////////
+    var wrapperArray = new bws.packer.WrapperArray();
+    var instanceArray = new bws.packer.InstanceArray();
+    // Wrappers
+    wrapperArray.push(new bws.packer.Wrapper("Large", 1000, 40, 40, 15, 0), new bws.packer.Wrapper("Medium", 700, 20, 20, 10, 0), new bws.packer.Wrapper("Small", 500, 15, 15, 8, 0));
+    ///////
+    // Each Instance is repeated #15
+    ///////
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Eraser", 1, 2, 5));
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Book", 15, 30, 3));
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Drink", 3, 3, 10));
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Umbrella", 5, 5, 20));
+    // Wrappers also can be packed into another Wrapper.
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Notebook-Box", 2000, 30, 40, 4, 2));
+    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Tablet-Box", 2500, 20, 28, 2, 0));
+    ///////////////////////////
+    // BEGINS PACKING
+    ///////////////////////////
+    // CONSTRUCT PACKER
+    var packer = new bws.packer.Packer(wrapperArray, instanceArray);
+    ///////
+    // PACK (OPTIMIZE)
+    var result = packer.optimize();
+    ///////
+    ///////////////////////////
+    // TRACE PACKING RESULT
+    ///////////////////////////
+    var xml = result.toXML();
+    console.log(xml.toString());
+}
