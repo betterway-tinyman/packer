@@ -8,7 +8,7 @@ Desktop.ini
 # ======================================================
 #	CPP: VISUAL STUDIO
 # ======================================================
-./cpp/
+cpp/
 !cpp/src
 !cpp/Packer.sln
 !cpp/Packer/Packer.vcxproj

@@ -1,8 +1,0 @@
-﻿  Client.cpp
-  Server.cpp
-  Generating code
-  40 of 3765 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    21 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  Packer.vcxproj -> D:\OneDrive\Project\HisWill\packer\cpp\x64\Release\Packer.exe
