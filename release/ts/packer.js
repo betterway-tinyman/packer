@@ -1312,6 +1312,8 @@ var bws;
              *
              */
             Packer.prototype.optimize = function () {
+                if (this.instanceArray.empty() || this.wrapperArray.empty())
+                    throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
                 var wrappers = new packer.WrapperArray(); // TO BE RETURNED
                 if (this.wrapperArray.size() == 1) {
                     // ONLY A TYPE OF WRAPPER EXISTS,
@@ -1319,7 +1321,7 @@ var bws;
                     var wrapperGroup = new packer.WrapperGroup(this.wrapperArray.front());
                     for (var i = 0; i < this.instanceArray.size(); i++)
                         if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
-                            return null;
+                            throw new std.LogicError("All instances are greater than the wrapper.");
                     // OPTIMIZE
                     wrapperGroup.optimize();
                     // ASSIGN WRAPPERS
@@ -1344,8 +1346,11 @@ var bws;
                     wrappers = this.repack(wrappers);
                 }
                 // SORT THE WRAPPERS BY ITEMS' POSITION
-                for (var i = 0; i < wrappers.size(); i++)
-                    std.sort(wrappers[i].begin(), wrappers[i].end(), function (left, right) {
+                for (var i = 0; i < wrappers.size(); i++) {
+                    var wrapper = wrappers[i];
+                    var begin = wrapper.begin();
+                    var end = wrapper.end();
+                    std.sort(wrapper.begin(), wrapper.end(), function (left, right) {
                         if (left.getZ() != right.getZ())
                             return left.getZ() < right.getZ();
                         else if (left.getY() != right.getY())
@@ -1353,6 +1358,9 @@ var bws;
                         else
                             return left.getX() < right.getX();
                     });
+                }
+                if (wrappers.empty() == true)
+                    throw new std.LogicError("All instances are greater than the wrapper.");
                 return wrappers;
             };
             /**
@@ -1884,7 +1892,7 @@ var bws;
              *
              * @details orientation Packer's new orientation.
              */
-            Wrap.prototype.changeWrapperOrientation = function (orietation) {
+            Wrap.prototype.changeWrapperOrientation = function (orientation) {
                 if (orientation == 1)
                     return;
                 // DECLARES
@@ -2770,8 +2778,15 @@ var bws;
             // CONSTRUCT PACKER AND RESULT
             ////////////////////////
             var packer = packerForm.toPacker();
-            wrapperArray = packer.optimize();
-            var invoke = new samchon.protocol.Invoke("setWrapperArray", wrapperArray.toXML());
+            var result;
+            var invoke;
+            try {
+                result = packer.optimize();
+                invoke = new samchon.protocol.Invoke("setWrapperArray", result.toXML());
+            }
+            catch (e) {
+                invoke = new samchon.protocol.Invoke("sendError", e.what(), "Unable to pack.");
+            }
             ////////////////////////
             // NOTIFY TO FLEX
             ////////////////////////
@@ -2822,8 +2837,11 @@ function main() {
     var packer = new bws.packer.Packer(wrapperArray, instanceArray);
     ///////
     // PACK (OPTIMIZE)
-    var result = packer.optimize();
     ///////
+    var result = packer.optimize();
+    console.log(result);
+    if (result == null)
+        return;
     ///////////////////////////
     // TRACE PACKING RESULT
     ///////////////////////////

@@ -8,6 +8,40 @@ if (typeof (exports) != "undefined") {
 }
 /// <reference path="../miscellaneous/node/requires.ts" /> 
 /// <reference path="../../samchon/API.ts" />
+var samchon;
+(function (samchon) {
+    var example;
+    (function (example) {
+        var WebClient = (function () {
+            function WebClient() {
+                var this_ = this;
+                this.connector = new samchon.protocol.ServerConnector(this);
+                this.connector.onopen =
+                    function (event) {
+                        console.log("connected");
+                        this_.sendData(new samchon.protocol.Invoke("sendMessage", 99999, "I am JavaScript Client", 3, 7));
+                    };
+                this.connector.connect("127.0.0.1", 37888);
+            }
+            WebClient.prototype.rotate_interval = function () {
+                console.log("send message");
+                this.sendData(new samchon.protocol.Invoke("sendMessage", "I am JavaScript Client", 3, 7));
+            };
+            WebClient.prototype.sendData = function (invoke) {
+                console.log("sendData: #" + invoke.toXML().toString());
+                this.connector.sendData(invoke);
+            };
+            WebClient.prototype.replyData = function (invoke) {
+                console.log("message from cpp:", invoke.getListener());
+            };
+            return WebClient;
+        }());
+        function test_web_client() {
+            var webClient = new WebClient();
+        }
+        example.test_web_client = test_web_client;
+    })(example = samchon.example || (samchon.example = {}));
+})(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
 var samchon;
 (function (samchon) {
@@ -2426,40 +2460,6 @@ var samchon;
         }(std.TreeMultiSet));
         collection.TreeMultiSetCollection = TreeMultiSetCollection;
     })(collection = samchon.collection || (samchon.collection = {}));
-})(samchon || (samchon = {}));
-var samchon;
-(function (samchon) {
-    var example;
-    (function (example) {
-        var WebClient = (function () {
-            function WebClient() {
-                var this_ = this;
-                this.connector = new samchon.protocol.ServerConnector(this);
-                this.connector.onopen =
-                    function (event) {
-                        console.log("connected");
-                        this_.sendData(new samchon.protocol.Invoke("sendMessage", 99999, "I am JavaScript Client", 3, 7));
-                    };
-                this.connector.connect("127.0.0.1", 37888);
-            }
-            WebClient.prototype.rotate_interval = function () {
-                console.log("send message");
-                this.sendData(new samchon.protocol.Invoke("sendMessage", "I am JavaScript Client", 3, 7));
-            };
-            WebClient.prototype.sendData = function (invoke) {
-                console.log("sendData: #" + invoke.toXML().toString());
-                this.connector.sendData(invoke);
-            };
-            WebClient.prototype.replyData = function (invoke) {
-                console.log("message from cpp:", invoke.getListener());
-            };
-            return WebClient;
-        }());
-        function test_web_client() {
-            var webClient = new WebClient();
-        }
-        example.test_web_client = test_web_client;
-    })(example = samchon.example || (samchon.example = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
 var samchon;

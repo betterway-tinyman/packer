@@ -199,7 +199,7 @@
 		 *
 		 * @details orientation Packer's new orientation.
 		 */
-		public changeWrapperOrientation(orietation: number): void
+		public changeWrapperOrientation(orientation: number): void
 		{
 			if (orientation == 1)
 				return;

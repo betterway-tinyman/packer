@@ -22,10 +22,20 @@
 		// CONSTRUCT PACKER AND RESULT
 		////////////////////////
 		let packer: Packer = packerForm.toPacker();
-		wrapperArray = packer.optimize();
-
-		let invoke = new samchon.protocol.Invoke("setWrapperArray", wrapperArray.toXML());
 		
+		let result: WrapperArray;
+		let invoke: samchon.protocol.Invoke;
+
+		try
+		{
+			result = packer.optimize();
+			invoke = new samchon.protocol.Invoke("setWrapperArray", result.toXML());
+		}
+		catch (e)
+		{
+			invoke = new samchon.protocol.Invoke("sendError", (e as std.Exception).what(), "Unable to pack.");
+		}
+
 		////////////////////////
 		// NOTIFY TO FLEX
 		////////////////////////
@@ -65,12 +75,12 @@ function main(): void
 	let instanceArray: bws.packer.InstanceArray = new bws.packer.InstanceArray();
 
 	// Wrappers
-	wrapperArray.push
-		(
+	wrapperArray.push	
+	(
 		new bws.packer.Wrapper("Large", 1000, 40, 40, 15, 0),
 		new bws.packer.Wrapper("Medium", 700, 20, 20, 10, 0),
 		new bws.packer.Wrapper("Small", 500, 15, 15, 8, 0)
-		);
+	);
 
 	///////
 	// Each Instance is repeated #15
@@ -92,8 +102,12 @@ function main(): void
 
 	///////
 	// PACK (OPTIMIZE)
-	let result: bws.packer.WrapperArray = packer.optimize();
 	///////
+	let result: bws.packer.WrapperArray = packer.optimize();
+	console.log(result);
+
+	if (result == null)
+		return;
 
 	///////////////////////////
 	// TRACE PACKING RESULT

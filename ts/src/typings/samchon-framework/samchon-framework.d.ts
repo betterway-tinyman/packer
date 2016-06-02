@@ -39,6 +39,9 @@ declare namespace samchon.protocol.master {
 }
 declare namespace samchon.protocol.slave {
 }
+declare namespace samchon.example {
+    function test_web_client(): void;
+}
 declare namespace samchon.library {
     /**
      * <p> XML is a class representing a tree structued xml objects. </p>
@@ -1599,9 +1602,6 @@ declare namespace samchon.collection {
          */
         removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
     }
-}
-declare namespace samchon.example {
-    function test_web_client(): void;
 }
 declare namespace samchon.library {
     /**

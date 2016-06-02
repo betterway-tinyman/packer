@@ -101,6 +101,9 @@
 		 */
 		public optimize(): WrapperArray
 		{
+			if (this.instanceArray.empty() || this.wrapperArray.empty())
+				throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
+
 			let wrappers: WrapperArray = new WrapperArray(); // TO BE RETURNED
 
 			if (this.wrapperArray.size() == 1)
@@ -111,7 +114,7 @@
 
 				for (let i: number = 0; i < this.instanceArray.size(); i++)
 					if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
-						return null;
+						throw new std.LogicError("All instances are greater than the wrapper.");
 
 				// OPTIMIZE
 				wrapperGroup.optimize();
@@ -144,7 +147,12 @@
 
 			// SORT THE WRAPPERS BY ITEMS' POSITION
 			for (let i: number = 0; i < wrappers.size(); i++)
-				std.sort(wrappers[i].begin(), wrappers[i].end(),
+			{
+				let wrapper = wrappers[i];
+				let begin = wrapper.begin();
+				let end = wrapper.end();
+
+				std.sort(wrapper.begin(), wrapper.end(),
 					function (left: Wrap, right: Wrap): boolean
 					{
 						if (left.getZ() != right.getZ())
@@ -155,6 +163,10 @@
 							return left.getX() < right.getX();
 					}
 				);
+			}
+
+			if (wrappers.empty() == true)
+				throw new std.LogicError("All instances are greater than the wrapper.");
 
 			return wrappers;
 		}

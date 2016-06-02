@@ -140,6 +140,7 @@
 			public function _replyData(str:String):void
 			{
 				trace(str);
+				
 				var invoke:Invoke = new Invoke(new XML(str));
 				
 				this.replyData(invoke);
@@ -155,6 +156,15 @@
 					
 					progressBar.setProgress(completed, total);
 					//statusLabel.text = StringUtil.substitute("진행 상황: {0} of {1}: {2}%", completed, total, percent);
+				}
+				else if (invoke.getListener() == "sendError")
+				{
+					var message:String = invoke.at(0).getValue();
+					var title:String = invoke.at(1).getValue();
+					
+					Alert.show(message, title);
+					parameterMovie.enabled = true;
+					resultMovie.enabled = true;
 				}
 				else
 				{

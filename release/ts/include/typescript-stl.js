@@ -3,162 +3,322 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/// <reference path="../API.ts" />
+/// <reference path="../../std/API.ts" />
+/*
+//////////////////////////////////////////////////
+// List of ambigious names for notation
+//////////////////////////////////////////////////
+// CLASSES
+// -----------------------------------------------
+    - vector					Vector
+    - deque						Deque
+    - list						List
+    - set						Set
+    - map						Map
+    - multiset					MultiSet
+    - multimap					MultiMap
+    - unordered_set				HashSet
+    - unordered_map				HashMap
+    - unordered_multiset		HashMultiSet
+    - unordered_multimap		HashMultiMap
+
+    - exception...				Exception...
+    - error_code				ErrorCode
+    - error_condition			ErrorCondition
+    - system_error				SystemError
+// -----------------------------------------------
+*/ 
+/// <reference path="API.ts" />
+// Iterator definitions.
+//
+// @reference http://www.cplusplus.com/reference/iterator
+// @author Jeongho Nam <http://samchon.org>
 var std;
 (function (std) {
-    var base;
-    (function (base) {
+    /**
+     * <p> Bi-directional iterator. </p>
+     *
+     * <p> {@link Iterator Bidirectional iterators} are iterators that can be used to access the sequence of elements
+     * in a range in both directions (towards the end and towards the beginning). </p>
+     *
+     * <p> All {@link IArrayIterator random-access iterators} are also valid {@link Iterrator bidirectional iterators}.
+     * </p>
+     *
+     * <p> There is not a single type of {@link Iterator bidirectional iterator}: {@link IContainer Each container}
+     * may define its own specific iterator type able to iterate through it and access its elements. </p>
+     *
+     * <p> <img src="../assets/images/design/abstract_containers.png" width="100%" /> </p>
+     *
+     * @reference http://www.cplusplus.com/reference/iterator/BidirectionalIterator
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    var Iterator = (function () {
+        /* ---------------------------------------------------------
+            CONSTRUCTORS
+        --------------------------------------------------------- */
         /**
-         * <p> Bi-directional iterator. </p>
+         * Construct from the source {@link IContainer container}.
          *
-         * <p> {@link Iterator Bidirectional iterators} are iterators that can be used to access the sequence of elements
-         * in a range in both directions (towards the end and towards the beginning). </p>
-         *
-         * <p> All {@link IArrayIterator random-access iterators} are also valid {@link Iterrator bidirectional iterators}.
-         * </p>
-         *
-         * <p> There is not a single type of {@link Iterator bidirectional iterator}: {@link IContainer Each container}
-         * may define its own specific iterator type able to iterate through it and access its elements. </p>
-         *
-         * <ul>
-         *	<li> Reference: http://www.cplusplus.com/reference/iterator/BidirectionalIterator/ </li>
-         * </ul>
-         *
-         * @author Jeongho Nam <http://samchon.org>
+         * @param source The source
          */
-        var Iterator = (function () {
-            /* ---------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------- */
-            /**
-             * Construct from the source {@link IContainer container}.
-             *
-             * @param source The source
-             */
-            function Iterator(source) {
-                this.source_ = source;
+        function Iterator(source) {
+            this.source_ = source;
+        }
+        /**
+         * Advances the {@link Iterator} by <i>n</i> element positions.
+         *
+         * @param n Number of element positions to advance.
+         * @return An advanced iterator.
+         */
+        Iterator.prototype.advance = function (n) {
+            var it = this;
+            var i;
+            if (n >= 0) {
+                for (i = 0; i < n; i++)
+                    if (it.equal_to(this.source_.end()))
+                        return this.source_.end();
+                    else
+                        it = it.next();
             }
+            else {
+                n = n * -1;
+                for (i = 0; i < n; i++)
+                    if (it.equal_to(this.source_.end()))
+                        return this.source_.end();
+                    else
+                        it = it.prev();
+            }
+            return it;
+        };
+        /* ---------------------------------------------------------
+            ACCESSORS
+        --------------------------------------------------------- */
+        /**
+         * Get source
+         */
+        Iterator.prototype.get_source = function () {
+            return this.source_;
+        };
+        /**
+         * <p> Whether an iterator is equal with the iterator. </p>
+         *
+         * <p> Compare two iterators and returns whether they are equal or not. </p>
+         *
+         * <h4> Note </h4>
+         * <p> Iterator's equal_to() only compare souce container and index number. </p>
+         *
+         * <p> Although elements in a pair, key and value are equal_to, if the source map or
+         * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
+         * compare the elements of a pair, compare them directly by yourself. </p>
+         *
+         * @param obj An iterator to compare
+         * @return Indicates whether equal or not.
+         */
+        Iterator.prototype.equal_to = function (obj) {
+            return this.source_ == obj.source_;
+        };
+        Object.defineProperty(Iterator.prototype, "value", {
             /**
-             * Advances the {@link Iterator} by <i>n</i> element positions.
+             * <p> Get value of the iterator is pointing. </p>
              *
-             * @param n Number of element positions to advance.
-             * @return An advanced iterator.
+             * @return A value of the iterator.
              */
-            Iterator.prototype.advance = function (n) {
-                var it = this;
-                var i;
-                if (n >= 0) {
-                    for (i = 0; i < n; i++)
-                        if (it.equal_to(this.source_.end()))
-                            return this.source_.end();
-                        else
-                            it = it.next();
-                }
-                else {
-                    n = n * -1;
-                    for (i = 0; i < n; i++)
-                        if (it.equal_to(this.source_.end()))
-                            return this.source_.end();
-                        else
-                            it = it.prev();
-                }
-                return it;
-            };
+            get: function () {
+                throw new std.LogicError("Have to be overriden.");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Iterator;
+    }());
+    std.Iterator = Iterator;
+    /**
+     * <p> This class reverses the direction in which a bidirectional or random-access iterator iterates through a range.
+     * </p>
+     *
+     * <p> A copy of the original iterator (the {@link Iterator base iterator}) is kept internally and used to reflect
+     * the operations performed on the {@link ReverseIterator}: whenever the {@link ReverseIterator} is incremented, its
+     * {@link Iterator base iterator} is decreased, and vice versa. A copy of the {@link Iterator base iterator} with the
+     * current state can be obtained at any time by calling member {@link base}. </p>
+     *
+     * <p> Notice however that when an iterator is reversed, the reversed version does not point to the same element in
+     * the range, but to <b>the one preceding it</b>. This is so, in order to arrange for the past-the-end element of a
+     * range: An iterator pointing to a past-the-end element in a range, when reversed, is pointing to the last element
+     * (not past it) of the range (this would be the first element of the reversed range). And if an iterator to the
+     * first element in a range is reversed, the reversed iterator points to the element before the first element (this
+     * would be the past-the-end element of the reversed range). </p>
+     *
+     * <p> <img src="../assets/images/design/abstract_containers.png" width="100%" /> </p>
+     *
+     * @reference http://www.cplusplus.com/reference/iterator/reverse_iterator
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    var ReverseIterator = (function (_super) {
+        __extends(ReverseIterator, _super);
+        /* ---------------------------------------------------------
+            CONSTRUCTORS
+        --------------------------------------------------------- */
+        function ReverseIterator(base) {
+            if (base == null)
+                _super.call(this, null);
+            else {
+                _super.call(this, base.get_source());
+                this.base_ = base.prev();
+            }
+        }
+        ReverseIterator.prototype.base = function () {
+            return this.base_.next();
+        };
+        Object.defineProperty(ReverseIterator.prototype, "value", {
             /* ---------------------------------------------------------
                 ACCESSORS
             --------------------------------------------------------- */
-            /**
-             * Get source
-             */
-            Iterator.prototype.get_source = function () {
-                return this.source_;
-            };
-            /**
-             * <p> Whether an iterator is equal with the iterator. </p>
-             *
-             * <p> Compare two iterators and returns whether they are equal or not. </p>
-             *
-             * <h4> Note </h4>
-             * <p> Iterator's equal_to() only compare souce container and index number. </p>
-             *
-             * <p> Although elements in a pair, key and value are equal_to, if the source map or
-             * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
-             * compare the elements of a pair, compare them directly by yourself. </p>
-             *
-             * @param obj An iterator to compare
-             * @return Indicates whether equal or not.
-             */
-            Iterator.prototype.equal_to = function (obj) {
-                return this.source_ == obj.source_;
-            };
-            Object.defineProperty(Iterator.prototype, "value", {
-                /**
-                 * <p> Get value of the iterator is pointing. </p>
-                 *
-                 * @return A value of the iterator.
-                 */
-                get: function () {
-                    throw new std.LogicError("Have to be overriden.");
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Iterator;
-        }());
-        base.Iterator = Iterator;
-    })(base = std.base || (std.base = {}));
-})(std || (std = {}));
-/// <reference path="../API.ts" />
-/// <reference path="Iterator.ts" />
-var std;
-(function (std) {
-    var base;
-    (function (base) {
+            get: function () {
+                return this.base_.value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /* ---------------------------------------------------------
+            MOVERS
+        --------------------------------------------------------- */
         /**
-         * A reverse and bi-directional iterator. </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
+         * @inheritdoc
          */
-        var ReverseIterator = (function (_super) {
-            __extends(ReverseIterator, _super);
-            /* ---------------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------------- */
-            function ReverseIterator(iterator) {
-                _super.call(this, iterator.get_source());
-                this.iterator_ = iterator;
-            }
-            ReverseIterator.prototype.equal_to = function (obj) {
-                if (obj instanceof ReverseIterator) {
-                    return this.iterator_.equal_to(obj.iterator_);
-                }
-                else
-                    return this.iterator_.equal_to(obj);
-            };
-            Object.defineProperty(ReverseIterator.prototype, "value", {
-                /**
-                 * @inheritdoc
-                 */
-                get: function () {
-                    return this.iterator_.value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            ReverseIterator.prototype.swap = function (obj) {
-                if (obj instanceof ReverseIterator)
-                    this.iterator_.swap(obj.iterator_);
-                else
-                    this.iterator_.swap(obj);
-            };
-            return ReverseIterator;
-        }(base.Iterator));
-        base.ReverseIterator = ReverseIterator;
-    })(base = std.base || (std.base = {}));
+        ReverseIterator.prototype.prev = function () {
+            var ret = this.create_neighbor();
+            ret.source_ = this.source_;
+            ret.base_ = this.base_.next();
+            return ret;
+        };
+        /**
+         * @inheritdoc
+         */
+        ReverseIterator.prototype.next = function () {
+            var ret = this.create_neighbor();
+            ret.source_ = this.source_;
+            ret.base_ = this.base_.next();
+            return ret;
+        };
+        /**
+         * @inheritdoc
+         */
+        ReverseIterator.prototype.advance = function (n) {
+            var ret = this.create_neighbor();
+            ret.source_ = this.source_;
+            ret.base_ = this.base_.advance(-n);
+            return ret;
+        };
+        /* ---------------------------------------------------------
+            COMPARES
+        --------------------------------------------------------- */
+        /**
+         * @inheritdoc
+         */
+        ReverseIterator.prototype.equal_to = function (obj) {
+            return this.base_.equal_to(obj.base_);
+        };
+        /**
+         * @inheritdoc
+         */
+        ReverseIterator.prototype.swap = function (obj) {
+            this.base_.swap(obj.base_);
+        };
+        return ReverseIterator;
+    }(Iterator));
+    std.ReverseIterator = ReverseIterator;
+    /* =========================================================
+        GLOBAL FUNCTIONS
+            - MOVERS
+            - BEGIN
+            - END
+    ============================================================
+        MOVERS
+    --------------------------------------------------------- */
+    /**
+     * <p> Return distance between {@link Iterator iterators}. </p>
+     *
+     * <p> Calculates the number of elements between <i>first</i> and <i>last</i>. </p>
+     *
+     * <p> If it is a {@link IArrayIterator random-access iterator}, the function uses operator- to calculate this.
+     * Otherwise, the function uses the increase operator {@link Iterator.next next()} repeatedly. </p>
+     *
+     * @param first Iterator pointing to the initial element.
+     * @param last Iterator pointing to the final element. This must be reachable from first.
+     *
+     * @return The number of elements between first and last.
+     */
+    function distance(first, last) {
+        if (first.index != undefined) {
+            // WHEN IARRAY_ITERATOR
+            // ABS FOR REVERSE_ITERATOR
+            return Math.abs(last.index - first.index);
+        }
+        var length = 0;
+        for (; !first.equal_to(last); first = first.next())
+            length++;
+        return length;
+    }
+    std.distance = distance;
+    /**
+     * <p> Advance iterator. </p>
+     *
+     * <p> Advances the iterator <i>it</i> by <i>n</i> elements positions. </p>
+     *
+     * @param it Iterator to be advanced.
+     * @param n Number of element positions to advance.
+     *
+     * @return An iterator to the element <i>n</i> positions before <i>it</i>.
+     */
+    function advance(it, n) {
+        return it.advance(n);
+    }
+    std.advance = advance;
+    /**
+     * <p> Get iterator to previous element. </p>
+     *
+     * <p> Returns an iterator pointing to the element that <i>it</i> would be pointing to if advanced <i>-n</i> positions. </p>
+     *
+     * @param it Iterator to base position.
+     * @param n Number of element positions offset (1 by default).
+     *
+     * @return An iterator to the element <i>n</i> positions before <i>it</i>.
+     */
+    function prev(it, n) {
+        if (n === void 0) { n = 1; }
+        return it.advance(n);
+    }
+    std.prev = prev;
+    /**
+     * <p> Get iterator to next element. </p>
+     *
+     * <p> Returns an iterator pointing to the element that <i>it</i> would be pointing to if advanced <i>n</i> positions. </p>
+     *
+     * @param it Iterator to base position.
+     * @param n Number of element positions offset (1 by default).
+     *
+     * @return An iterator to the element <i>n</i> positions away from <i>it</i>.
+     */
+    function next(it, n) {
+        if (n === void 0) { n = 1; }
+        return it.advance(n);
+    }
+    std.next = next;
+    // typedef is not specified in TypeScript yet.
+    // Instead, I listed all the containers and its iterators as overloaded functions
+    function begin(container) {
+        return container.begin();
+    }
+    std.begin = begin;
+    // typedef is not specified in TypeScript yet.
+    // Instead, I listed all the containers and its iterators as overloaded functions
+    function end(container) {
+        return container.end();
+    }
+    std.end = end;
 })(std || (std = {}));
 /// <reference path="API.ts" />
-/// <reference path="base/Iterator.ts" />
-/// <reference path="base/ReverseIterator.ts" />
+/// <reference path="Iterator.ts" />
 var std;
 (function (std) {
     /**
@@ -192,6 +352,8 @@ var std;
      * end, they perform worse than the others, and have less consistent iterators and references than {@link List}s.
      * </p>
      *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Sequence </dt>
@@ -207,12 +369,9 @@ var std;
      *	</dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/vector/vector/
-     * </ul>
-     *
      * @param <T> Type of the elements.
      *
+     * @reference http://www.cplusplus.com/reference/vector/vector
      * @author Jeongho Nam <http://samchon.org>
      */
     var Vector = (function (_super) {
@@ -225,10 +384,10 @@ var std;
             _super.call(this);
             if (args.length == 0) {
             }
-            if (args.length == 1 && args[0] instanceof Array) {
+            else if (args.length == 1 && args[0] instanceof Array) {
                 // CONSTRUCT FROM AN ARRAY OF ITEMS
                 var array = args[0];
-                this.push.apply(this, array);
+                _super.prototype.push.apply(this, array);
             }
             else if (args.length == 1 && typeof args[0] == "number") {
                 // CONSTRUCT FROM SIZE
@@ -246,11 +405,11 @@ var std;
                 var container = args[0];
                 this.assign(container.begin(), container.end());
             }
-            else if (args.length == 2 && args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
+            else if (args.length == 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
                 // CONSTRUCT FROM INPUT ITERATORS
-                var begin = args[0];
-                var end = args[1];
-                this.assign(begin, end);
+                var begin_1 = args[0];
+                var end_1 = args[1];
+                this.assign(begin_1, end_1);
             }
         }
         Object.defineProperty(Vector, "iterator", {
@@ -263,24 +422,13 @@ var std;
         });
         Vector.prototype.assign = function (first, second) {
             this.clear();
-            if (first instanceof std.base.Iterator && second instanceof std.base.Iterator) {
-                var begin = first;
-                var end = second;
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    this.push(it.value);
-            }
-            else if (typeof first == "number") {
-                var size = first;
-                var val = second;
-                this.length = size;
-                for (var i = 0; i < size; i++)
-                    this[i] = val;
-            }
+            this.insert(this.end(), first, second);
         };
         /**
          * @inheritdoc
          */
         Vector.prototype.reserve = function (size) {
+            // NOTHING TO DO ESPECIALLY
         };
         /**
          * @inheritdoc
@@ -310,16 +458,13 @@ var std;
          * @inheritdoc
          */
         Vector.prototype.rbegin = function () {
-            if (this.empty() == true)
-                return this.rend();
-            else
-                return new VectorReverseIterator(this, this.size() - 1);
+            return new VectorReverseIterator(this.end());
         };
         /**
          * @inheritdoc
          */
         Vector.prototype.rend = function () {
-            return new VectorReverseIterator(this, -1);
+            return new VectorReverseIterator(this.begin());
         };
         /**
          * @inheritdoc
@@ -370,69 +515,145 @@ var std;
         Vector.prototype.back = function () {
             return this.at(this.length - 1);
         };
-        /* ---------------------------------------------------------
+        /* =========================================================
             ELEMENTS I/O
+                - INSERT
+                - ERASE
+        ============================================================
+            INSERT
         --------------------------------------------------------- */
         /**
          * @inheritdoc
          */
         Vector.prototype.push_back = function (val) {
-            this.push(val);
-        };
-        /**
-         * @inheritdoc
-         */
-        Vector.prototype.pop_back = function () {
-            this.erase(this.end().prev());
+            _super.prototype.push.call(this, val);
         };
         Vector.prototype.insert = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            var position = args[0];
-            if (args.length == 2 && args[1] instanceof std.base.Iterator == false) {
-                var val = args[1];
-                return this.insert(position, 1, val);
+            // REVERSE_ITERATOR TO ITERATOR
+            var ret;
+            var is_reverse_iterator = false;
+            if (args[0] instanceof VectorReverseIterator) {
+                is_reverse_iterator = true;
+                args[0] = args[0].base().prev();
             }
-            else if (args.length == 3 && typeof args[1] == "number") {
-                var size = args[1];
-                var val = args[2];
-                var spliced = this.splice(position.index);
-                var inserts = [];
-                for (var i = 0; i < size; i++)
-                    inserts.push(val);
-                this.push.apply(this, inserts);
-                this.push.apply(this, spliced);
-                return new VectorIterator(this, position.index + inserts.length - 1);
-            }
-            else if (args.length == 3 && args[1] instanceof std.base.Iterator && args[2] instanceof std.base.Iterator) {
-                var myEnd = args[0];
-                var begin = args[1];
-                var end = args[2];
-                var spliced = this.splice(position.index);
-                var inserts = [];
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    inserts.push(it.value);
-                this.push.apply(this, spliced);
-                this.push.apply(this, inserts);
-                return new VectorIterator(this, myEnd.index + inserts.length - 1);
-            }
+            // BRANCHES
+            if (args.length == 2)
+                ret = this.insert_by_val(args[0], args[1]);
+            else if (args.length == 3 && typeof args[1] == "number")
+                ret = this.insert_by_repeating_val(args[0], args[1], args[2]);
             else
-                throw new std.InvalidArgument("invalid parameters.");
+                ret = this.insert_by_range(args[0], args[1], args[2]);
+            // RETURNS
+            if (is_reverse_iterator == true)
+                return new VectorReverseIterator(ret.next());
+            else
+                return ret;
         };
-        Vector.prototype.erase = function (begin, end) {
-            if (end === void 0) { end = null; }
-            var startIndex = begin.index;
-            if (end == null)
-                this.splice(startIndex, 1);
-            else if (end.index == -1) {
-                this.splice(startIndex);
+        /**
+         * @hidden
+         */
+        Vector.prototype.insert_by_val = function (position, val) {
+            return this.insert_by_repeating_val(position, 1, val);
+        };
+        /**
+         * @hidden
+         */
+        Vector.prototype.insert_by_repeating_val = function (position, n, val) {
+            if (position.index == -1) {
+                // WHEN INSERT TO THE LAST
+                for (var i = 0; i < n; i++)
+                    _super.prototype.push.call(this, val);
+                return this.begin();
+            }
+            else {
+                ///////
+                // INSERT TO THE MIDDLE POSITION
+                ///////
+                // CUT RIGHT SIDE
+                var spliced_array = _super.prototype.splice.call(this, position.index);
+                var insert_size = 0;
+                // INSERT ELEMENTS
+                for (var i = 0; i < n; i++) {
+                    _super.prototype.push.call(this, val);
+                    insert_size++;
+                }
+                _super.prototype.push.apply(this, spliced_array); // CONCAT THE SPLICEDS
+                return position;
+            }
+        };
+        /**
+         * @hidden
+         */
+        Vector.prototype.insert_by_range = function (position, first, last) {
+            if (position.index == -1) {
+                // WHEN INSERT TO THE LAST
+                for (; !first.equal_to(last); first = first.next())
+                    _super.prototype.push.call(this, first.value);
+                return this.begin();
+            }
+            else {
+                ///////
+                // INSERT TO THE MIDDLE POSITION
+                ///////
+                // CUT RIGHT SIDE
+                var spliced_array = _super.prototype.splice.call(this, position.index);
+                var insert_size = 0;
+                // INSERT ELEMENTS
+                for (; !first.equal_to(last); first = first.next()) {
+                    _super.prototype.push.call(this, first.value);
+                    insert_size++;
+                }
+                _super.prototype.push.apply(this, spliced_array); // CONCAT THE SPLICEDS
+                return position;
+            }
+        };
+        /* ---------------------------------------------------------
+            ERASE
+        --------------------------------------------------------- */
+        /**
+         * @inheritdoc
+         */
+        Vector.prototype.pop_back = function () {
+            this.erase(this.end().prev());
+        };
+        Vector.prototype.erase = function (first, last) {
+            if (last === void 0) { last = first.next(); }
+            var ret;
+            var is_reverse_iterator = false;
+            // REVERSE_ITERATOR TO ITERATOR
+            if (first instanceof VectorReverseIterator) {
+                is_reverse_iterator = true;
+                var first_it = last.base();
+                var last_it = first.base();
+                first = first_it;
+                last = last_it;
+            }
+            // ERASE ELEMENTS
+            ret = this.erase_by_range(first, last);
+            // RETURN BRANCHES
+            if (is_reverse_iterator == true)
+                return new VectorReverseIterator(ret.next());
+            else
+                return ret;
+        };
+        /**
+         * @hiddde
+         */
+        Vector.prototype.erase_by_range = function (first, last) {
+            if (first.index == -1)
+                return first;
+            // ERASE ELEMENTS
+            if (last.index == -1) {
+                _super.prototype.splice.call(this, first.index);
                 return this.end();
             }
             else
-                this.splice(startIndex, end.index - startIndex);
-            return new VectorIterator(this, startIndex);
+                _super.prototype.splice.call(this, first.index, last.index - first.index);
+            return first;
         };
         /* ===============================================================
             UTILITIES
@@ -450,6 +671,8 @@ var std;
     std.Vector = Vector;
     /**
      * <p> An iterator of Vector. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of the elements.
      *
@@ -503,25 +726,10 @@ var std;
             enumerable: true,
             configurable: true
         });
-        /**
-         * <p> Whether an iterator is equal with the iterator. </p>
-         *
-         * <p> Compare two iterators and returns whether they are equal or not. </p>
-         *
-         * <h4> Note </h4>
-         * <p> Iterator's equal_to() only compare souce container and index number. </p>
-         *
-         * <p> Although elements in a pair, key and value are equal_to, if the source map or
-         * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
-         * compare the elements of a pair, compare them directly by yourself. </p>
-         *
-         * @param obj An iterator to compare
-         * @return Indicates whether equal or not.
-         */
-        VectorIterator.prototype.equal_to = function (obj) {
-            return _super.prototype.equal_to.call(this, obj) && this.index_ == obj.index_;
-        };
         Object.defineProperty(VectorIterator.prototype, "index", {
+            /**
+             * Get index.
+             */
             get: function () {
                 return this.index_;
             },
@@ -561,6 +769,27 @@ var std;
             else
                 return new VectorIterator(this.vector, newIndex);
         };
+        /* ---------------------------------------------------------
+            COMPARES
+        --------------------------------------------------------- */
+        /**
+         * <p> Whether an iterator is equal with the iterator. </p>
+         *
+         * <p> Compare two iterators and returns whether they are equal or not. </p>
+         *
+         * <h4> Note </h4>
+         * <p> Iterator's equal_to() only compare souce container and index number. </p>
+         *
+         * <p> Although elements in a pair, key and value are equal_to, if the source map or
+         * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
+         * compare the elements of a pair, compare them directly by yourself. </p>
+         *
+         * @param obj An iterator to compare
+         * @return Indicates whether equal or not.
+         */
+        VectorIterator.prototype.equal_to = function (obj) {
+            return _super.prototype.equal_to.call(this, obj) && this.index_ == obj.index_;
+        };
         /**
          * @inheritdoc
          */
@@ -569,10 +798,12 @@ var std;
             var _a;
         };
         return VectorIterator;
-    }(std.base.Iterator));
+    }(std.Iterator));
     std.VectorIterator = VectorIterator;
     /**
      * <p> A reverse-iterator of Vector. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of the elements.
      *
@@ -583,44 +814,40 @@ var std;
         /* ---------------------------------------------------------
             CONSTRUCTORS
         --------------------------------------------------------- */
-        function VectorReverseIterator(source, index) {
-            _super.call(this, source, index);
+        function VectorReverseIterator(base) {
+            _super.call(this, base);
         }
-        /* ---------------------------------------------------------
-            MOVERS
-        --------------------------------------------------------- */
         /**
          * @inheritdoc
          */
-        VectorReverseIterator.prototype.prev = function () {
-            if (this.index_ >= this.source_.size() - 1)
-                return this.vector.end();
-            else
-                return new VectorIterator(this.vector, this.index_ + 1);
+        VectorReverseIterator.prototype.create_neighbor = function () {
+            return new VectorReverseIterator(null);
         };
-        /**
-         * @inheritdoc
-         */
-        VectorReverseIterator.prototype.next = function () {
-            if (this.index_ == -1)
-                return new VectorIterator(this.vector, this.vector.size() - 1);
-            else if (this.index_ - 1 < 0)
-                return this.vector.end();
-            else
-                return new VectorIterator(this.vector, this.index_ - 1);
-        };
-        /**
-         * @inheritdoc
-         */
-        VectorReverseIterator.prototype.advance = function (n) {
-            var newIndex = this.index_ - n;
-            if (newIndex < 0 || newIndex >= this.vector.size())
-                return this.vector.rend();
-            else
-                return new VectorReverseIterator(this.vector, newIndex);
-        };
+        Object.defineProperty(VectorReverseIterator.prototype, "value", {
+            /* ---------------------------------------------------------
+                ACCESSORS
+            --------------------------------------------------------- */
+            /**
+             * Set value.
+             */
+            set: function (val) {
+                this.base_.value = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VectorReverseIterator.prototype, "index", {
+            /**
+             * Get index.
+             */
+            get: function () {
+                return this.base_.index;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return VectorReverseIterator;
-    }(VectorIterator));
+    }(std.ReverseIterator));
     std.VectorReverseIterator = VectorReverseIterator;
 })(std || (std = {}));
 /// <reference path="../API.ts" />
@@ -629,7 +856,9 @@ var std;
     var base;
     (function (base) {
         /**
-         * <p> An abstract  </p>
+         * <p> An abstract container. </p>
+         *
+         * <p> <img src="../assets/images/design/abstract_containers.png" width="100%" /> </p>
          *
          * <h3> Container properties </h3>
          * <dl>
@@ -668,9 +897,9 @@ var std;
             Container.prototype.empty = function () {
                 return this.size() == 0;
             };
-            /* ===============================================================
+            /* ---------------------------------------------------------------
                 UTILITIES
-            =============================================================== */
+            --------------------------------------------------------------- */
             /**
              * @inheritdoc
              */
@@ -686,40 +915,39 @@ var std;
 })(std || (std = {}));
 /// <reference path="API.ts" />
 /// <reference path="base/Container.ts" />
-/// <reference path="base/Iterator.ts" />
-/// <reference path="base/ReverseIterator.ts" />
+/// <reference path="Iterator.ts" />
 var std;
 (function (std) {
     /**
      * <p> Double ended queue. </p>
      *
      * <p> {@link Deque} (usually pronounced like "<i>deck</i>") is an irregular acronym of
-     * <b>d</b>ouble-<b>e</b>nded <b>q</b>ueue. Double-ended queues are sequence containers with dynamic
-     * sizes that can be expanded or contracted on both ends (either its front or its back). </p>
+     * <b>d</b>ouble-<b>e</b>nded <b>q</b>ueue. Double-ended queues are sequence containers with dynamic sizes that can be
+     * expanded or contracted on both ends (either its front or its back). </p>
      *
-     * <p> Specific libraries may implement deques in different ways, generally as some form of dynamic
-     * array. But in any case, they allow for the individual elements to be accessed directly through
-     * random access iterators, with storage handled automatically by expanding and contracting the
-     * container as needed. </p>
+     * <p> Specific libraries may implement deques in different ways, generally as some form of dynamic array. But in any
+     * case, they allow for the individual elements to be accessed directly through random access iterators, with storage
+     * handled automatically by expanding and contracting the container as needed. </p>
      *
-     * <p> Therefore, they provide a functionality similar to vectors, but with efficient insertion and
-     * deletion of elements also at the beginning of the sequence, and not only at its end. But, unlike
-     * {@link Vector}s, {@link Deque}s are not guaranteed to store all its elements in contiguous storage
-     * locations: accessing elements in a <u>deque</u> by offsetting a pointer to another element causes
-     * undefined behavior. </p>
+     * <p> Therefore, they provide a functionality similar to vectors, but with efficient insertion and deletion of
+     * elements also at the beginning of the sequence, and not only at its end. But, unlike {@link Vector Vectors},
+     * {@link Deque Deques} are not guaranteed to store all its elements in contiguous storage locations: accessing
+     * elements in a <u>deque</u> by offsetting a pointer to another element causes undefined behavior. </p>
      *
-     * <p> Both {@link Vector}s and {@link Deque}s provide a very similar interface and can be used for
-     * similar purposes, but internally both work in quite different ways: While {@link Vector}s use a
-     * single array that needs to be occasionally reallocated for growth, the elements of a {@link Deque}
-     * can be scattered in different chunks of storage, with the container keeping the necessary information
-     * internally to provide direct access to any of its elements in constant time and with a uniform
-     * sequential interface (through iterators). Therefore, {@link Deque}s are a little more complex
-     * internally than {@link Vector}s, but this allows them to grow more efficiently under certain
-     * circumstances, especially with very long sequences, where reallocations become more expensive. </p>
+     * <p> Both {@link Vector}s and {@link Deque}s provide a very similar interface and can be used for similar purposes,
+     * but internally both work in quite different ways: While {@link Vector}s use a single array that needs to be
+     * occasionally reallocated for growth, the elements of a {@link Deque} can be scattered in different chunks of
+     * storage, with the container keeping the necessary information internally to provide direct access to any of its
+     * elements in constant time and with a uniform sequential interface (through iterators). Therefore,
+     * {@link Deque Deques} are a little more complex internally than {@link Vector}s, but this allows them to grow more
+     * efficiently under certain circumstances, especially with very long sequences, where reallocations become more
+     * expensive. </p>
      *
-     * <p> For operations that involve frequent insertion or removals of elements at positions other than
-     * the beginning or the end, {@link Deque}s perform worse and have less consistent iterators and
-     * references than {@link List}s. </p>
+     * <p> For operations that involve frequent insertion or removals of elements at positions other than the beginning or
+     * the end, {@link Deque Deques} perform worse and have less consistent iterators and references than
+     * {@link List Lists}. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * <h3> Container properties </h3>
      * <dl>
@@ -733,12 +961,9 @@ var std;
      *		 of the sequence. </dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/deque/deque/ </li>
-     * </ul>
-     *
      * @param <T> Type of the elements.
      *
+     * @reference http://www.cplusplus.com/reference/deque/deque/
      * @author Jeongho Nam <http://samchon.org>
      */
     var Deque = (function (_super) {
@@ -762,10 +987,10 @@ var std;
                 this.assign(container.begin(), container.end());
             }
             else if (args.length == 2 &&
-                args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
-                var begin = args[0];
-                var end = args[1];
-                this.assign(begin, end);
+                args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                var begin_2 = args[0];
+                var end_2 = args[1];
+                this.assign(begin_2, end_2);
             }
         }
         Object.defineProperty(Deque, "iterator", {
@@ -812,18 +1037,18 @@ var std;
         Deque.prototype.assign = function (first, second) {
             // CLEAR PREVIOUS CONTENTS
             this.clear();
-            if (first instanceof std.base.Iterator && second instanceof std.base.Iterator) {
-                var begin = first;
-                var end = second;
+            if (first instanceof std.Iterator && second instanceof std.Iterator) {
+                var begin_3 = first;
+                var end_3 = second;
                 var size = 0;
-                for (var it = begin; !it.equal_to(end); it = it.next())
+                for (var it = begin_3; !it.equal_to(end_3); it = it.next())
                     size++;
                 // RESERVE
                 this.reserve(size);
                 this.size_ = size;
                 // ASSIGN CONTENTS
                 var array = this.matrix_[0];
-                for (var it = begin; !it.equal_to(end); it = it.next()) {
+                for (var it = begin_3; !it.equal_to(end_3); it = it.next()) {
                     if (array.length >= this.get_col_size()) {
                         array = new Array();
                         this.matrix_.push(array);
@@ -852,11 +1077,15 @@ var std;
          * @inheritdoc
          */
         Deque.prototype.reserve = function (capacity) {
+            // MEMORIZE
             var prevMatrix = this.matrix_;
             var prevSize = this.size_;
-            this.clear();
-            // RESERVE
-            this.size_ = prevSize;
+            // REFRESH
+            this.matrix_ = new Array();
+            this.matrix_.push(new Array());
+            /////
+            // RE-FILL
+            /////
             var array = this.matrix_[0];
             for (var i = 0; i < prevMatrix.length; i++)
                 for (var j = 0; j < prevMatrix[i].length; j++) {
@@ -871,8 +1100,10 @@ var std;
          * @inheritdoc
          */
         Deque.prototype.clear = function () {
+            // CLEAR CONTENTS
             this.matrix_ = new Array();
             this.matrix_.push(new Array());
+            // RE-INDEX
             this.size_ = 0;
             this.capacity_ = Deque.MIN_CAPACITY;
         };
@@ -900,16 +1131,13 @@ var std;
          * @inheritdoc
          */
         Deque.prototype.rbegin = function () {
-            if (this.empty() == true)
-                return this.rend();
-            else
-                return new DequeReverseIterator(this, this.size() - 1);
+            return new DequeReverseIterator(this.end());
         };
         /**
          * @inheritdoc
          */
         Deque.prototype.rend = function () {
-            return new DequeReverseIterator(this, -1);
+            return new DequeReverseIterator(this.begin());
         };
         /**
          * @inheritdoc
@@ -971,13 +1199,14 @@ var std;
             }
             if (row == this.matrix_.length)
                 row--;
-            return new std.Pair(row, index);
+            return std.make_pair(row, index);
         };
         /* =========================================================
             ELEMENTS I/O
                 - PUSH & POP
                 - INSERT
                 - ERASE
+                - PRE & POST-PROCESS
         ============================================================
             PUSH & POP
         --------------------------------------------------------- */
@@ -989,8 +1218,10 @@ var std;
             for (var _i = 0; _i < arguments.length; _i++) {
                 items[_i - 0] = arguments[_i];
             }
+            // RE-SIZE
             if (this.size_ + items.length > this.capacity_)
                 this.reserve(this.size_ + items.length);
+            // INSERTS
             var array = this.matrix_[this.matrix_.length - 1];
             for (var i = 0; i < items.length; i++) {
                 if (array.length >= this.get_col_size()) {
@@ -999,6 +1230,7 @@ var std;
                 }
                 array.push(items[i]);
             }
+            // INDEXING
             this.size_ += items.length;
             return this.size_;
         };
@@ -1032,6 +1264,7 @@ var std;
         Deque.prototype.pop_front = function () {
             if (this.empty() == true)
                 return; // SOMEWHERE PLACE TO THROW EXCEPTION
+            // EREASE FIRST ELEMENT
             this.matrix_[0].shift();
             this.size_--;
             if (this.matrix_[0].length == 0)
@@ -1043,57 +1276,95 @@ var std;
         Deque.prototype.pop_back = function () {
             if (this.empty() == true)
                 return; // SOMEWHERE PLACE TO THROW EXCEPTION
+            // ERASE LAST ELEMENT
             var lastArray = this.matrix_[this.matrix_.length - 1];
             lastArray.splice(lastArray.length - 1, 1);
             this.size_--;
             if (lastArray.length == 0)
                 this.matrix_.splice(this.matrix_.length - 1, 1);
         };
-        Deque.prototype.insert = function (position) {
+        Deque.prototype.insert = function () {
             var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
             }
+            // REVERSE_ITERATOR TO ITERATOR
+            var ret;
+            var is_reverse_iterator = false;
+            if (args[0] instanceof DequeReverseIterator) {
+                is_reverse_iterator = true;
+                args[0] = args[0].base().prev();
+            }
+            // BRANCHES
+            if (args.length == 2)
+                ret = this.insert_by_val(args[0], args[1]);
+            else if (args.length == 3 && typeof args[1] == "number")
+                ret = this.insert_by_repeating_val(args[0], args[1], args[2]);
+            else
+                ret = this.insert_by_range(args[0], args[1], args[2]);
+            // RETURNS
+            if (is_reverse_iterator == true)
+                return new DequeReverseIterator(ret.next());
+            else
+                return ret;
+        };
+        /**
+         * @hidden
+         */
+        Deque.prototype.insert_by_val = function (position, val) {
+            return this.insert_by_repeating_val(position, 1, val);
+        };
+        /**
+         * @hidden
+         */
+        Deque.prototype.insert_by_repeating_val = function (position, n, val) {
+            // CONSTRUCT ITEMS
             var items = [];
-            if (args.length == 1) {
-                var val = args[0];
-                items.push(val);
-            }
-            else if (args.length == 2 && typeof args[0] == "number") {
-                var n = args[0];
-                var val = args[1];
-                for (var i = 0; i < n; i++)
-                    items.push(val);
-            }
-            else if (args.length == 2 && args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
-                var begin = args[0];
-                var end = args[1];
-                for (var it = begin; !it.equal_to(end); it = it.next())
-                    items.push(it.value);
-            }
-            // -----------------------------------------------------
-            // INSERT ITEMS
-            // -----------------------------------------------------
-            // INSERTS CAREFULLY
-            if (position.equal_to(this.end()) == true) {
-                // WHEN INSERTS TO THE BACK SIDE
+            items.length = n;
+            for (var i = 0; i < n; i++)
+                items[i] = val;
+            // INSERT ELEMENTS
+            if (position.equal_to(this.end())) {
                 this.push.apply(this, items);
-                return;
+                return this.begin();
             }
-            this.size_ += items.length;
+            else
+                return this.insert_by_items(position, items);
+        };
+        /**
+         * @hidden
+         */
+        Deque.prototype.insert_by_range = function (position, begin, end) {
+            // CONSTRUCT ITEMS
+            var items = [];
+            for (var it = begin; !it.equal_to(end); it = it.next())
+                items.push(it.value);
+            // INSERT ELEMENTS
+            if (position.equal_to(this.end())) {
+                this.push.apply(this, items);
+                return this.begin();
+            }
+            else
+                return this.insert_by_items(position, items);
+        };
+        /**
+         * @hidden
+         */
+        Deque.prototype.insert_by_items = function (position, items) {
+            var item_size = items.length;
+            this.size_ += item_size;
             if (this.size_ <= this.capacity_) {
                 // ------------------------------------------------------
                 // WHEN FITTING INTO RESERVED CAPACITY IS POSSIBLE
                 // ------------------------------------------------------
                 // INSERTS CAREFULLY CONSIDERING THE COL_SIZE
-                var indexPair = this.fetch_index(position.index);
-                var index = indexPair.first;
-                var splicedValues = this.matrix_[index].splice(indexPair.second);
-                if (splicedValues.length != 0)
-                    items = items.concat.apply(items, splicedValues);
+                var index_pair = this.fetch_index(position.index);
+                var index = index_pair.first;
+                var spliced_values = this.matrix_[index].splice(index_pair.second);
+                if (spliced_values.length != 0)
+                    items = items.concat.apply(items, spliced_values);
                 if (this.matrix_[index].length < Deque.ROW) {
-                    this.matrix_[index] =
-                        (_a = this.matrix_[index]).concat.apply(_a, items.splice(0, Deque.ROW - this.matrix_[index].length));
+                    this.matrix_[index] = (_a = this.matrix_[index]).concat.apply(_a, items.splice(0, Deque.ROW - this.matrix_[index].length));
                 }
                 var splicedArray = this.matrix_.splice(index + 1);
                 // INSERTS
@@ -1126,15 +1397,36 @@ var std;
             return position;
             var _a, _b, _c;
         };
-        Deque.prototype.erase = function (begin, end) {
-            if (end === void 0) { end = null; }
-            if (end == null)
-                end = begin.next();
-            var index = begin.index;
-            var size = end.index - index;
+        Deque.prototype.erase = function (first, last) {
+            if (last === void 0) { last = first.next(); }
+            var ret;
+            var is_reverse_iterator = false;
+            // REVERSE_ITERATOR TO ITERATOR
+            if (first instanceof DequeReverseIterator) {
+                is_reverse_iterator = true;
+                var first_it = last.base();
+                var last_it = first.base();
+                first = first_it;
+                last = last_it;
+            }
+            // ERASE ELEMENTS
+            ret = this.erase_by_range(first, last);
+            // RETURN BRANCHES
+            if (is_reverse_iterator == true)
+                return new DequeReverseIterator(ret.next());
+            else
+                return ret;
+        };
+        /**
+         * @hidden
+         */
+        Deque.prototype.erase_by_range = function (first, last) {
+            // INDEXING
+            var size = last.index - first.index;
             this.size_ -= size;
+            // ERASING
             while (size != 0) {
-                var indexPair = this.fetch_index(index);
+                var indexPair = this.fetch_index(first.index);
                 var array = this.matrix_[indexPair.first];
                 var myDeleteSize = Math.min(size, array.length - indexPair.second);
                 array.splice(indexPair.second, myDeleteSize);
@@ -1142,7 +1434,7 @@ var std;
                     this.matrix_.splice(indexPair.first, 1);
                 size -= myDeleteSize;
             }
-            return begin;
+            return first;
         };
         /* ===============================================================
             UTILITIES
@@ -1169,7 +1461,9 @@ var std;
     }(std.base.Container));
     std.Deque = Deque;
     /**
-     * An iterator of {@link Deque}.
+     * <p> An iterator of {@link Deque}. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @author Jeongho Nam <http://samchon.org>
      */
@@ -1218,24 +1512,6 @@ var std;
             enumerable: true,
             configurable: true
         });
-        /**
-         * <p> Whether an iterator is equal with the iterator. </p>
-         *
-         * <p> Compare two iterators and returns whether they are equal or not. </p>
-         *
-         * <h4> Note </h4>
-         * <p> Iterator's equal_to() only compare souce container and index number. </p>
-         *
-         * <p> Although elements in a pair, key and value are equal_to, if the source map or
-         * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
-         * compare the elements of a pair, compare them directly by yourself. </p>
-         *
-         * @param obj An iterator to compare
-         * @return Indicates whether equal or not.
-         */
-        DequeIterator.prototype.equal_to = function (obj) {
-            return _super.prototype.equal_to.call(this, obj) && this.index_ == obj.index_;
-        };
         Object.defineProperty(DequeIterator.prototype, "index", {
             /**
              * @inheritdoc
@@ -1279,6 +1555,27 @@ var std;
             else
                 return new DequeIterator(this.deque, new_index);
         };
+        /* ---------------------------------------------------------
+            COMPARES
+        --------------------------------------------------------- */
+        /**
+         * <p> Whether an iterator is equal with the iterator. </p>
+         *
+         * <p> Compare two iterators and returns whether they are equal or not. </p>
+         *
+         * <h4> Note </h4>
+         * <p> Iterator's equal_to() only compare souce container and index number. </p>
+         *
+         * <p> Although elements in a pair, key and value are equal_to, if the source map or
+         * index number is different, then the {@link equal_to equal_to()} will return false. If you want to
+         * compare the elements of a pair, compare them directly by yourself. </p>
+         *
+         * @param obj An iterator to compare
+         * @return Indicates whether equal or not.
+         */
+        DequeIterator.prototype.equal_to = function (obj) {
+            return _super.prototype.equal_to.call(this, obj) && this.index_ == obj.index_;
+        };
         /**
          * @inheritdoc
          */
@@ -1287,10 +1584,12 @@ var std;
             var _a;
         };
         return DequeIterator;
-    }(std.base.Iterator));
+    }(std.Iterator));
     std.DequeIterator = DequeIterator;
     /**
      * <p> A reverse-iterator of Deque. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of the elements.
      *
@@ -1301,95 +1600,87 @@ var std;
         /* ---------------------------------------------------------
             CONSTRUCTORS
         --------------------------------------------------------- */
-        function DequeReverseIterator(source, index) {
-            _super.call(this, source, index);
+        function DequeReverseIterator(base) {
+            _super.call(this, base);
         }
-        /* ---------------------------------------------------------
-            MOVERS
-        --------------------------------------------------------- */
         /**
          * @inheritdoc
          */
-        DequeReverseIterator.prototype.prev = function () {
-            if (this.index_ >= this.source_.size() - 1)
-                return this.deque.end();
-            else
-                return new DequeReverseIterator(this.deque, this.index_ + 1);
+        DequeReverseIterator.prototype.create_neighbor = function () {
+            return new DequeReverseIterator(null);
         };
-        /**
-         * @inheritdoc
-         */
-        DequeReverseIterator.prototype.next = function () {
-            if (this.index_ == -1)
-                return new DequeReverseIterator(this.deque, this.deque.size() - 1);
-            else if (this.index_ - 1 < 0)
-                return this.deque.end();
-            else
-                return new DequeReverseIterator(this.deque, this.index_ - 1);
-        };
-        /**
-         * @inheritdoc
-         */
-        DequeReverseIterator.prototype.advance = function (n) {
-            var new_index = this.index_ - n;
-            if (new_index < 0 || new_index >= this.deque.size())
-                return this.deque.end();
-            else
-                return new DequeReverseIterator(this.deque, new_index);
-        };
+        Object.defineProperty(DequeReverseIterator.prototype, "value", {
+            /* ---------------------------------------------------------
+                ACCESSORS
+            --------------------------------------------------------- */
+            /**
+             * Set value.
+             */
+            set: function (val) {
+                this.base_.value = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DequeReverseIterator.prototype, "index", {
+            /**
+             * Get index.
+             */
+            get: function () {
+                return this.base_.index;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return DequeReverseIterator;
-    }(DequeIterator));
+    }(std.ReverseIterator));
     std.DequeReverseIterator = DequeReverseIterator;
 })(std || (std = {}));
 /// <reference path="API.ts" />
 /// <reference path="base/Container.ts" />
-/// <reference path="base/Iterator.ts" />
-/// <reference path="base/ReverseIterator.ts" />
+/// <reference path="Iterator.ts" />
 var std;
 (function (std) {
     /**
      * <p> Doubly linked list. </p>
      *
-     * <p> {@link List}s are sequence containers that allow constant time insert and erase operations anywhere
-     * within the sequence, and iteration in both directions. </p>
+     * <p> {@link List}s are sequence containers that allow constant time insert and erase operations anywhere within the
+     * sequence, and iteration in both directions. </p>
      *
-     * <p> List containers are implemented as doubly-linked lists; Doubly linked lists can store each of the elements
-     * they contain in different and unrelated storage locations. The ordering is kept internally by the association
-     * to each element of a link to the element preceding it and a link to the element following it. </p>
+     * <p> List containers are implemented as doubly-linked lists; Doubly linked lists can store each of the elements they
+     * contain in different and unrelated storage locations. The ordering is kept internally by the association to each
+     * element of a link to the element preceding it and a link to the element following it. </p>
      *
-     * <p> They are very similar to forward_list: The main difference being that forward_list objects are
-     * single-linked lists, and thus they can only be iterated forwards, in exchange for being somewhat smaller and
-     * more efficient. </p>
+     * <p> They are very similar to forward_list: The main difference being that forward_list objects are single-linked
+     * lists, and thus they can only be iterated forwards, in exchange for being somewhat smaller and more efficient. </p>
      *
-     * <p> Compared to other base standard sequence containers (array, vector and deque), lists perform generally
-     * better in inserting, extracting and moving elements in any position within the container for which an iterator
-     * has already been obtained, and therefore also in algorithms that make intensive use of these, like sorting
-     * algorithms. </p>
+     * <p> Compared to other base standard sequence containers (array, vector and deque), lists perform generally better
+     * in inserting, extracting and moving elements in any position within the container for which an iterator has already
+     * been obtained, and therefore also in algorithms that make intensive use of these, like sorting algorithms. </p>
      *
      * <p> The main drawback of lists and forward_lists compared to these other sequence containers is that they lack
-     * direct access to the elements by their position; For example, to access the sixth element in a list, one has
-     * to iterate from a known position (like the beginning or the end) to that position, which takes linear time in
-     * the distance between these. They also consume some extra memory to keep the linking information associated to
-     * each element (which may be an important factor for large lists of small-sized elements). </p>
+     * direct access to the elements by their position; For example, to access the sixth element in a list, one has to
+     * iterate from a known position (like the beginning or the end) to that position, which takes linear time in the
+     * distance between these. They also consume some extra memory to keep the linking information associated to each
+     * element (which may be an important factor for large lists of small-sized elements). </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * <h3> Container properties </h3>
      * <dl>
      * 	<dt> Sequence </dt>
-     * 	<dd> Elements in sequence containers are ordered in a strict linear sequence. Individual elements are
-     *		 accessed by their position in this sequence. </dd>
+     * 	<dd> Elements in sequence containers are ordered in a strict linear sequence. Individual elements are accessed by
+     *		 their position in this sequence. </dd>
      *
      * 	<dt> Doubly-linked list </dt>
-     *	<dd> Each element keeps information on how to locate the next and the previous elements, allowing constant
-     *		 time insert and erase operations before or after a specific element (even of entire ranges), but no
-     *		 direct random access. </dd>
+     *	<dd> Each element keeps information on how to locate the next and the previous elements, allowing constant time
+     *		 insert and erase operations before or after a specific element (even of entire ranges), but no direct random
+     *		 access. </dd>
      * </dl>
-     *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/list/list/
-     * </ul>
      *
      * @param <T> Type of the elements.
      *
+     * @reference http://www.cplusplus.com/reference/list/list/
      * @author Jeongho Nam <http://samchon.org>
      */
     var List = (function (_super) {
@@ -1400,22 +1691,27 @@ var std;
                 args[_i - 0] = arguments[_i];
             }
             _super.call(this);
+            // INIT MEMBERS
+            this.end_ = new ListIterator(this, null, null, null);
+            this.end_.set_prev(this.end_);
+            this.end_.set_next(this.end_);
+            this.begin_ = this.end_;
+            this.size_ = 0;
+            // BRANCHES
             if (args.length == 0) {
-                this.clear();
             }
             else if (args.length == 1 && args[0] instanceof Array) {
                 var array = args[0];
-                this.clear();
                 this.push.apply(this, array);
             }
             else if (args.length == 1 && (args[0] instanceof std.Vector || args[0] instanceof std.base.Container)) {
                 var container = args[0];
                 this.assign(container.begin(), container.end());
             }
-            else if (args.length == 2 && args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
-                var begin = args[0];
-                var end = args[1];
-                this.assign(begin, end);
+            else if (args.length == 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                var begin_4 = args[0];
+                var end_4 = args[1];
+                this.assign(begin_4, end_4);
             }
             else if (args.length == 2 && typeof args[0] == "number") {
                 var size = args[0];
@@ -1424,42 +1720,18 @@ var std;
             }
         }
         List.prototype.assign = function (par1, par2) {
-            if (par1 instanceof std.base.Iterator && par2 instanceof std.base.Iterator) {
-                // PARAMETERS
-                var begin = par1;
-                var end = par2;
-                // BODY
-                var prev = null;
-                var item = void 0;
-                var it = begin;
-                while (true) {
-                    // CONSTRUCT ELEMENT ITEM
-                    item = new ListIterator(this, prev, null, (it != end ? it.value : null));
-                    // SET PREVIOUS NEXT POINTER
-                    if (prev != null)
-                        prev.setNext(item);
-                    // CONSTRUCT BEGIN AND END
-                    if (it == begin)
-                        this.begin_ = item;
-                    else if (it == end) {
-                        this.end_ = item;
-                        break;
-                    }
-                    // ADD COUNTS AND STEP TO THE NEXT
-                    this.size_++;
-                    it = it.next();
-                }
-            }
+            this.clear();
+            this.insert(this.end(), par1, par2);
         };
         /**
          * @inheritdoc
          */
         List.prototype.clear = function () {
-            var it = new ListIterator(this, null, null, null);
-            it.setPrev(it);
-            it.setNext(it);
-            this.begin_ = it;
-            this.end_ = it;
+            // DISCONNECT NODES
+            this.begin_ = this.end_;
+            this.end_.set_prev(this.end_);
+            this.end_.set_next(this.end_);
+            // RE-SIZE -> 0
             this.size_ = 0;
         };
         /* =========================================================
@@ -1481,16 +1753,13 @@ var std;
          * @inheritdoc
          */
         List.prototype.rbegin = function () {
-            if (this.empty() == true)
-                return this.rend();
-            else
-                return new ListReverseIterator(this.end().prev());
+            return new ListReverseIterator(this.end());
         };
         /**
          * @inheritdoc
          */
         List.prototype.rend = function () {
-            return new ListReverseIterator(this.end());
+            return new ListReverseIterator(this.begin());
         };
         /**
          * @inheritdoc
@@ -1512,10 +1781,10 @@ var std;
         };
         /* =========================================================
             ELEMENTS I/O
-                - ITERATOR FACTORY
                 - PUSH & POP
                 - INSERT
                 - ERASE
+                - POST-PROCESS
         ============================================================
             PUSH & POP
         --------------------------------------------------------- */
@@ -1527,41 +1796,36 @@ var std;
             for (var _i = 0; _i < arguments.length; _i++) {
                 items[_i - 0] = arguments[_i];
             }
-            for (var i = 0; i < items.length; i++)
-                this.push_back(items[i]);
+            var prev = this.end().prev();
+            var first = null;
+            for (var i = 0; i < items.length; i++) {
+                // CONSTRUCT ITEM, THE NEW ELEMENT
+                var item = new ListIterator(this, prev, null, items[i]);
+                if (i == 0)
+                    first = item;
+                prev.set_next(item);
+                prev = item;
+            }
+            // IF WAS EMPTY, VAL IS THE BEGIN
+            if (this.empty() == true || first.prev().equal_to(this.end()) == true)
+                this.begin_ = first;
+            // CONNECT BETWEEN LAST INSERTED ITEM AND POSITION
+            prev.set_next(this.end_);
+            this.end_.set_prev(prev);
+            this.size_ += items.length;
             return this.size();
         };
         /**
          * @inheritdoc
          */
         List.prototype.push_front = function (val) {
-            var item = new ListIterator(this, null, this.begin_, val);
-            // CONFIGURE BEGIN AND NEXT
-            this.begin_.setPrev(item);
-            if (this.size_ == 0) {
-                // IT WAS EMPTY
-                this.end_ = new ListIterator(this, item, item, null);
-                item.setNext(this.end_);
-            }
-            else
-                this.end_.setNext(item);
-            // SET
-            this.begin_ = item;
-            this.size_++;
+            this.insert(this.begin(), val);
         };
         /**
          * @inheritdoc
          */
         List.prototype.push_back = function (val) {
-            var prev = this.end_.prev();
-            var item = new ListIterator(this, this.end_.prev(), this.end_, val);
-            prev.setNext(item);
-            this.end_.setPrev(item);
-            if (this.empty() == true) {
-                this.begin_ = item;
-                item.setPrev(this.end_);
-            }
-            this.size_++;
+            this.insert(this.end(), val);
         };
         /**
          * @inheritdoc
@@ -1580,25 +1844,38 @@ var std;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            if (args.length == 2)
-                return this.insert_by_val(args[0], args[1]);
-            else if (args.length == 3 && typeof args[1] == "number") {
-                return this.insertByRepeatingVal(args[0], args[1], args[2]);
+            // REVERSE_ITERATOR TO ITERATOR
+            var ret;
+            var is_reverse_iterator = false;
+            if (args[0] instanceof ListReverseIterator) {
+                is_reverse_iterator = true;
+                args[0] = args[0].base().prev();
             }
+            // BRANCHES
+            if (args.length == 2)
+                ret = this.insert_by_val(args[0], args[1]);
+            else if (args.length == 3 && typeof args[1] == "number")
+                ret = this.insert_by_repeating_val(args[0], args[1], args[2]);
             else
-                return this.insert_by_range(args[0], args[1], args[2]);
+                ret = this.insert_by_range(args[0], args[1], args[2]);
+            // RETURNS
+            if (is_reverse_iterator == true)
+                return new ListReverseIterator(ret.next());
+            else
+                return ret;
         };
         /**
          * @hidden
          */
         List.prototype.insert_by_val = function (position, val) {
             // SHIFT TO INSERT OF THE REPEATING VAL
-            return this.insertByRepeatingVal(position, 1, val);
+            return this.insert_by_repeating_val(position, 1, val);
         };
         /**
          * @hidden
          */
-        List.prototype.insertByRepeatingVal = function (position, size, val) {
+        List.prototype.insert_by_repeating_val = function (position, size, val) {
+            // INVALID ITERATOR
             if (this != position.get_source())
                 throw new std.InvalidArgument("Parametric iterator is not this container's own.");
             var prev = position.prev();
@@ -1608,7 +1885,7 @@ var std;
                 var item = new ListIterator(this, prev, null, val);
                 if (i == 0)
                     first = item;
-                prev.setNext(item);
+                prev.set_next(item);
                 // SHIFT ITEM LEFT TO BE PREV
                 prev = item;
             }
@@ -1616,8 +1893,8 @@ var std;
             if (this.empty() == true || first.prev().equal_to(this.end()) == true)
                 this.begin_ = first;
             // CONNECT BETWEEN LAST INSERTED ITEM AND POSITION
-            prev.setNext(position);
-            position.setPrev(prev);
+            prev.set_next(position);
+            position.set_prev(prev);
             this.size_ += size;
             return first;
         };
@@ -1625,6 +1902,7 @@ var std;
          * @hidden
          */
         List.prototype.insert_by_range = function (position, begin, end) {
+            // INVALID ITERATOR
             if (this != position.get_source())
                 throw new std.InvalidArgument("Parametric iterator is not this container's own.");
             var prev = position.prev();
@@ -1636,7 +1914,7 @@ var std;
                 if (size == 0)
                     first = item;
                 if (prev != null)
-                    prev.setNext(item);
+                    prev.set_next(item);
                 // SHIFT CURRENT ITEM TO PREVIOUS
                 prev = item;
                 size++;
@@ -1645,48 +1923,46 @@ var std;
             if (this.empty() == true)
                 this.begin_ = first;
             // CONNECT BETWEEN LAST AND POSITION
-            prev.setNext(position);
-            position.setPrev(prev);
+            prev.set_next(position);
+            position.set_prev(prev);
             this.size_ += size;
             return first;
         };
-        List.prototype.erase = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
+        List.prototype.erase = function (first, last) {
+            if (last === void 0) { last = first.next(); }
+            var ret;
+            var is_reverse_iterator = false;
+            // REVERSE ITERATOR TO ITERATOR
+            if (first instanceof ListReverseIterator) {
+                is_reverse_iterator = true;
+                var first_it = last.base();
+                var last_it = first.base();
+                first = first_it;
+                last = last_it;
             }
-            if (args.length == 1)
-                return this.erase_by_iterator(args[0]);
-            else if (args.length == 2)
-                return this.erase_by_range(args[0], args[1]);
+            // ERASE ELEMENTS
+            ret = this.erase_by_range(first, last);
+            // RETURN BRANCHES
+            if (is_reverse_iterator == true)
+                return new ListReverseIterator(ret.next());
+            else
+                return ret;
         };
         /**
          * @hidden
          */
-        List.prototype.erase_by_iterator = function (it) {
-            if (it.equal_to(this.end_))
-                throw new std.LogicError("Unable to erase end iterator.");
-            return this.erase_by_range(it, it.next());
-        };
-        /**
-         * @hidden
-         */
-        List.prototype.erase_by_range = function (begin, end) {
-            if (this != begin.get_source() || begin.get_source() != end.get_source())
-                throw new std.InvalidArgument("Parametric iterator is not this container's own.");
+        List.prototype.erase_by_range = function (first, last) {
             // FIND PREV AND NEXT
-            var prev = begin.prev();
+            var prev = first.prev();
             // CALCULATE THE SIZE
-            var size = 0;
-            for (var it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
+            var size = std.distance(first, last);
             // SHRINK
-            prev.setNext(end);
-            end.setPrev(prev);
+            prev.set_next(last);
+            last.set_prev(prev);
             this.size_ -= size;
             if (this.size_ == 0)
-                this.begin_ = end;
-            return end;
+                this.begin_ = this.end_;
+            return last;
         };
         List.prototype.unique = function (binary_pred) {
             if (binary_pred === void 0) { binary_pred = std.equal_to; }
@@ -1752,10 +2028,10 @@ var std;
                 return;
             var it = this.begin();
             while (obj.empty() == false) {
-                var begin = obj.begin();
-                while (!it.equal_to(this.end()) && compare(it.value, begin.value) == true)
+                var begin_5 = obj.begin();
+                while (!it.equal_to(this.end()) && compare(it.value, begin_5.value) == true)
                     it = it.next();
-                this.splice(it, obj, begin);
+                this.splice(it, obj, begin_5);
             }
         };
         List.prototype.splice = function (position, obj, begin, end) {
@@ -1772,57 +2048,29 @@ var std;
             obj.erase(begin, end);
         };
         List.prototype.sort = function (compare) {
-            //let whole: Vector<T> = new Vector<T>(this);
-            //let part: Vector<T> = new Vector<T>(this);
             if (compare === void 0) { compare = std.less; }
-            //this.msort(whole, part, 0, this.size(), compare);
-            //this.assign(whole.begin(), whole.end());
             var vector = new std.Vector(this.begin(), this.end());
             std.sort(vector.begin(), vector.end());
-            this.assign(vector.begin(), vector.end());
+            // IT CALLS HANDLE_INSERT
+            // this.assign(vector.begin(), vector.end());
+            ///////
+            // INSTEAD OF ASSIGN
+            ///////
+            var prev = this.end_;
+            var first = null;
+            for (var i = 0; i < vector.length; i++) {
+                // CONSTRUCT ITEM, THE NEW ELEMENT
+                var item = new ListIterator(this, prev, null, vector[i]);
+                if (i == 0)
+                    first = item;
+                prev.set_next(item);
+                prev = item;
+            }
+            this.begin_ = first;
+            // CONNECT BETWEEN LAST INSERTED ITEM AND POSITION
+            prev.set_next(this.end_);
+            this.end_.set_prev(prev);
         };
-        ///**
-        // * @hidden
-        // */
-        //private msort
-        //	(
-        //		whole: Array<T>, part: Array<T>, 
-        //		begin: number, end: number, compare: (left: T, right: T) => boolean
-        //	): void
-        //{
-        //	if (begin >= end - 1)
-        //		return;
-        //	let mid = begin + Math.floor((end - begin) / 2);
-        //	this.msort(whole, part, begin, mid, compare);
-        //	this.msort(whole, part, mid, end, compare);
-        //	this.msort_merge(whole, part, begin, mid, end, compare);
-        //}
-        ///**
-        // * @hidden
-        // */
-        //private msort_merge
-        //	(
-        //		whole: Array<T>, part: Array<T>, 
-        //		begin: number, mid: number, end: number, 
-        //		compare: (left: T, right: T) => boolean
-        //	): void
-        //{
-        //	for (let i: number = begin; i < end; i++)
-        //		part[i] = whole[i];
-        //	let x: number = begin;
-        //	let y: number = mid;
-        //	for (let i: number = mid; i < end; i++)
-        //	{
-        //		if (x >= mid)
-        //			whole[i] = part[y++];
-        //		else if (y >= end)
-        //			whole[i] = part[x++];
-        //		else if (part[x] < part[y])
-        //			whole[i] = part[y++];
-        //		else
-        //			whole[i] = part[x++];
-        //	}
-        //}
         /* ---------------------------------------------------------
             SWAP
         --------------------------------------------------------- */
@@ -1848,7 +2096,11 @@ var std;
     }(std.base.Container));
     std.List = List;
     /**
-     * An iterator, node of a List.
+     * <p> An iterator, node of a List. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
+     *
+     * @author Jeongho Nam <http://samchon.org>
      */
     var ListIterator = (function (_super) {
         __extends(ListIterator, _super);
@@ -1876,23 +2128,20 @@ var std;
         /**
          * @inheritdoc
          */
-        ListIterator.prototype.setPrev = function (prev) {
-            this.prev_ = prev;
+        ListIterator.prototype.set_prev = function (it) {
+            this.prev_ = it;
         };
         /**
          * @inheritdoc
          */
-        ListIterator.prototype.setNext = function (next) {
+        ListIterator.prototype.set_next = function (next) {
             this.next_ = next;
         };
         /* ---------------------------------------------------------------
             ACCESSORS
         --------------------------------------------------------------- */
-        /**
-         * @inheritdoc
-         */
-        ListIterator.prototype.equal_to = function (obj) {
-            return this == obj;
+        ListIterator.prototype.list = function () {
+            return this.source_;
         };
         /**
          * @inheritdoc
@@ -1940,6 +2189,15 @@ var std;
             enumerable: true,
             configurable: true
         });
+        /* ---------------------------------------------------------------
+            COMPARISON
+        --------------------------------------------------------------- */
+        /**
+         * @inheritdoc
+         */
+        ListIterator.prototype.equal_to = function (obj) {
+            return this == obj;
+        };
         /**
          * @inheritdoc
          */
@@ -1960,10 +2218,12 @@ var std;
                 this.source_.begin_ = this;
         };
         return ListIterator;
-    }(std.base.Iterator));
+    }(std.Iterator));
     std.ListIterator = ListIterator;
     /**
      * <p> A reverse-iterator of List. </p>
+     *
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of the elements.
      *
@@ -1974,52 +2234,30 @@ var std;
         /* ---------------------------------------------------------------
             CONSTRUCTORS
         --------------------------------------------------------------- */
-        function ListReverseIterator(iterator) {
-            _super.call(this, iterator);
+        function ListReverseIterator(base) {
+            _super.call(this, base);
         }
-        Object.defineProperty(ListReverseIterator.prototype, "list_iterator", {
+        /**
+         * @inheritdoc
+         */
+        ListReverseIterator.prototype.create_neighbor = function () {
+            return new ListReverseIterator(null);
+        };
+        Object.defineProperty(ListReverseIterator.prototype, "value", {
             /* ---------------------------------------------------------
                 ACCESSORS
             --------------------------------------------------------- */
             /**
-             * @hidden
+             * @inheritdoc
              */
-            get: function () {
-                return this.iterator_;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ListReverseIterator.prototype, "value", {
             set: function (val) {
-                this.list_iterator.value = val;
+                this.base_.value = val;
             },
             enumerable: true,
             configurable: true
         });
-        /* ---------------------------------------------------------
-            MOVERS
-        --------------------------------------------------------- */
-        /**
-         * @inheritdoc
-         */
-        ListReverseIterator.prototype.prev = function () {
-            return new ListReverseIterator(this.list_iterator.next());
-        };
-        /**
-         * @inheritdoc
-         */
-        ListReverseIterator.prototype.next = function () {
-            return new ListReverseIterator(this.list_iterator.prev());
-        };
-        /**
-         * @inheritdoc
-         */
-        ListReverseIterator.prototype.advance = function (n) {
-            return new ListReverseIterator(this.list_iterator.advance(-1 * n));
-        };
         return ListReverseIterator;
-    }(std.base.ReverseIterator));
+    }(std.ReverseIterator));
     std.ListReverseIterator = ListReverseIterator;
 })(std || (std = {}));
 /// <reference path="API.ts" />
@@ -2054,12 +2292,11 @@ var std;
      * By default, if no container class is specified for a particular {@link Queue} class instantiation, the standard
      * container {@link List} is used. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/queue/queue/ </li>
-     * </ul>
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of elements.
      *
+     * @reference http://www.cplusplus.com/reference/queue/queue
      * @author Jeongho Nam <http://samchon.org>
      */
     var Queue = (function () {
@@ -2386,12 +2623,11 @@ var std;
      * By default, if no container class is specified for a particular {@link Stack} class instantiation, the standard
      * container {@link List} is used. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/stack/stack/ </li>
-     * </ul>
+     * <p> <img src="../assets/images/design/linear_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of elements.
      *
+     * @reference http://www.cplusplus.com/reference/stack/stack
      * @author Jeongho Nam <http://samchon.org>
      */
     var Stack = (function () {
@@ -2497,8 +2733,7 @@ var std;
 })(std || (std = {}));
 /// <reference path="../API.ts" />
 /// <reference path="Container.ts" />
-/// <reference path="Iterator.ts" />
-/// <reference path="ReverseIterator.ts" />
+/// <reference path="../Iterator.ts" />
 var std;
 (function (std) {
     var base;
@@ -2517,12 +2752,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-         *		position in the
+         *		position in the container.
          *	</dd>
          *
          *	<dt> Set </dt>
@@ -2543,9 +2780,18 @@ var std;
                 }
                 _super.call(this);
                 // INITIALIZATION
-                this.data_ = new std.List();
-                // THIS IS ABSTRACT CLASS
-                // NOTHING TO DO ESPECIALLY
+                this.init();
+                // BRANCH - OVERLOADINGS
+                if (args.length == 0) { } // DO NOTHING
+                else if (args.length == 1 && (args[0] instanceof base.Container || args[0] instanceof std.Vector)) {
+                    this.construct_from_container(args[0]);
+                }
+                else if (args.length == 1 && args[0] instanceof Array) {
+                    this.construct_from_array(args[0]);
+                }
+                else if (args.length == 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                    this.construct_from_range(args[0], args[1]);
+                }
             }
             Object.defineProperty(SetContainer, "iterator", {
                 /**
@@ -2555,6 +2801,12 @@ var std;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * @hidden
+             */
+            SetContainer.prototype.init = function () {
+                this.data_ = new std.List();
+            };
             /**
              * @hidden
              */
@@ -2582,13 +2834,14 @@ var std;
              */
             SetContainer.prototype.assign = function (begin, end) {
                 // INSERT
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    this.insert_by_val(it.value);
+                this.clear();
+                this.insert(begin, end);
             };
             /**
              * @inheritdoc
              */
             SetContainer.prototype.clear = function () {
+                // TO BE ABSTRACT
                 this.data_.clear();
             };
             /**
@@ -2607,13 +2860,13 @@ var std;
              * @inheritdoc
              */
             SetContainer.prototype.rbegin = function () {
-                return new std.SetReverseIterator(this, this.data_.end().prev());
+                return new std.SetReverseIterator(this.end());
             };
             /**
              * @inheritdoc
              */
             SetContainer.prototype.rend = function () {
-                return new std.SetReverseIterator(this, this.data_.end());
+                return new std.SetReverseIterator(this.begin());
             };
             /* ---------------------------------------------------------
                 ELEMENTS
@@ -2628,7 +2881,7 @@ var std;
              * @return Whether the set has an item having the specified identifier.
              */
             SetContainer.prototype.has = function (val) {
-                return this.count(val) != 0;
+                return !this.find(val).equal_to(this.end());
             };
             /**
              * @inheritdoc
@@ -2652,6 +2905,7 @@ var std;
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
+                // TO BE ABSTRACT
                 for (var i = 0; i < args.length; i++)
                     this.insert_by_val(args[i]);
                 return this.size();
@@ -2663,44 +2917,64 @@ var std;
                 }
                 if (args.length == 1)
                     return this.insert_by_val(args[0]);
-                else if (args.length == 2 && args[0] instanceof base.Iterator) {
-                    if (args[1] instanceof base.Iterator && args[0].get_source() != this && args[1].get_source() != this)
+                else if (args.length == 2 && args[0] instanceof std.Iterator) {
+                    if (args[1] instanceof std.Iterator && args[0].get_source() != this && args[1].get_source() != this) {
+                        // IT DOESN'T CONTAIN POSITION
+                        // RANGES TO INSERT ONLY
                         return this.insert_by_range(args[0], args[1]);
-                    else
-                        return this.insert_by_hint(args[0], args[1]);
+                    }
+                    else {
+                        var ret = void 0;
+                        var is_reverse_iterator = false;
+                        // REVERSE_ITERATOR TO ITERATOR
+                        if (args[0] instanceof std.SetReverseIterator) {
+                            is_reverse_iterator = true;
+                            args[0] = args[0].base().prev();
+                        }
+                        // INSERT AN ELEMENT
+                        ret = this.insert_by_hint(args[0], args[1]);
+                        // RETURN BRANCHES
+                        if (is_reverse_iterator == true)
+                            return new std.SetReverseIterator(ret.next());
+                        else
+                            return ret;
+                    }
                 }
-            };
-            /**
-             * @hidden
-             */
-            SetContainer.prototype.insert_by_hint = function (hint, val) {
-                // INSERT
-                var list_iterator = this.data_.insert(hint.get_list_iterator(), val);
-                // POST-PROCESS
-                var it = new std.SetIterator(this, list_iterator);
-                this.handle_insert(it);
-                return it;
-            };
-            /**
-             * @hidden
-             */
-            SetContainer.prototype.insert_by_range = function (begin, end) {
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    this.insert_by_val(it.value);
             };
             SetContainer.prototype.erase = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
-                if (args.length == 1) {
-                    if (args[0] instanceof base.Iterator && args[0].get_source() == this)
-                        return this.erase_by_iterator(args[0]);
-                    else
-                        return this.erase_by_val(args[0]);
+                if (args.length == 1 && (args[0] instanceof std.Iterator == false || args[0].get_source() != this))
+                    return this.erase_by_val(args[0]);
+                else if (args.length == 1)
+                    return this.erase_by_iterator(args[0]);
+                else
+                    return this.erase_by_iterator(args[0], args[1]);
+            };
+            /**
+             * @hidden
+             */
+            SetContainer.prototype.erase_by_iterator = function (first, last) {
+                if (last === void 0) { last = first.next(); }
+                var ret;
+                var is_reverse_iterator = false;
+                // REVERSE ITERATOR TO ITERATOR
+                if (first instanceof std.SetReverseIterator) {
+                    is_reverse_iterator = true;
+                    var first_it = last.base();
+                    var last_it = first.base();
+                    first = first_it;
+                    last = last_it;
                 }
-                else if (args.length == 2 && args[0] instanceof base.Iterator && args[1] instanceof base.Iterator)
-                    return this.erase_by_range(args[0], args[1]);
+                // ERASE ELEMENTS
+                ret = this.erase_by_range(first, last);
+                // RETURN BRANCHES
+                if (is_reverse_iterator == true)
+                    return new std.SetReverseIterator(ret.next());
+                else
+                    return ret;
             };
             /**
              * @hidden
@@ -2717,22 +2991,11 @@ var std;
             /**
              * @hidden
              */
-            SetContainer.prototype.erase_by_iterator = function (it) {
-                // ERASE
-                var list_iterator = this.data_.erase(it.get_list_iterator());
-                // POST-PROCESS
-                this.handle_erase(it);
-                return new std.SetIterator(this, list_iterator);
-            };
-            /**
-             * @hidden
-             */
             SetContainer.prototype.erase_by_range = function (begin, end) {
                 // ERASE
                 var list_iterator = this.data_.erase(begin.get_list_iterator(), end.get_list_iterator());
                 // POST-PROCESS
-                for (var it = begin; !it.equal_to(end); it = it.next())
-                    this.handle_erase(it);
+                this.handle_erase(begin, end);
                 return new std.SetIterator(this, list_iterator); //begin.prev();
             };
             return SetContainer;
@@ -2744,6 +3007,8 @@ var std;
 (function (std) {
     /**
      * <p> An iterator of a Set. </p>
+     *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
      *
      * @author Jeongho Nam <http://samchon.org>
      */
@@ -2838,10 +3103,12 @@ var std;
             this.list_iterator_.swap(obj.list_iterator_);
         };
         return SetIterator;
-    }(std.base.Iterator));
+    }(std.Iterator));
     std.SetIterator = SetIterator;
     /**
      * <p> A reverse-iterator of Set. </p>
+     *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
      *
      * @param <T> Type of the elements.
      *
@@ -2849,35 +3116,20 @@ var std;
      */
     var SetReverseIterator = (function (_super) {
         __extends(SetReverseIterator, _super);
-        /* ---------------------------------------------------------------
-            CONSTRUCTORS
-        --------------------------------------------------------------- */
-        function SetReverseIterator(source, it) {
-            _super.call(this, source, it);
-        }
         /* ---------------------------------------------------------
-            MOVERS
+            CONSTRUCTORS
         --------------------------------------------------------- */
+        function SetReverseIterator(base) {
+            _super.call(this, base);
+        }
         /**
          * @inheritdoc
          */
-        SetReverseIterator.prototype.prev = function () {
-            return new SetReverseIterator(this.set, this.list_iterator_.next());
-        };
-        /**
-         * @inheritdoc
-         */
-        SetReverseIterator.prototype.next = function () {
-            return new SetReverseIterator(this.set, this.list_iterator_.prev());
-        };
-        /**
-         * @inheritdoc
-         */
-        SetReverseIterator.prototype.advance = function (n) {
-            return new SetReverseIterator(this.set, this.list_iterator_.advance(-1 * n));
+        SetReverseIterator.prototype.create_neighbor = function () {
+            return new SetReverseIterator(null);
         };
         return SetReverseIterator;
-    }(SetIterator));
+    }(std.ReverseIterator));
     std.SetReverseIterator = SetReverseIterator;
 })(std || (std = {}));
 /// <reference path="../API.ts" />
@@ -2900,12 +3152,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-         *		position in the
+         *		position in the container.
          *	</dd>
          *
          *	<dt> Set </dt>
@@ -2922,15 +3176,12 @@ var std;
          */
         var UniqueSet = (function (_super) {
             __extends(UniqueSet, _super);
-            /* =========================================================
-                CONSTRUCTORS
-            ========================================================= */
-            /**
-             * Default Constructor.
-             */
             function UniqueSet() {
-                _super.call(this);
+                _super.apply(this, arguments);
             }
+            /* ---------------------------------------------------------
+                ACCESSOR
+            --------------------------------------------------------- */
             /**
              * @inheritdoc
              */
@@ -2943,6 +3194,17 @@ var std;
                     args[_i - 0] = arguments[_i];
                 }
                 return _super.prototype.insert.apply(this, args);
+            };
+            /* ---------------------------------------------------------
+                UTILITIES
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            UniqueSet.prototype.swap = function (obj) {
+                var vec = new std.Vector(this.begin(), this.end());
+                this.assign(obj.begin(), obj.end());
+                obj.assign(vec.begin(), vec.end());
             };
             return UniqueSet;
         }(base.SetContainer));
@@ -2969,12 +3231,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-         *		position in the
+         *		position in the container.
          *	</dd>
          *
          *	<dt> Set </dt>
@@ -2991,33 +3255,26 @@ var std;
          */
         var MultiSet = (function (_super) {
             __extends(MultiSet, _super);
-            /* ---------------------------------------------------------
-                CONSTRUCTORS
-            --------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
             function MultiSet() {
-                _super.call(this);
+                _super.apply(this, arguments);
             }
-            /**
-             * @inheritdoc
-             */
-            MultiSet.prototype.count = function (val) {
-                var myIt = this.find(val);
-                if (myIt.equal_to(this.end()))
-                    return 0;
-                var size = 0;
-                for (var it = myIt; !it.equal_to(this.end()) && std.equal_to(val, it.value); it = it.next())
-                    size++;
-                return size;
-            };
             MultiSet.prototype.insert = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
                 return _super.prototype.insert.apply(this, args);
+            };
+            /* ---------------------------------------------------------
+                UTILITIES
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            MultiSet.prototype.swap = function (obj) {
+                var vec = new std.Vector(this.begin(), this.end());
+                this.assign(obj.begin(), obj.end());
+                obj.assign(vec.begin(), vec.end());
             };
             return MultiSet;
         }(base.SetContainer));
@@ -3047,11 +3304,13 @@ var std;
      * elements by their <i>key</i>, although they are generally less efficient for range iteration through a
      * subset of their elements. </p>
      *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd> Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		 position in the  </dd>
+     *		 position in the container. </dd>
      *
      *	<dt> Hashed </dt>
      *	<dd> Hashed containers organize their elements using hash tables that allow for fast access to elements
@@ -3064,36 +3323,35 @@ var std;
      *	<dd> No two elements in the container can have equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/unordered_set/unordered_set/ </li>
-     * </ul>
-     *
      * @param <T> Type of the elements.
      *			  Each element in an {@link HashSet} is also uniquely identified by this value.
      *
+     * @reference http://www.cplusplus.com/reference/unordered_set/unordered_set
      * @author Jeongho Nam <http://samchon.org>
      */
     var HashSet = (function (_super) {
         __extends(HashSet, _super);
         function HashSet() {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            _super.call(this);
-            // BUCKET
+            _super.apply(this, arguments);
             this.hash_buckets_ = new std.base.SetHashBuckets(this);
-            // OVERLOADINGS
-            if (args.length == 1 && args[0] instanceof Array && args[0] instanceof std.Vector == false) {
-                this.construct_from_array(args[0]);
-            }
-            else if (args.length == 1 && args[0] instanceof std.base.Container) {
-                this.construct_from_container(args[0]);
-            }
-            else if (args.length == 2 && args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
-                this.construct_from_range(args[0], args[1]);
-            }
         }
+        /* =========================================================
+            CONSTRUCTORS & SEMI-CONSTRUCTORS
+                - CONSTRUCTORS
+                - ASSIGN & CLEAR
+        ============================================================
+            CONSTURCTORS
+        --------------------------------------------------------- */
+        /////
+        // using super::constructor
+        /////
+        /**
+         * @hidden
+         */
+        HashSet.prototype.init = function () {
+            _super.prototype.init.call(this);
+            this.hash_buckets_ = new std.base.SetHashBuckets(this);
+        };
         /**
          * @hidden
          */
@@ -3107,23 +3365,9 @@ var std;
         /**
          * @inheritdoc
          */
-        HashSet.prototype.assign = function (begin, end) {
-            var it;
-            var size = 0;
-            // RESERVE HASH_BUCKET SIZE
-            for (it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
-            this.hash_buckets_.clear();
-            this.hash_buckets_.reserve(size * std.base.RATIO);
-            // SUPER; INSERT
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         HashSet.prototype.clear = function () {
-            _super.prototype.clear.call(this);
             this.hash_buckets_.clear();
+            _super.prototype.clear.call(this);
         };
         /* =========================================================
             ACCESSORS
@@ -3148,27 +3392,48 @@ var std;
             // TEST WHETHER EXIST
             var it = this.find(val);
             if (it.equal_to(this.end()) == false)
-                return new std.Pair(it, false);
+                return std.make_pair(it, false);
             // INSERT
             this.data_.push_back(val);
             it = it.prev();
             // POST-PROCESS
-            this.handle_insert(it);
-            return new std.Pair(it, true);
+            this.handle_insert(it, it.next());
+            return std.make_pair(it, true);
         };
         /**
          * @hidden
          */
-        HashSet.prototype.insert_by_range = function (begin, end) {
-            // CALCULATE INSERTING SIZE
+        HashSet.prototype.insert_by_hint = function (hint, val) {
+            // FIND KEY
+            if (this.has(val) == true)
+                return this.end();
+            // INSERT
+            var list_iterator = this.data_.insert(hint.get_list_iterator(), val);
+            // POST-PROCESS
+            var it = new std.SetIterator(this, list_iterator);
+            this.handle_insert(it, it.next());
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        HashSet.prototype.insert_by_range = function (first, last) {
+            var my_first = this.end().prev();
             var size = 0;
-            for (var it = begin; it.equal_to(end) == false; it = it.next())
+            for (; !first.equal_to(last); first = first.next()) {
+                // TEST WHETER EXIST
+                if (this.has(first.value))
+                    continue;
+                // INSERTS
+                this.data_.push_back(first.value);
                 size++;
+            }
+            my_first = my_first.next();
             // IF NEEDED, HASH_BUCKET TO HAVE SUITABLE SIZE
             if (this.size() + size > this.hash_buckets_.size() * std.base.MAX_RATIO)
                 this.hash_buckets_.reserve((this.size() + size) * std.base.RATIO);
             // INSERTS
-            _super.prototype.insert_by_range.call(this, begin, end);
+            this.handle_insert(my_first, this.end());
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -3176,14 +3441,16 @@ var std;
         /**
          * @inheritdoc
          */
-        HashSet.prototype.handle_insert = function (item) {
-            this.hash_buckets_.insert(item);
+        HashSet.prototype.handle_insert = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        HashSet.prototype.handle_erase = function (item) {
-            this.hash_buckets_.erase(item);
+        HashSet.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.erase(first);
         };
         /* ===============================================================
             UTILITIES
@@ -3226,11 +3493,13 @@ var std;
      * <p> Elements with equivalent values are grouped together in the same bucket and in such a way that an
      * iterator can iterate through all of them. Iterators in the container are doubly linked iterators. </p>
      *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd> Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		 position in the  </dd>
+     *		 position in the container. </dd>
      *
      *	<dt> Hashed </dt>
      *	<dd> Hashed containers organize their elements using hash tables that allow for fast access to elements
@@ -3243,36 +3512,35 @@ var std;
      *	<dd> The container can hold multiple elements with equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/unordered_set/unordered_multiset/ </li>
-     * </ul>
-     *
      * @param <T> Type of the elements.
      *		   Each element in an {@link UnorderedMultiSet} is also identified by this value..
      *
+     * @reference http://www.cplusplus.com/reference/unordered_set/unordered_multiset
      * @author Jeongho Nam <http://samchon.org>
      */
     var HashMultiSet = (function (_super) {
         __extends(HashMultiSet, _super);
         function HashMultiSet() {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            _super.call(this);
-            // BUCKET
+            _super.apply(this, arguments);
             this.hash_buckets_ = new std.base.SetHashBuckets(this);
-            // OVERLOADINGS
-            if (args.length == 1 && args[0] instanceof Array && args[0] instanceof std.Vector == false) {
-                this.construct_from_array(args[0]);
-            }
-            else if (args.length == 1 && args[0] instanceof std.base.Container) {
-                this.construct_from_container(args[0]);
-            }
-            else if (args.length == 2 && args[0] instanceof std.base.Iterator && args[1] instanceof std.base.Iterator) {
-                this.construct_from_range(args[0], args[1]);
-            }
         }
+        /* =========================================================
+            CONSTRUCTORS & SEMI-CONSTRUCTORS
+                - CONSTRUCTORS
+                - ASSIGN & CLEAR
+        ============================================================
+            CONSTURCTORS
+        --------------------------------------------------------- */
+        /////
+        // using super::constructor
+        /////
+        /**
+         * @hidden
+         */
+        HashMultiSet.prototype.init = function () {
+            _super.prototype.init.call(this);
+            this.hash_buckets_ = new std.base.SetHashBuckets(this);
+        };
         /**
          * @hidden
          */
@@ -3286,23 +3554,9 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMultiSet.prototype.assign = function (begin, end) {
-            var it;
-            var size = 0;
-            // RESERVE HASH_BUCKET SIZE
-            for (it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
-            this.hash_buckets_.clear();
-            this.hash_buckets_.reserve(size * std.base.RATIO);
-            // SUPER; INSERT
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         HashMultiSet.prototype.clear = function () {
-            _super.prototype.clear.call(this);
             this.hash_buckets_.clear();
+            _super.prototype.clear.call(this);
         };
         /* =========================================================
             ACCESSORS
@@ -3312,6 +3566,20 @@ var std;
          */
         HashMultiSet.prototype.find = function (val) {
             return this.hash_buckets_.find(val);
+        };
+        /**
+         * @inheritdoc
+         */
+        HashMultiSet.prototype.count = function (val) {
+            // FIND MATCHED BUCKET
+            var index = std.hash(val) % this.hash_buckets_.item_size();
+            var bucket = this.hash_buckets_.at(index);
+            // ITERATE THE BUCKET
+            var cnt = 0;
+            for (var i = 0; i < bucket.length; i++)
+                if (std.equal_to(bucket[i].value, val))
+                    cnt++;
+            return cnt;
         };
         /* =========================================================
             ELEMENTS I/O
@@ -3325,25 +3593,33 @@ var std;
          */
         HashMultiSet.prototype.insert_by_val = function (val) {
             // INSERT
-            var listIterator = this.data_.insert(this.data_.end(), val);
-            var it = new std.SetIterator(this, listIterator);
-            // POST-PROCESS
-            this.handle_insert(it);
+            var it = new std.SetIterator(this, this.data_.insert(this.data_.end(), val));
+            this.handle_insert(it, it.next()); // POST-PROCESS
             return it;
         };
         /**
          * @hidden
          */
-        HashMultiSet.prototype.insert_by_range = function (begin, end) {
-            // CALCULATE INSERTING SIZE
-            var size = 0;
-            for (var it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
+        HashMultiSet.prototype.insert_by_hint = function (hint, val) {
+            // INSERT
+            var list_iterator = this.data_.insert(hint.get_list_iterator(), val);
+            // POST-PROCESS
+            var it = new std.SetIterator(this, list_iterator);
+            this.handle_insert(it, it.next());
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        HashMultiSet.prototype.insert_by_range = function (first, last) {
+            // INSERT ELEMENTS
+            var list_iterator = this.data_.insert(this.data_.end(), first, last);
+            var my_first = new std.SetIterator(this, list_iterator);
             // IF NEEDED, HASH_BUCKET TO HAVE SUITABLE SIZE
-            if (this.size() + size > this.hash_buckets_.item_size() * std.base.MAX_RATIO)
-                this.hash_buckets_.reserve((this.size() + size) * std.base.RATIO);
-            // INSERTS
-            _super.prototype.insert_by_range.call(this, begin, end);
+            if (this.size() > this.hash_buckets_.item_size() * std.base.MAX_RATIO)
+                this.hash_buckets_.reserve(this.size() * std.base.RATIO);
+            // POST-PROCESS
+            this.handle_insert(my_first, this.end());
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -3351,14 +3627,16 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMultiSet.prototype.handle_insert = function (it) {
-            this.hash_buckets_.insert(it);
+        HashMultiSet.prototype.handle_insert = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        HashMultiSet.prototype.handle_erase = function (it) {
-            this.hash_buckets_.erase(it);
+        HashMultiSet.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.erase(first);
         };
         /* ===============================================================
             UTILITIES
@@ -3386,8 +3664,7 @@ var std;
 })(std || (std = {}));
 /// <reference path="../API.ts" />
 /// <reference path="Container.ts" />
-/// <reference path="Iterator.ts" />
-/// <reference path="ReverseIterator.ts" />
+/// <reference path="../Iterator.ts" />
 var std;
 (function (std) {
     var base;
@@ -3410,12 +3687,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute position
-         *		in the
+         *		in the container.
          *	</dd>
          *
          *	<dt> Map </dt>
@@ -3439,9 +3718,18 @@ var std;
                 }
                 _super.call(this);
                 // INITIALIZATION
-                this.data_ = new std.List();
-                // THIS IS ABSTRACT CLASS
-                // NOTHING TO DO ESPECIALLY
+                this.init();
+                // BRANCH - OVERLOADINGS
+                if (args.length == 0) { } // DO NOTHING
+                else if (args.length == 1 && (args[0] instanceof base.Container || args[0] instanceof std.Vector)) {
+                    this.construct_from_container(args[0]);
+                }
+                else if (args.length == 1 && args[0] instanceof Array) {
+                    this.construct_from_array(args[0]);
+                }
+                else if (args.length == 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                    this.construct_from_range(args[0], args[1]);
+                }
             }
             Object.defineProperty(MapContainer, "iterator", {
                 /**
@@ -3451,6 +3739,12 @@ var std;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * @hidden
+             */
+            MapContainer.prototype.init = function () {
+                this.data_ = new std.List();
+            };
             /**
              * @hidden
              */
@@ -3479,15 +3773,16 @@ var std;
             /**
              * @inheritdoc
              */
-            MapContainer.prototype.assign = function (begin, end) {
+            MapContainer.prototype.assign = function (first, last) {
                 // INSERT
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    this.insert_by_pair(new std.Pair(it.first, it.second));
+                this.clear();
+                this.insert(first, last);
             };
             /**
              * @inheritdoc
              */
             MapContainer.prototype.clear = function () {
+                // TO BE ABSTRACT
                 this.data_.clear();
             };
             /**
@@ -3541,10 +3836,7 @@ var std;
              *
              */
             MapContainer.prototype.rbegin = function () {
-                if (this.empty() == true)
-                    return this.rend();
-                else
-                    return new std.MapIterator(this, this.data_.end().prev());
+                return new std.MapReverseIterator(this.end());
             };
             /**
              * <p> Return {@link MapReverseIterator reverse iterator} to <i>reverse end</i>. </p>
@@ -3559,7 +3851,7 @@ var std;
              * @return A {@link MapReverseIterator reverse iterator} to the <i>reverse end</i> of the sequence
              */
             MapContainer.prototype.rend = function () {
-                return new std.MapReverseIterator(this, this.data_.end());
+                return new std.MapReverseIterator(this.begin());
             };
             /* ---------------------------------------------------------
                 ELEMENTS
@@ -3574,7 +3866,7 @@ var std;
              * @return Whether the map has an item having the specified identifier.
              */
             MapContainer.prototype.has = function (key) {
-                return this.count(key) != 0;
+                return !this.find(key).equal_to(this.end());
             };
             /**
              * Return the number of elements in the map.
@@ -3587,6 +3879,7 @@ var std;
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
+                // TO BE ABSTRACT
                 for (var i = 0; i < args.length; i++)
                     if (args[i] instanceof std.Pair)
                         this.insert_by_pair(args[i]);
@@ -3605,14 +3898,27 @@ var std;
                 else if (args.length == 1 && args[0] instanceof Array) {
                     return this.insert_by_tuple(args[0]);
                 }
-                else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.Pair) {
-                    return this.insert_by_hint(args[0], args[1]);
-                }
-                else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof Array) {
-                    return this.insert_by_hint_with_tuple(args[0], args[1]);
-                }
-                else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator) {
+                else if (args.length == 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
                     return this.insert_by_range(args[0], args[1]);
+                }
+                else {
+                    var ret = void 0;
+                    var is_reverse_iterator = false;
+                    // REVERSE_ITERATOR TO ITERATOR
+                    if (args[0] instanceof std.MapReverseIterator) {
+                        is_reverse_iterator = true;
+                        args[0] = args[0].base().prev();
+                    }
+                    // INSERT AN ELEMENT
+                    if (args[1] instanceof std.Pair)
+                        ret = this.insert_by_hint(args[0], args[1]);
+                    else
+                        ret = this.insert_by_hint_with_tuple(args[0], args[1]);
+                    // RETURN BRANCHES
+                    if (is_reverse_iterator == true)
+                        return new std.MapReverseIterator(ret.next());
+                    else
+                        return ret;
                 }
             };
             /**
@@ -3624,40 +3930,20 @@ var std;
             /**
              * @hidden
              */
-            MapContainer.prototype.insert_by_hint = function (hint, pair) {
-                // INSERT
-                var list_it = this.data_.insert(hint.get_list_iterator(), pair);
-                // POST-PROCESS
-                var it = new std.MapIterator(this, list_it);
-                this.handle_insert(it);
-                return it;
-            };
-            /**
-             * @hidden
-             */
             MapContainer.prototype.insert_by_hint_with_tuple = function (hint, tuple) {
-                return this.insert_by_hint(hint, new std.Pair(tuple[0], tuple[1]));
-            };
-            /**
-             * @hidden
-             */
-            MapContainer.prototype.insert_by_range = function (begin, end) {
-                for (var it = begin; it.equal_to(end) == false; it = it.next())
-                    this.insert_by_pair(new std.Pair(it.first, it.second));
+                return this.insert_by_hint(hint, std.make_pair(tuple[0], tuple[1]));
             };
             MapContainer.prototype.erase = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
-                if (args.length == 1) {
-                    if (args[0] instanceof std.MapIterator && args[0].get_source() == this)
-                        return this.erase_by_iterator(args[0]);
-                    else
-                        return this.erase_by_key(args[0]);
-                }
-                else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator)
-                    return this.erase_by_range(args[0], args[1]);
+                if (args.length == 1 && (args[0] instanceof std.Iterator == false || args[0].get_source() != this))
+                    return this.erase_by_key(args[0]);
+                else if (args.length == 1)
+                    return this.erase_by_iterator(args[0]);
+                else
+                    return this.erase_by_iterator(args[0], args[1]);
             };
             /**
              * @hidden
@@ -3672,13 +3958,25 @@ var std;
             /**
              * @hidden
              */
-            MapContainer.prototype.erase_by_iterator = function (it) {
-                // ERASE
-                var listIterator = this.data_.erase(it.get_list_iterator());
-                // POST-PROCESS
-                this.handle_erase(it);
-                return new std.MapIterator(this, listIterator);
-                ;
+            MapContainer.prototype.erase_by_iterator = function (first, last) {
+                if (last === void 0) { last = first.next(); }
+                var ret;
+                var is_reverse_iterator = false;
+                // REVERSE ITERATOR TO ITERATOR
+                if (first instanceof std.MapReverseIterator) {
+                    is_reverse_iterator = true;
+                    var first_it = last.base();
+                    var last_it = first.base();
+                    first = first_it;
+                    last = last_it;
+                }
+                // ERASE ELEMENTS
+                ret = this.erase_by_range(first, last);
+                // RETURN BRANCHES
+                if (is_reverse_iterator == true)
+                    return new std.MapReverseIterator(ret.next());
+                else
+                    return ret;
             };
             /**
              * @hidden
@@ -3687,34 +3985,8 @@ var std;
                 // ERASE
                 var listIterator = this.data_.erase(begin.get_list_iterator(), end.get_list_iterator());
                 // POST-PROCESS
-                for (var it = begin; !it.equal_to(end); it = it.next())
-                    this.handle_erase(it);
+                this.handle_erase(begin, end);
                 return new std.MapIterator(this, listIterator);
-            };
-            /* ===============================================================
-                UTILITIES
-            =============================================================== */
-            /**
-             * <p> Swap content. </p>
-             *
-             * <p> Exchanges the content of the container by the content of <i>obj</i>, which is another
-             * {@link MapContainer map} of the same type. Sizes abd container type may differ. </p>
-             *
-             * <p> After the call to this member function, the elements in this container are those which were
-             * in <i>obj</i> before the call, and the elements of <i>obj</i> are those which were in this. All
-             * iterators, references and pointers remain valid for the swapped objects. </p>
-             *
-             * <p> Notice that a non-member function exists with the same name, {@link std.swap swap}, overloading that
-             * algorithm with an optimization that behaves like this member function. </p>
-             *
-             * @param obj Another {@link MapContainer map container} of the same type of elements as this (i.e.,
-             *			  with the same template parameters, <b>Key</b> and <b>T</b>) whose content is swapped
-             *			  with that of this {@link MapContaier container}.
-             */
-            MapContainer.prototype.swap = function (obj) {
-                var supplement = new std.HashMultiMap(this.begin(), this.end());
-                this.assign(obj.begin(), obj.end());
-                obj.assign(supplement.begin(), supplement.end());
             };
             return MapContainer;
         }(base.Container));
@@ -3724,7 +3996,9 @@ var std;
 var std;
 (function (std) {
     /**
-     * An iterator of {@link MapColntainer map container}.
+     * <p> An iterator of {@link MapContainer map container}. </p>
+     *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
      *
      * @author Jeongho Nam <http://samchon.org>
      */
@@ -3846,10 +4120,12 @@ var std;
             this.list_iterator_.swap(obj.list_iterator_);
         };
         return MapIterator;
-    }(std.base.Iterator));
+    }(std.Iterator));
     std.MapIterator = MapIterator;
     /**
-     * A reverse-iterator of {@link MapColntainer map container}.
+     * <p> A reverse-iterator of {@link MapContainer map container}. </p>
+     *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
      *
      * @author Jeongho Nam <http://samchon.org>
      */
@@ -3858,38 +4134,43 @@ var std;
         /* ---------------------------------------------------------
             CONSTRUCTORS
         --------------------------------------------------------- */
-        /**
-         * Construct from the {@link MapContainer source map} and {@link ListIterator list iterator}.
-         *
-         * @param source The source {@link MapContainer}.
-         * @param list_iterator A {@link ListIterator} pointing {@link Pair} of <i>key</i> and <i>value</i>.
-         */
-        function MapReverseIterator(source, list_iterator) {
-            _super.call(this, source, list_iterator);
+        function MapReverseIterator(base) {
+            _super.call(this, base);
         }
-        /* ---------------------------------------------------------
-            MOVERS
-        --------------------------------------------------------- */
-        /**
-         * @inheritdoc
-         */
-        MapReverseIterator.prototype.prev = function () {
-            return new MapReverseIterator(this.map, this.list_iterator_.next());
+        MapReverseIterator.prototype.create_neighbor = function () {
+            return new MapReverseIterator(null);
         };
-        /**
-         * @inheritdoc
-         */
-        MapReverseIterator.prototype.next = function () {
-            return new MapReverseIterator(this.map, this.list_iterator_.next());
-        };
-        /**
-         * @inheritdoc
-         */
-        MapReverseIterator.prototype.advance = function (step) {
-            return new MapReverseIterator(this.map, this.list_iterator_.advance(-1 * step));
-        };
+        Object.defineProperty(MapReverseIterator.prototype, "first", {
+            /* ---------------------------------------------------------
+                ACCESSORS
+            --------------------------------------------------------- */
+            /**
+             * Get first, key element.
+             */
+            get: function () {
+                return this.base_.first;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MapReverseIterator.prototype, "second", {
+            /**
+             * Get second, value element.
+             */
+            get: function () {
+                return this.base_.second;
+            },
+            /**
+             * Set second value.
+             */
+            set: function (val) {
+                this.base_.second = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return MapReverseIterator;
-    }(MapIterator));
+    }(std.ReverseIterator));
     std.MapReverseIterator = MapReverseIterator;
 })(std || (std = {}));
 /// <reference path="../API.ts" />
@@ -3916,12 +4197,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute position
-         *		in the
+         *		in the container.
          *	</dd>
          *
          *	<dt> Map </dt>
@@ -3941,13 +4224,8 @@ var std;
          */
         var UniqueMap = (function (_super) {
             __extends(UniqueMap, _super);
-            /**
-             * Default Constructor.
-             */
             function UniqueMap() {
-                _super.call(this);
-                // THIS IS ABSTRACT CLASS
-                // NOTHING TO DO ESPECIALLY
+                _super.apply(this, arguments);
             }
             /* ---------------------------------------------------------
                 ACCESSORS
@@ -3987,7 +4265,7 @@ var std;
             UniqueMap.prototype.set = function (key, val) {
                 var it = this.find(key);
                 if (it.equal_to(this.end()) == true)
-                    this.insert(new std.Pair(key, val));
+                    this.insert(std.make_pair(key, val));
                 else
                     it.second = val;
             };
@@ -3997,6 +4275,31 @@ var std;
                     args[_i - 0] = arguments[_i];
                 }
                 return _super.prototype.insert.apply(this, args);
+            };
+            /* ---------------------------------------------------------
+                UTILITIES
+            --------------------------------------------------------- */
+            /**
+             * <p> Swap content. </p>
+             *
+             * <p> Exchanges the content of the container by the content of <i>obj</i>, which is another
+             * {@link UniqueMap map} of the same type. Sizes abd container type may differ. </p>
+             *
+             * <p> After the call to this member function, the elements in this container are those which were
+             * in <i>obj</i> before the call, and the elements of <i>obj</i> are those which were in this. All
+             * iterators, references and pointers remain valid for the swapped objects. </p>
+             *
+             * <p> Notice that a non-member function exists with the same name, {@link std.swap swap}, overloading that
+             * algorithm with an optimization that behaves like this member function. </p>
+             *
+             * @param obj Another {@link UniqueMap map container} of the same type of elements as this (i.e.,
+             *			  with the same template parameters, <b>Key</b> and <b>T</b>) whose content is swapped
+             *			  with that of this {@link UniqueMap container}.
+             */
+            UniqueMap.prototype.swap = function (obj) {
+                var vec = new std.Vector(this.begin(), this.end());
+                this.assign(obj.begin(), obj.end());
+                obj.assign(vec.begin(), vec.end());
             };
             return UniqueMap;
         }(base.MapContainer));
@@ -4027,12 +4330,14 @@ var std;
          * {@link List} and registering {@link ListIterator iterators} of the {@link data_ list container} to an index
          * table like {@link RBTree tree} or {@link HashBuckets hash-table}. </p>
          *
+         * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+         *
          * <h3> Container properties </h3>
          * <dl>
          *	<dt> Associative </dt>
          *	<dd>
          *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute position
-         *		in the
+         *		in the container.
          *	</dd>
          *
          *	<dt> Map </dt>
@@ -4052,32 +4357,37 @@ var std;
          */
         var MultiMap = (function (_super) {
             __extends(MultiMap, _super);
-            /**
-             * Default Constructor.
-             */
             function MultiMap() {
-                _super.call(this);
-                // THIS IS ABSTRACT CLASS
-                // NOTHING TO DO ESPECIALLY
+                _super.apply(this, arguments);
             }
-            /**
-             * @inheritdoc
-             */
-            MultiMap.prototype.count = function (key) {
-                var myIt = this.find(key);
-                if (myIt.equal_to(this.end()))
-                    return 0;
-                var size = 0;
-                for (var it = myIt.next(); !it.equal_to(this.end()) && std.equal_to(key, it.first); it = it.next())
-                    size++;
-                return size;
-            };
             MultiMap.prototype.insert = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
                 return _super.prototype.insert.apply(this, args);
+            };
+            /**
+             * <p> Swap content. </p>
+             *
+             * <p> Exchanges the content of the container by the content of <i>obj</i>, which is another
+             * {@link UniqueMap map} of the same type. Sizes abd container type may differ. </p>
+             *
+             * <p> After the call to this member function, the elements in this container are those which were
+             * in <i>obj</i> before the call, and the elements of <i>obj</i> are those which were in this. All
+             * iterators, references and pointers remain valid for the swapped objects. </p>
+             *
+             * <p> Notice that a non-member function exists with the same name, {@link std.swap swap}, overloading that
+             * algorithm with an optimization that behaves like this member function. </p>
+             *
+             * @param obj Another {@link MultiMap map container} of the same type of elements as this (i.e.,
+             *			  with the same template parameters, <b>Key</b> and <b>T</b>) whose content is swapped
+             *			  with that of this {@link MultiMap container}.
+             */
+            MultiMap.prototype.swap = function (obj) {
+                var vec = new std.Vector(this.begin(), this.end());
+                this.assign(obj.begin(), obj.end());
+                obj.assign(vec.begin(), vec.end());
             };
             return MultiMap;
         }(base.MapContainer));
@@ -4092,28 +4402,29 @@ var std;
     /**
      * <p> Hashed, unordered map. </p>
      *
-     * <p> {@link HashMap}s are associative containers that store elements formed by the
-     * combination of a <i>key value</i> and a <i>mapped value</i>, and which allows for fast
-     * retrieval of individual elements based on their <i>keys</i>. </p>
+     * <p> {@link HashMap}s are associative containers that store elements formed by the combination of a <i>key value</i>
+     * and a <i>mapped value</i>, and which allows for fast retrieval of individual elements based on their <i>keys</i>.
+     * </p>
      *
-     * <p> In an {@link HashMap}, the <i>key value</i> is generally used to uniquely identify
-     * the element, while the <i>mapped value</i> is an object with the content associated to this
-     * <i>key</i>. Types of <i>key</i> and <i>mapped value</i> may differ. </p>
+     * <p> In an {@link HashMap}, the <i>key value</i> is generally used to uniquely identify the element, while the
+     * <i>mapped value</i> is an object with the content associated to this <i>key</i>. Types of <i>key</i> and
+     * <i>mapped value</i> may differ. </p>
      *
-     * <p> Internally, the elements in the {@link HashMap} are not sorted in any particular order
-     * with respect to either their <i>key</i> or <i>mapped values</i>, but organized into <i>buckets</i>
-     * depending on their hash values to allow for fast access to individual elements directly by
-     * their <i>key values</i> (with a constant average time complexity on average). </p>
+     * <p> Internally, the elements in the {@link HashMap} are not sorted in any particular order with respect to either
+     * their <i>key</i> or <i>mapped values</i>, but organized into <i>buckets</i> depending on their hash values to allow
+     * for fast access to individual elements directly by their <i>key values</i> (with a constant average time complexity
+     * on average). </p>
      *
-     * <p> {@link HashMap} containers are faster than {@link TreeMap} containers to access
-     * individual elements by their <i>key</i>, although they are generally less efficient for range
-     * iteration through a subset of their elements. </p>
+     * <p> {@link HashMap} containers are faster than {@link TreeMap} containers to access individual elements by their
+     * <i>key</i>, although they are generally less efficient for range iteration through a subset of their elements. </p>
+     *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
      *
      * <h3> Container properties </h3>
      * <dl>
      * 	<dt> Associative </dt>
      * 	<dd> Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		 position in the  </dd>
+     *		 position in the container. </dd>
      *
      * 	<dt> Hashed </dt>
      * 	<dd> Hashed containers organize their elements using hash tables that allow for fast access to elements
@@ -4127,38 +4438,36 @@ var std;
      * 	<dd> No two elements in the container can have equivalent keys. </dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/unordered_map/unordered_map/ </li>
-     * </ul>
-     *
      * @param <Key> Type of the key values.
      *				Each element in an {@link HashMap} is uniquely identified by its key value.
      * @param <T> Type of the mapped value.
      *			  Each element in an {@link HashMap} is used to store some data as its mapped value.
      *
+     * @reference http://www.cplusplus.com/reference/unordered_map/unordered_map
      * @author Jeongho Nam <http://samchon.org>
      */
     var HashMap = (function (_super) {
         __extends(HashMap, _super);
         function HashMap() {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            _super.call(this);
-            // HASH_BUCKET
-            this.hash_buckets_ = new std.base.MapHashBuckets(this);
-            // OVERLOADINGS
-            if (args.length == 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
-            }
-            else if (args.length == 1 && args[0] instanceof std.base.MapContainer) {
-                this.construct_from_container(args[0]);
-            }
-            else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator) {
-                this.construct_from_range(args[0], args[1]);
-            }
+            _super.apply(this, arguments);
         }
+        /* =========================================================
+            CONSTRUCTORS & SEMI-CONSTRUCTORS
+                - CONSTRUCTORS
+                - ASSIGN & CLEAR
+        ============================================================
+            CONSTURCTORS
+        --------------------------------------------------------- */
+        /////
+        // using super::constructor
+        /////
+        /**
+         * @hidden
+         */
+        HashMap.prototype.init = function () {
+            _super.prototype.init.call(this);
+            this.hash_buckets_ = new std.base.MapHashBuckets(this);
+        };
         /**
          * @hidden
          */
@@ -4172,23 +4481,9 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMap.prototype.assign = function (begin, end) {
-            var it;
-            var size = 0;
-            // RESERVE HASH_BUCKET SIZE
-            for (it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
-            this.hash_buckets_.clear();
-            this.hash_buckets_.reserve(size * std.base.RATIO);
-            // SUPER; INSERT
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         HashMap.prototype.clear = function () {
-            _super.prototype.clear.call(this);
             this.hash_buckets_.clear();
+            _super.prototype.clear.call(this);
         };
         /* =========================================================
             ACCESSORS
@@ -4213,27 +4508,49 @@ var std;
             // TEST WHETHER EXIST
             var it = this.find(pair.first);
             if (it.equal_to(this.end()) == false)
-                return new std.Pair(it, false);
+                return std.make_pair(it, false);
             // INSERT
             this.data_.push_back(pair);
             it = it.prev();
             // POST-PROCESS
-            this.handle_insert(it);
-            return new std.Pair(it, true);
+            this.handle_insert(it, it.next());
+            return std.make_pair(it, true);
         };
         /**
          * @hidden
          */
-        HashMap.prototype.insert_by_range = function (begin, end) {
-            // CALCULATE INSERTING SIZE
+        HashMap.prototype.insert_by_hint = function (hint, pair) {
+            // FIND KEY
+            if (this.has(pair.first) == true)
+                return this.end();
+            // INSERT
+            var list_it = this.data_.insert(hint.get_list_iterator(), pair);
+            // POST-PROCESS
+            var it = new std.MapIterator(this, list_it);
+            this.handle_insert(it, it.next());
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        HashMap.prototype.insert_by_range = function (first, last) {
+            var my_first = this.end().prev();
             var size = 0;
-            for (var it = begin; it.equal_to(end) == false; it = it.next())
+            // INSERT ELEMENTS
+            for (; !first.equal_to(last); first = first.next()) {
+                // TEST WHETER EXIST
+                if (this.has(first.value.first))
+                    continue;
+                // INSERTS
+                this.data_.push_back(std.make_pair(first.value.first, first.value.second));
                 size++;
+            }
+            my_first = my_first.next();
             // IF NEEDED, HASH_BUCKET TO HAVE SUITABLE SIZE
-            if (this.size() + size > this.hash_buckets_.item_size() * std.base.MAX_RATIO)
+            if (this.size() + size > this.hash_buckets_.size() * std.base.MAX_RATIO)
                 this.hash_buckets_.reserve((this.size() + size) * std.base.RATIO);
-            // INSERTS
-            _super.prototype.insert_by_range.call(this, begin, end);
+            // POST-PROCESS
+            this.handle_insert(my_first, this.end());
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -4241,14 +4558,16 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMap.prototype.handle_insert = function (it) {
-            this.hash_buckets_.insert(it);
+        HashMap.prototype.handle_insert = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        HashMap.prototype.handle_erase = function (it) {
-            this.hash_buckets_.erase(it);
+        HashMap.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.erase(first);
         };
         /* ===============================================================
             UTILITIES
@@ -4292,11 +4611,13 @@ var std;
      * <p> Elements with equivalent <i>keys</i> are grouped together in the same bucket and in such a way that
      * an iterator can iterate through all of them. Iterators in the container are doubly linked iterators. </p>
      *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd> Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		 position in the  </dd>
+     *		 position in the container. </dd>
      *
      *	<dt> Hashed </dt>
      *	<dd> Hashed containers organize their elements using hash tables that allow for fast access to elements
@@ -4310,38 +4631,36 @@ var std;
      *	<dd> The container can hold multiple elements with equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/unordered_map/unordered_multimap/ </li>
-     * </ul>
-     *
      * @param <Key> Type of the key values.
      *				Each element in an {@link HashMap} is identified by a key value.
      * @param <T> Type of the mapped value.
      *			  Each element in an {@link HashMap} is used to store some data as its mapped value.
      *
+     * @reference http://www.cplusplus.com/reference/unordered_map/unordered_multimap
      * @author Jeongho Nam <http://samchon.org>
      */
     var HashMultiMap = (function (_super) {
         __extends(HashMultiMap, _super);
         function HashMultiMap() {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            _super.call(this);
-            // HASH_BUCKET
-            this.hash_buckets_ = new std.base.MapHashBuckets(this);
-            // OVERLOADINGS
-            if (args.length == 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
-            }
-            else if (args.length == 1 && args[0] instanceof std.base.MapContainer) {
-                this.construct_from_container(args[0]);
-            }
-            else if (args.length == 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator) {
-                this.construct_from_range(args[0], args[1]);
-            }
+            _super.apply(this, arguments);
         }
+        /* =========================================================
+            CONSTRUCTORS & SEMI-CONSTRUCTORS
+                - CONSTRUCTORS
+                - ASSIGN & CLEAR
+        ============================================================
+            CONSTURCTORS
+        --------------------------------------------------------- */
+        /////
+        // using super::constructor
+        /////
+        /**
+         * @hidden
+         */
+        HashMultiMap.prototype.init = function () {
+            _super.prototype.init.call(this);
+            this.hash_buckets_ = new std.base.MapHashBuckets(this);
+        };
         /**
          * @hidden
          */
@@ -4355,23 +4674,9 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMultiMap.prototype.assign = function (begin, end) {
-            var it;
-            var size = 0;
-            // REVERSE HASH_GROUP SIZE
-            for (it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
-            this.hash_buckets_.clear();
-            this.hash_buckets_.reserve(size * std.base.RATIO);
-            // SUPER; INSERT
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         HashMultiMap.prototype.clear = function () {
-            _super.prototype.clear.call(this);
             this.hash_buckets_.clear();
+            _super.prototype.clear.call(this);
         };
         /* =========================================================
             ACCESSORS
@@ -4381,6 +4686,20 @@ var std;
          */
         HashMultiMap.prototype.find = function (key) {
             return this.hash_buckets_.find(key);
+        };
+        /**
+         * @inheritdoc
+         */
+        HashMultiMap.prototype.count = function (key) {
+            // FIND MATCHED BUCKET
+            var index = std.hash(key) % this.hash_buckets_.item_size();
+            var bucket = this.hash_buckets_.at(index);
+            // ITERATE THE BUCKET
+            var cnt = 0;
+            for (var i = 0; i < bucket.length; i++)
+                if (std.equal_to(bucket[i].first, key))
+                    cnt++;
+            return cnt;
         };
         /* =========================================================
             ELEMENTS I/O
@@ -4393,24 +4712,34 @@ var std;
          * @hidden
          */
         HashMultiMap.prototype.insert_by_pair = function (pair) {
-            var listIterator = this.data_.insert(this.data_.end(), pair);
-            var it = new std.MapIterator(this, listIterator);
-            this.handle_insert(it);
+            // INSERT
+            var it = new std.MapIterator(this, this.data_.insert(this.data_.end(), pair));
+            this.handle_insert(it, it.next()); // POST-PROCESS
             return it;
         };
         /**
          * @hidden
          */
-        HashMultiMap.prototype.insert_by_range = function (begin, end) {
-            // CALCULATE INSERTING SIZE
-            var size = 0;
-            for (var it = begin; it.equal_to(end) == false; it = it.next())
-                size++;
+        HashMultiMap.prototype.insert_by_hint = function (hint, pair) {
+            // INSERT
+            var list_it = this.data_.insert(hint.get_list_iterator(), pair);
+            // POST-PROCESS
+            var it = new std.MapIterator(this, list_it);
+            this.handle_insert(it, it.next());
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        HashMultiMap.prototype.insert_by_range = function (first, last) {
+            // INSERT ELEMENTS
+            var list_iterator = this.data_.insert(this.data_.end(), first, last);
+            var my_first = new std.MapIterator(this, list_iterator);
             // IF NEEDED, HASH_BUCKET TO HAVE SUITABLE SIZE
-            if (this.size() + size > this.hash_buckets_.item_size() * std.base.MAX_RATIO)
-                this.hash_buckets_.reserve((this.size() + size) * std.base.RATIO);
-            // INSERTS
-            _super.prototype.insert_by_range.call(this, begin, end);
+            if (this.size() > this.hash_buckets_.item_size() * std.base.MAX_RATIO)
+                this.hash_buckets_.reserve(this.size() * std.base.RATIO);
+            // POST-PROCESS
+            this.handle_insert(my_first, this.end());
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -4418,14 +4747,16 @@ var std;
         /**
          * @inheritdoc
          */
-        HashMultiMap.prototype.handle_insert = function (it) {
-            this.hash_buckets_.insert(it);
+        HashMultiMap.prototype.handle_insert = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        HashMultiMap.prototype.handle_erase = function (it) {
-            this.hash_buckets_.erase(it);
+        HashMultiMap.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.hash_buckets_.erase(first);
         };
         /* ===============================================================
             UTILITIES
@@ -4475,12 +4806,14 @@ var std;
      *
      * <p> {@link TreeSet}s are typically implemented as binary search trees. </p>
      *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd>
      *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		position in the
+     *		position in the container.
      *	</dd>
      *
      *	<dt> Ordered </dt>
@@ -4496,13 +4829,10 @@ var std;
      *	<dd> No two elements in the container can have equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/set/set/ </li>
-     * </ul>
-     *
      * @param <T> Type of the elements.
      *			  Each element in an {@link TreeSet} is also uniquely identified by this value.
      *
+     * @reference http://www.cplusplus.com/reference/set/set
      * @author Jeongho Nam <http://samchon.org>
      */
     var TreeSet = (function (_super) {
@@ -4514,22 +4844,32 @@ var std;
             }
             _super.call(this);
             // CONSTRUCT TREE WITH COMPARE
-            var compare;
-            if (args.length == 0 || args[args.length - 1] instanceof Function == false)
-                compare = std.less;
-            else
-                compare = args[args.length - 1];
-            this.tree_ = new std.base.AtomicTree(compare);
+            var compare = std.less;
+            var fn = null;
             // OVERLOADINGS
-            if (args.length >= 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
+            if (args.length == 0) { } // DO NOTHING
+            else if (args.length >= 1 && (args[0] instanceof std.base.Container || args[0] instanceof std.Vector)) {
+                fn = this.construct_from_container;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 1 && args[0] instanceof std.base.SetContainer) {
-                this.construct_from_container(args[0]);
+            else if (args.length >= 1 && args[0] instanceof Array) {
+                fn = this.construct_from_array;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 2 && args[0] instanceof std.SetIterator && args[1] instanceof std.SetIterator) {
-                this.construct_from_range(args[0], args[1]);
+            else if (args.length >= 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                fn = this.construct_from_range;
+                if (args.length == 3)
+                    compare = args[2];
             }
+            else if (args.length == 1)
+                compare = args[0];
+            // CONSTRUCT TREE
+            this.tree_ = new std.base.AtomicTree(compare);
+            // BRANCH - CALL OVERLOADED CONSTRUCTORS
+            if (fn != null)
+                fn.apply(this, args);
         }
         /* ---------------------------------------------------------
             ASSIGN & CLEAR
@@ -4537,15 +4877,9 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeSet.prototype.assign = function (begin, end) {
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         TreeSet.prototype.clear = function () {
+            this.tree_ = new std.base.AtomicTree(this.tree_.get_compare());
             _super.prototype.clear.call(this);
-            this.tree_ = new std.base.AtomicTree();
         };
         /* =========================================================
             ACCESSORS
@@ -4659,8 +4993,8 @@ var std;
             var node = this.tree_.find(val);
             // IF EQUALS, THEN RETURN FALSE
             if (node != null && std.equal_to(node.value.value, val) == true)
-                return new std.Pair(node.value, false);
-            // INSERTS
+                return std.make_pair(node.value, false);
+            // FIND NODE
             var it;
             if (node == null)
                 it = this.end();
@@ -4668,9 +5002,46 @@ var std;
                 it = node.value.next();
             else
                 it = node.value;
-            // ITERATOR TO RETURN
-            it = this.insert(it, val);
-            return new std.Pair(it, true);
+            /////
+            // INSERTS
+            /////
+            it = new std.SetIterator(this, this.data_.insert(it.get_list_iterator(), val));
+            this.handle_insert(it, it.next()); // POST-PROCESS
+            return std.make_pair(it, true);
+        };
+        TreeSet.prototype.insert_by_hint = function (hint, val) {
+            // FIND KEY
+            if (this.has(val) == true)
+                return this.end();
+            // VALIDATE HINT
+            var ret;
+            var compare = this.tree_.get_compare();
+            // hint < current && current < next
+            if (compare(hint.value, val) == true
+                && (hint.next().equal_to(this.end()) || compare(val, hint.next().value) == true)) {
+                ///////
+                // RIGHT HINT
+                ///////
+                // INSERT
+                ret = new std.SetIterator(this, this.data_.insert(hint.get_list_iterator(), val));
+                // POST-PROCESS
+                this.handle_insert(ret, ret.next());
+            }
+            else {
+                ///////
+                // WRONG HINT
+                ///////
+                // INSERT BY AUTOMATIC NODE FINDING
+                ret = this.insert_by_val(val).first;
+            }
+            return ret;
+        };
+        /**
+         * @hidden
+         */
+        TreeSet.prototype.insert_by_range = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.insert_by_val(first.value);
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -4678,14 +5049,15 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeSet.prototype.handle_insert = function (item) {
-            this.tree_.insert(item);
+        TreeSet.prototype.handle_insert = function (first, last) {
+            this.tree_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        TreeSet.prototype.handle_erase = function (item) {
-            this.tree_.erase(item);
+        TreeSet.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.tree_.erase(last);
         };
         /* ===============================================================
             UTILITIES
@@ -4730,12 +5102,14 @@ var std;
      *
      * <p> {@link TreeMultiSet TreeMultiSets} are typically implemented as binary search trees. </p>
      *
+     * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd>
      *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		position in the
+     *		position in the container.
      *	</dd>
      *
      *	<dt> Ordered </dt>
@@ -4751,13 +5125,10 @@ var std;
      *	<dd> Multiple elements in the container can have equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/set/multiset/ </li>
-     * </ul>
-     *
      * @param <T> Type of the elements. Each element in a {@link TreeMultiSet} container is also identified
      *			  by this value (each value is itself also the element's <i>key</i>).
      *
+     * @reference http://www.cplusplus.com/reference/set/multiset
      * @author Jeongho Nam <http://samchon.org>
      */
     var TreeMultiSet = (function (_super) {
@@ -4769,22 +5140,32 @@ var std;
             }
             _super.call(this);
             // CONSTRUCT TREE WITH COMPARE
-            var compare;
-            if (args.length == 0 || args[args.length - 1] instanceof Function == false)
-                compare = std.less;
-            else
-                compare = args[args.length - 1];
-            this.tree_ = new std.base.AtomicTree(compare);
+            var compare = std.less;
+            var fn = null;
             // OVERLOADINGS
-            if (args.length >= 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
+            if (args.length == 0) { } // DO NOTHING
+            else if (args.length >= 1 && (args[0] instanceof std.base.Container || args[0] instanceof std.Vector)) {
+                fn = this.construct_from_container;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 1 && args[0] instanceof std.base.SetContainer) {
-                this.construct_from_container(args[0]);
+            else if (args.length >= 1 && args[0] instanceof Array) {
+                fn = this.construct_from_array;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 2 && args[0] instanceof std.SetIterator && args[1] instanceof std.SetIterator) {
-                this.construct_from_range(args[0], args[1]);
+            else if (args.length >= 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                fn = this.construct_from_range;
+                if (args.length == 3)
+                    compare = args[2];
             }
+            else if (args.length == 1)
+                compare = args[0];
+            // CONSTRUCT TREE
+            this.tree_ = new std.base.AtomicTree(compare);
+            // BRANCH - CALL OVERLOADED CONSTRUCTORS
+            if (fn != null)
+                fn.apply(this, args);
         }
         /* ---------------------------------------------------------
             ASSIGN & CLEAR
@@ -4792,15 +5173,9 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMultiSet.prototype.assign = function (begin, end) {
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         TreeMultiSet.prototype.clear = function () {
+            this.tree_ = new std.base.AtomicTree(this.tree_.get_compare());
             _super.prototype.clear.call(this);
-            this.tree_ = new std.base.AtomicTree();
         };
         /* =========================================================
             ACCESSORS
@@ -4814,6 +5189,16 @@ var std;
                 return this.end();
             else
                 return node.value;
+        };
+        /**
+         * @inheritdoc
+         */
+        TreeMultiSet.prototype.count = function (val) {
+            var it = this.find(val);
+            var cnt = 0;
+            for (; !it.equal_to(this.end()) && std.equal_to(it.value, val); it = it.next())
+                cnt++;
+            return cnt;
         };
         /**
          * <p> Return iterator to lower bound. </p>
@@ -4918,6 +5303,7 @@ var std;
         TreeMultiSet.prototype.insert_by_val = function (val) {
             var node = this.tree_.find(val);
             var it;
+            // FIND NODE
             if (node == null) {
                 it = this.end();
             }
@@ -4932,8 +5318,46 @@ var std;
             else {
                 it = node.value;
             }
-            // ITERATOR TO RETURN
-            return this.insert(it, val);
+            /////
+            // INSERTS
+            /////
+            it = new std.SetIterator(this, this.data_.insert(it.get_list_iterator(), val));
+            this.handle_insert(it, it.next()); // POST-PROCESS
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        TreeMultiSet.prototype.insert_by_hint = function (hint, val) {
+            // VALIDATE HINT
+            var ret;
+            var compare = this.tree_.get_compare();
+            // hint <= current && current <= next
+            if ((compare(hint.value, val) || std.equal_to(hint.value, val))
+                && (hint.next().equal_to(this.end()) || (compare(val, hint.next().value) || std.equal_to(val, hint.next().value)))) {
+                ///////
+                // RIGHT HINT
+                ///////
+                // INSERT
+                ret = new std.SetIterator(this, this.data_.insert(hint.get_list_iterator(), val));
+                // POST-PROCESS
+                this.handle_insert(ret, ret.next());
+            }
+            else {
+                ///////
+                // WRONG HINT
+                ///////
+                // INSERT BY AUTOMATIC NODE FINDING
+                ret = this.insert_by_val(val);
+            }
+            return ret;
+        };
+        /**
+         * @hidden
+         */
+        TreeMultiSet.prototype.insert_by_range = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.insert_by_val(first.value);
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -4941,14 +5365,15 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMultiSet.prototype.handle_insert = function (item) {
-            this.tree_.insert(item);
+        TreeMultiSet.prototype.handle_insert = function (first, last) {
+            this.tree_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        TreeMultiSet.prototype.handle_erase = function (item) {
-            this.tree_.erase(item);
+        TreeMultiSet.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.tree_.erase(last);
         };
         /* ===============================================================
             UTILITIES
@@ -4985,27 +5410,28 @@ var std;
      * <p> {@link TreeMap TreeMaps} are associative containers that store elements formed by a combination of a
      * <i>key value</i> (<i>Key</i>) and a <i>mapped value</i> (<i>T</i>), following order. </p>
      *
-     * <p> In a {@link TreeMap}, the <i>key values</i> are generally used to sort and uniquely identify
-     * the elements, while the <i>mapped values</i> store the content associated to this key. The types of
-     * <i>key</i> and <i>mapped value</i> may differ, and are grouped together in member type <i>value_type</i>,
-     * which is a {@link Pair} type combining both: </p>
+     * <p> In a {@link TreeMap}, the <i>key values</i> are generally used to sort and uniquely identify the elements,
+     * while the <i>mapped values</i> store the content associated to this key. The types of <i>key</i> and
+     * <i>mapped value</i> may differ, and are grouped together in member type <i>value_type</i>, which is a {@link Pair}
+     * type combining both: </p>
      *
      * <p> <code>typedef Pair<Key, T> value_type;</code> </p>
      *
-     * <p> Internally, the elements in a {@link TreeMap} are always sorted by its <i>key</i> following
-     * a strict weak ordering criterion indicated by its internal comparison method {@link less}.
+     * <p> Internally, the elements in a {@link TreeMap} are always sorted by its <i>key</i> following a
+     * <i>strict weak ordering</i> criterion indicated by its internal comparison method {@link less}.
      *
-     * <p> {@link TreeMap} containers are generally slower than {@link HashMap HashMap} containers to
-     * access individual elements by their <i>key</i>, but they allow the direct iteration on subsets based on
-     * their order. </p>
+     * <p> {@link TreeMap} containers are generally slower than {@link HashMap HashMap} containers to access individual
+     * elements by their <i>key</i>, but they allow the direct iteration on subsets based on their order. </p>
      *
      * <p> {@link TreeMap}s are typically implemented as binary search trees. </p>
+     *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
      *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd> Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		 position in the  </dd>
+     *		 position in the container. </dd>
      *
      *	<dt> Ordered </dt>
      *	<dd> The elements in the container follow a strict order at all times. All inserted elements are
@@ -5019,13 +5445,10 @@ var std;
      *	<dd> No two elements in the container can have equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/map/map/ </li>
-     * </ul>
-     *
      * @param <Key> Type of the keys. Each element in a map is uniquely identified by its key value.
      * @param <T> Type of the mapped value. Each element in a map stores some data as its mapped value.
      *
+     * @reference http://www.cplusplus.com/reference/map/map
      * @author Jeongho Nam <http://samchon.org>
      */
     var TreeMap = (function (_super) {
@@ -5037,22 +5460,32 @@ var std;
             }
             _super.call(this);
             // CONSTRUCT TREE WITH COMPARE
-            var compare;
-            if (args.length == 0 || args[args.length - 1] instanceof Function == false)
-                compare = std.less;
-            else
-                compare = args[args.length - 1];
-            this.tree_ = new std.base.PairTree(compare);
+            var compare = std.less;
+            var fn = null;
             // OVERLOADINGS
-            if (args.length >= 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
+            if (args.length == 0) { } // DO NOTHING
+            else if (args.length >= 1 && (args[0] instanceof std.base.Container || args[0] instanceof std.Vector)) {
+                fn = this.construct_from_container;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 1 && args[0] instanceof std.base.MapContainer) {
-                this.construct_from_container(args[0]);
+            else if (args.length >= 1 && args[0] instanceof Array) {
+                fn = this.construct_from_array;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator) {
-                this.construct_from_range(args[0], args[1]);
+            else if (args.length >= 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                fn = this.construct_from_range;
+                if (args.length == 3)
+                    compare = args[2];
             }
+            else if (args.length == 1)
+                compare = args[0];
+            // CONSTRUCT TREE
+            this.tree_ = new std.base.PairTree(compare);
+            // BRANCH - CALL OVERLOADED CONSTRUCTORS
+            if (fn != null)
+                fn.apply(this, args);
         }
         /* ---------------------------------------------------------
             ASSIGN & CLEAR
@@ -5060,15 +5493,9 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMap.prototype.assign = function (begin, end) {
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         TreeMap.prototype.clear = function () {
+            this.tree_ = new std.base.PairTree(this.tree_.get_compare());
             _super.prototype.clear.call(this);
-            this.tree_ = new std.base.PairTree();
         };
         /* =========================================================
             ACCESSORS
@@ -5109,7 +5536,7 @@ var std;
             var node = this.tree_.find(key);
             if (node == null)
                 return this.end();
-            else if (std.less(node.value.first, key))
+            else if (this.tree_.get_compare()(node.value.first, key))
                 return node.value.next();
             else
                 return node.value;
@@ -5140,7 +5567,7 @@ var std;
             var node = this.tree_.find(key);
             if (node == null)
                 return this.end();
-            else if (!std.equal_to(node.value.first, key) && !std.less(node.value.first, key))
+            else if (!std.equal_to(node.value.first, key) && !this.tree_.get_compare()(node.value.first, key))
                 return node.value;
             else
                 return node.value.next();
@@ -5189,13 +5616,51 @@ var std;
             var it;
             if (node == null)
                 it = this.end();
-            else if (std.less(node.value.first, pair.first) == true)
+            else if (this.tree_.get_compare()(node.value.first, pair.first) == true)
                 it = node.value.next();
             else
                 it = node.value;
             // ITERATOR TO RETURN
-            it = this.insert(it, pair);
+            it = new std.MapIterator(this, this.data_.insert(it.get_list_iterator(), pair));
+            this.handle_insert(it, it.next()); // POST-PROCESS
             return new std.Pair(it, true);
+        };
+        /**
+         * @hidden
+         */
+        TreeMap.prototype.insert_by_hint = function (hint, pair) {
+            // FIND KEY
+            if (this.has(pair.first) == true)
+                return this.end();
+            // VALIDATE HINT
+            var ret;
+            var compare = this.tree_.get_compare();
+            // hint < current && current < next
+            if (compare(hint.first, pair.first) == true
+                && (hint.next().equal_to(this.end()) || compare(pair.first, hint.next().first) == true)) {
+                ///////
+                // RIGHT HINT
+                ///////
+                // INSERT
+                ret = new std.MapIterator(this, this.data_.insert(hint.get_list_iterator(), pair));
+                // POST-PROCESS
+                this.handle_insert(ret, ret.next());
+            }
+            else {
+                ///////
+                // WRONG HINT
+                ///////
+                // INSERT BY AUTOMATIC NODE FINDING
+                ret = this.insert_by_pair(pair).first;
+            }
+            return ret;
+        };
+        /**
+         * @hidden
+         */
+        TreeMap.prototype.insert_by_range = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.insert_by_pair(std.make_pair(first.value.first, first.value.second));
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -5203,14 +5668,15 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMap.prototype.handle_insert = function (item) {
-            this.tree_.insert(item);
+        TreeMap.prototype.handle_insert = function (first, last) {
+            this.tree_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        TreeMap.prototype.handle_erase = function (item) {
-            this.tree_.erase(item);
+        TreeMap.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.tree_.erase(last);
         };
         /* ===============================================================
             UTILITIES
@@ -5258,12 +5724,14 @@ var std;
      *
      * <p> {@link TreeMultiMap TreeMultiMaps} are typically implemented as binary search trees. </p>
      *
+     * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+     *
      * <h3> Container properties </h3>
      * <dl>
      *	<dt> Associative </dt>
      *	<dd>
      *		Elements in associative containers are referenced by their <i>key</i> and not by their absolute
-     *		position in the
+     *		position in the container.
      *	</dd>
      *
      *	<dt> Ordered </dt>
@@ -5282,13 +5750,10 @@ var std;
      *	<dd> Multiple elements in the container can have equivalent <i>keys</i>. </dd>
      * </dl>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/map/multimap/ </li>
-     * </ul>
-     *
      * @param <Key> Type of the keys. Each element in a map is uniquely identified by its key value.
      * @param <T> Type of the mapped value. Each element in a map stores some data as its mapped value.
      *
+     * @reference http://www.cplusplus.com/reference/map/multimap
      * @author Jeongho Nam <http://samchon.org>
      */
     var TreeMultiMap = (function (_super) {
@@ -5300,22 +5765,32 @@ var std;
             }
             _super.call(this);
             // CONSTRUCT TREE WITH COMPARE
-            var compare;
-            if (args.length == 0 || args[args.length - 1] instanceof Function == false)
-                compare = std.less;
-            else
-                compare = args[args.length - 1];
-            this.tree_ = new std.base.PairTree(compare);
+            var compare = std.less;
+            var fn = null;
             // OVERLOADINGS
-            if (args.length >= 1 && args[0] instanceof Array) {
-                this.construct_from_array(args[0]);
+            if (args.length == 0) { } // DO NOTHING
+            else if (args.length >= 1 && (args[0] instanceof std.base.Container || args[0] instanceof std.Vector)) {
+                fn = this.construct_from_container;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 1 && args[0] instanceof std.base.MapContainer) {
-                this.construct_from_container(args[0]);
+            else if (args.length >= 1 && args[0] instanceof Array) {
+                fn = this.construct_from_array;
+                if (args.length == 2)
+                    compare = args[1];
             }
-            else if (args.length >= 2 && args[0] instanceof std.MapIterator && args[1] instanceof std.MapIterator) {
-                this.construct_from_range(args[0], args[1]);
+            else if (args.length >= 2 && args[0] instanceof std.Iterator && args[1] instanceof std.Iterator) {
+                fn = this.construct_from_range;
+                if (args.length == 3)
+                    compare = args[2];
             }
+            else if (args.length == 1)
+                compare = args[0];
+            // CONSTRUCT TREE
+            this.tree_ = new std.base.PairTree(compare);
+            // BRANCH - CALL OVERLOADED CONSTRUCTORS
+            if (fn != null)
+                fn.apply(this, args);
         }
         /* ---------------------------------------------------------
             ASSIGN & CLEAR
@@ -5323,13 +5798,8 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMultiMap.prototype.assign = function (begin, end) {
-            _super.prototype.assign.call(this, begin, end);
-        };
-        /**
-         * @inheritdoc
-         */
         TreeMultiMap.prototype.clear = function () {
+            this.tree_ = new std.base.PairTree(this.tree_.get_compare());
             _super.prototype.clear.call(this);
         };
         /* =========================================================
@@ -5344,6 +5814,16 @@ var std;
                 return this.end();
             else
                 return node.value;
+        };
+        /**
+         * @inheritdoc
+         */
+        TreeMultiMap.prototype.count = function (key) {
+            var it = this.find(key);
+            var cnt = 0;
+            for (; !it.equal_to(this.end()) && std.equal_to(it.first, key); it = it.next())
+                cnt++;
+            return cnt;
         };
         /**
          * <p> Return iterator to lower bound. </p>
@@ -5375,7 +5855,7 @@ var std;
                 return node.value;
             else {
                 var it = node.value;
-                while (!std.equal_to(it, this.end()) && std.less(it.first, key))
+                while (!std.equal_to(it, this.end()) && this.tree_.get_compare()(it.first, key))
                     it = it.next();
                 return it;
             }
@@ -5408,7 +5888,7 @@ var std;
                 return this.end();
             else {
                 var it = node.value;
-                while (!std.equal_to(it, this.end()) && (std.equal_to(it.first, key) || std.less(it.first, key)))
+                while (!std.equal_to(it, this.end()) && (std.equal_to(it.first, key) || this.tree_.get_compare()(it.first, key)))
                     it = it.next();
                 return it;
             }
@@ -5454,15 +5934,54 @@ var std;
             else if (std.equal_to(node.value.first, pair.first) == true) {
                 it = node.value.next();
             }
-            else if (std.less(node.value.first, pair.first) == true) {
+            else if (this.tree_.get_compare()(node.value.first, pair.first) == true) {
                 it = node.value.next();
-                while (it.equal_to(this.end()) == false && std.less(it.first, pair.first))
+                while (it.equal_to(this.end()) == false && this.tree_.get_compare()(it.first, pair.first))
                     it = it.next();
             }
             else
                 it = node.value;
             // ITERATOR TO RETURN
-            return this.insert(it, pair);
+            it = new std.MapIterator(this, this.data_.insert(it.get_list_iterator(), pair));
+            this.handle_insert(it, it.next()); // POST-PROCESS
+            return it;
+        };
+        /**
+         * @hidden
+         */
+        TreeMultiMap.prototype.insert_by_hint = function (hint, pair) {
+            // FIND KEY
+            if (this.has(pair.first) == true)
+                return this.end();
+            // VALIDATE HINT
+            var ret;
+            var compare = this.tree_.get_compare();
+            // hint <= current && current <= next
+            if ((compare(hint.first, pair.first) || std.equal_to(hint.first, pair.first))
+                && (hint.next().equal_to(this.end()) || (compare(pair.first, hint.next().first) || std.equal_to(pair.first, hint.next().first)))) {
+                ///////
+                // RIGHT HINT
+                ///////
+                // INSERT
+                ret = new std.MapIterator(this, this.data_.insert(hint.get_list_iterator(), pair));
+                // POST-PROCESS
+                this.handle_insert(ret, ret.next());
+            }
+            else {
+                ///////
+                // WRONG HINT
+                ///////
+                // INSERT BY AUTOMATIC NODE FINDING
+                ret = this.insert_by_pair(pair);
+            }
+            return ret;
+        };
+        /**
+         * @hidden
+         */
+        TreeMultiMap.prototype.insert_by_range = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.insert_by_pair(std.make_pair(first.value.first, first.value.second));
         };
         /* ---------------------------------------------------------
             POST-PROCESS
@@ -5470,14 +5989,15 @@ var std;
         /**
          * @inheritdoc
          */
-        TreeMultiMap.prototype.handle_insert = function (item) {
-            this.tree_.insert(item);
+        TreeMultiMap.prototype.handle_insert = function (first, last) {
+            this.tree_.insert(first);
         };
         /**
          * @inheritdoc
          */
-        TreeMultiMap.prototype.handle_erase = function (item) {
-            this.tree_.erase(item);
+        TreeMultiMap.prototype.handle_erase = function (first, last) {
+            for (; !first.equal_to(last); first = first.next())
+                this.tree_.erase(last);
         };
         /* ===============================================================
             UTILITIES
@@ -5512,7 +6032,7 @@ var std;
 // values, not affecting in any way the structure of any possible container (it never affects the size or storage 
 // allocation of the container).
 //
-// @reference http://www.cplusplus.com/reference/algorithm/
+// @reference http://www.cplusplus.com/reference/algorithm
 // @author Jeongho Nam <http://samchon.org>
 var std;
 (function (std) {
@@ -5778,12 +6298,12 @@ var std;
     function adjacent_find(first, last, pred) {
         if (pred === void 0) { pred = std.equal_to; }
         if (!first.equal_to(last)) {
-            var next = first.next();
-            while (!next.equal_to(last)) {
+            var next_1 = first.next();
+            while (!next_1.equal_to(last)) {
                 if (std.equal_to(first.value, last.value))
                     return first;
                 first = first.next();
-                next = next.next();
+                next_1 = next_1.next();
             }
         }
         return last;
@@ -6609,8 +7129,8 @@ var std;
         if (compare === void 0) { compare = std.equal_to; }
         if (first.equal_to(last))
             return true;
-        for (var next = first.next(); !next.equal_to(last); next = next.next()) {
-            if (std.less(next.value, first.value))
+        for (var next_2 = first.next(); !next_2.equal_to(last); next_2 = next_2.next()) {
+            if (std.less(next_2.value, first.value))
                 return false;
             first = first.next();
         }
@@ -6621,9 +7141,9 @@ var std;
         if (compare === void 0) { compare = std.equal_to; }
         if (first.equal_to(last))
             return first;
-        for (var next = first.next(); !next.equal_to(last); next = next.next()) {
-            if (std.less(next.value, first.value))
-                return next;
+        for (var next_3 = first.next(); !next_3.equal_to(last); next_3 = next_3.next()) {
+            if (std.less(next_3.value, first.value))
+                return next_3;
             first = first.next();
         }
         return last;
@@ -6638,7 +7158,7 @@ var std;
     function qsort(container, first, last, compare) {
         if (last == -2)
             last = container.size() - 1;
-        else if (first >= last)
+        if (first >= last)
             return;
         var index = qsort_partition(container, first, last, compare);
         qsort(container, first, index - 1, compare);
@@ -7427,25 +7947,32 @@ var std;
         return std.base.code(obj);
     }
     std.hash = hash;
+    /* ---------------------------------------------------------
+        UNIQUE ID FOR OBJECTS
+    --------------------------------------------------------- */
     /**
      * Incremental sequence of unique id for objects.
      */
-    var __s_iUID = 0;
-    Object.defineProperties(Object.prototype, {
-        "__getUID": {
-            value: function () {
-                if (this.hasOwnProperty("__m_iUID") == false) {
-                    var uid = ++__s_iUID;
-                    Object.defineProperty(this, "__m_iUID", {
-                        "get": function () {
-                            return uid;
-                        }
-                    });
+    var __s_iUID;
+    if (__s_iUID == undefined)
+        __s_iUID = 0;
+    if (Object.prototype.hasOwnProperty("__getUID") == false) {
+        Object.defineProperties(Object.prototype, {
+            "__getUID": {
+                value: function () {
+                    if (this.hasOwnProperty("__m_iUID") == false) {
+                        var uid = ++__s_iUID;
+                        Object.defineProperty(this, "__m_iUID", {
+                            "get": function () {
+                                return uid;
+                            }
+                        });
+                    }
+                    return this.__m_iUID;
                 }
-                return this.__m_iUID;
             }
-        }
-    });
+        });
+    }
     function swap(left, right) {
         left.swap(right);
     }
@@ -7588,36 +8115,6 @@ var std;
 /// <reference path="API.ts" />
 var std;
 (function (std) {
-    /**
-     * <p> Return distance between {@link Iterator iterators}. </p>
-     *
-     * <p> Calculates the number of elements between <i>first</i> and <i>last</i>. </p>
-     *
-     * <p> If it is a {@link IArrayIterator random-access iterator}, the function uses operator- to calculate this.
-     * Otherwise, the function uses the increase operator {@link Iterator.next next()} repeatedly. </p>
-     *
-     * @param first Iterator pointing to the initial element.
-     * @param last Iterator pointing to the final element. This must be reachable from first.
-     *
-     * @return The number of elements between first and last.
-     */
-    function distance(first, last) {
-        if (first instanceof std.VectorIterator || first instanceof std.DequeIterator)
-            return last.index - first.index;
-        var length = 0;
-        for (; !first.equal_to(last); first = first.next())
-            length++;
-        return length;
-    }
-    std.distance = distance;
-    function advance(it, n) {
-        return it.advance(n);
-    }
-    std.advance = advance;
-})(std || (std = {}));
-/// <reference path="API.ts" />
-var std;
-(function (std) {
     /* =========================================================
         + EXCEPTION
             + LOGIC_ERROR
@@ -7639,10 +8136,9 @@ var std;
      * <p> All objects thrown by components of the standard library are derived from this class.
      * Therefore, all standard exceptions can be caught by catching this type by reference. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/exception/exception/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/exception/exception
      * @author Jeongho Nam <http://samchon.org>
      */
     var Exception = (function () {
@@ -7681,10 +8177,9 @@ var std;
      *
      * <p> It is used as a base class for several logical error exceptions. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/logic_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/logic_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var LogicError = (function (_super) {
@@ -7712,10 +8207,9 @@ var std;
      * <p> No component of the standard library throws exceptions of this type. It is designed as a standard
      * exception to be thrown by programs. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/domain_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/domain_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var DomainError = (function (_super) {
@@ -7739,10 +8233,9 @@ var std;
      * <p> It is a standard exception that can be thrown by programs. Some components of the standard library
      * also throw exceptions of this type to signal invalid arguments. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/invalid_argument/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/invalid_argument
      * @author Jeongho Nam <http://samchon.org>
      */
     var InvalidArgument = (function (_super) {
@@ -7766,10 +8259,9 @@ var std;
      * <p> It is a standard exception that can be thrown by programs. Some components of the standard library,
      * such as vector and string also throw exceptions of this type to signal errors resizing. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/length_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/length_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var LengthError = (function (_super) {
@@ -7794,10 +8286,9 @@ var std;
      * such as vector, deque, string and bitset also throw exceptions of this type to signal arguments
      * out of range. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/out_of_range/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/out_of_range
      * @author Jeongho Nam <http://samchon.org>
      */
     var OutOfRange = (function (_super) {
@@ -7828,10 +8319,9 @@ var std;
      *
      * <p> It is used as a base class for several runtime error exceptions. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/runtime_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/runtime_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var RuntimeError = (function (_super) {
@@ -7855,10 +8345,9 @@ var std;
      * <p> It is a standard exception that can be thrown by programs. Some components of the standard library
      * also throw exceptions of this type to signal range errors. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/outflow_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/outflow_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var OverflowError = (function (_super) {
@@ -7882,10 +8371,9 @@ var std;
      * <p> No component of the standard library throws exceptions of this type. It is designed as a standard
      * exception to be thrown by programs. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/underflow_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/underflow_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var UnderflowError = (function (_super) {
@@ -7910,10 +8398,9 @@ var std;
      * <p> It is a standard exception that can be thrown by programs. Some components of the standard library
      * also throw exceptions of this type to signal range errors. </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/stdexcept/range_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/stdexcept/range_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var RangeError = (function (_super) {
@@ -7948,6 +8435,8 @@ var std;
          * <p> Objects of this class associate such numerical codes to {@link ErrorCategory error categories},
          * so that they can be interpreted when needed as more abstract (and portable)
          * {@link ErrorCondition error conditions}. </p>
+         *
+         * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
          *
          * @author Jeongho Nam <http://samchon.org>
          */
@@ -8076,10 +8565,9 @@ var std;
      * <p> The class inherits from {@link RuntimeError}, to which it adds an {@link ErrorCode} as
      * member code (and defines a specialized what member). </p>
      *
-     * <ul>
-     *  <li> Reference: http://www.cplusplus.com/reference/system_error/system_error/
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/system_error/system_error
      * @author Jeongho Nam <http://samchon.org>
      */
     var SystemError = (function (_super) {
@@ -8123,10 +8611,9 @@ var std;
      * passed by reference. As such, only one object of each of these types shall exist, each uniquely identifying its own
      * category: all error codes and conditions of a same category shall return a reference to same object. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/system_error/error_category/ </li>
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/system_error/error_category
      * @author Jeongho Nam <http://samchon.org>
      */
     var ErrorCategory = (function () {
@@ -8162,7 +8649,7 @@ var std;
          * @return The default {@link ErrorCondition}object associated with condition value <i>val</i> for this category.
          */
         ErrorCategory.prototype.default_error_condition = function (val) {
-            return null;
+            return new ErrorCondition(val, this);
         };
         ErrorCategory.prototype.equivalent = function () {
             var args = [];
@@ -8200,10 +8687,9 @@ var std;
      * <p> The {@link ErrorCategory categories} associated with the {@link ErrorCondition} and the
      * {@link ErrorCode} define the equivalences between them. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/system_error/error_condition/ </li>
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/system_error/error_condition
      * @author Jeongho Nam <http://samchon.org>
      */
     var ErrorCondition = (function (_super) {
@@ -8228,10 +8714,9 @@ var std;
      * <p> Objects of this class associate such numerical codes to {@link ErrorCategory error categories}, so that they
      * can be interpreted when needed as more abstract (and portable) {@link ErrorCondition error conditions}. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/system_error/error_code/ </li>
-     * </ul>
+     * <p> <img src="../assets/images/design/exceptions.png" width="100%" /> </p>
      *
+     * @reference http://www.cplusplus.com/reference/system_error/error_code
      * @author Jeongho Nam <http://samchon.org>
      */
     var ErrorCode = (function (_super) {
@@ -8255,13 +8740,10 @@ var std;
      * <i>T2</i>). The individual values can be accessed through its public members {@link first} and
      * {@link second}. </p>
      *
-     * <ul>
-     *	<li> Reference: http://www.cplusplus.com/reference/utility/pair/ </li>
-     * </ul>
-     *
      * @param <K> Type of member {@link first}.
      * @param <T> Type of member {@link second}.
      *
+     * @reference http://www.cplusplus.com/reference/utility/pair
      * @author Jeongho Nam <http://samchon.org>
      */
     var Pair = (function () {
@@ -8339,23 +8821,22 @@ var std;
         example.test_all = test_all;
     })(example = std.example || (std.example = {}));
 })(std || (std = {}));
-/// <reference path="../API.ts" />
-/// <reference path="../Vector.ts" />
-/// <reference path="../Deque.ts" />
-/// <reference path="../List.ts" />
-/// <reference path="../Queue.ts" />
-/// <reference path="../Stack.ts" />
-/// <reference path="../HashSet.ts" />
-/// <reference path="../HashMap.ts" />
-/// <reference path="../TreeSet.ts" />
-/// <reference path="../TreeMap.ts" />
-/// <reference path="../Algorithm.ts" />
-/// <reference path="../Functional.ts" />
-/// <reference path="../Iterator.ts" />
-/// <reference path="../Exception.ts" />
-/// <reference path="../SystemError.ts" />
-/// <reference path="../Utility.ts" />
-/// <reference path="../example/test_all.ts" />
+/// <reference path="../../std/Vector.ts" />
+/// <reference path="../../std/Deque.ts" />
+/// <reference path="../../std/List.ts" />
+/// <reference path="../../std/Queue.ts" />
+/// <reference path="../../std/Stack.ts" />
+/// <reference path="../../std/HashSet.ts" />
+/// <reference path="../../std/HashMap.ts" />
+/// <reference path="../../std/TreeSet.ts" />
+/// <reference path="../../std/TreeMap.ts" />
+/// <reference path="../../std/Algorithm.ts" />
+/// <reference path="../../std/Functional.ts" />
+/// <reference path="../../std/Iterator.ts" />
+/// <reference path="../../std/Exception.ts" />
+/// <reference path="../../std/SystemError.ts" />
+/// <reference path="../../std/Utility.ts" />
+/// <reference path="../../std/example/test_all.ts" />
 if (typeof (exports) != "undefined")
     for (var key in std)
         exports[key] = std[key];
@@ -8437,12 +8918,9 @@ var std;
          * maximal paths have the same number of <font color='darkBlue'>black</font> nodes, by property 5, this shows
          * that no path is more than twice as long as any other path. </p>
          *
-         * <ul>
-         *	<li> Reference: https://en.wikipedia.org/w/index.php?title=Red%E2%80%93black_tree&redirect=no </li>
-         * </ul>
-         *
          * @param <T> Type of elements.
          *
+         * @reference https://en.wikipedia.org/w/index.php?title=Red%E2%80%93black_tree
          * @inventor Rudolf Bayer
          * @author Migrated by Jeongho Nam <http://samchon.org>
          */
@@ -8474,7 +8952,7 @@ var std;
                 var node = this.root_;
                 while (true) {
                     var newNode = null;
-                    if (this.is_equals(val, node.value))
+                    if (this.is_equal_to(val, node.value))
                         break; // EQUALS, MEANS MATCHED, THEN TERMINATE
                     else if (this.is_less(val, node.value))
                         newNode = node.left; // LESS, THEN TO THE LEFT
@@ -8901,7 +9379,7 @@ var std;
              */
             XTree.prototype.erase = function (val) {
                 var node = this.find(val);
-                if (node == null || this.is_equals(val, node.value) == false)
+                if (node == null || this.is_equal_to(val, node.value) == false)
                     return;
                 if (node.left != null && node.right != null) {
                     var pred = this.fetch_maximum(node.left);
@@ -9204,6 +9682,10 @@ var std;
     var base;
     (function (base) {
         /**
+         * <p> A red-black Tree storing {@link SetIterator SetIterators}. </p>
+         *
+         * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+         *
          * @author Jeongho Nam <http://samchon.org>
          */
         var AtomicTree = (function (_super) {
@@ -9236,7 +9718,7 @@ var std;
                     var newNode = null;
                     if (std.equal_to(val, node.value.value))
                         break; // EQUALS, MEANS MATCHED, THEN TERMINATE
-                    else if (std.less(val, node.value.value))
+                    else if (this.compare_(val, node.value.value))
                         newNode = node.left; // LESS, THEN TO THE LEFT
                     else
                         newNode = node.right; // GREATER, THEN TO THE RIGHT
@@ -9257,7 +9739,7 @@ var std;
             /**
              * @inheritdoc
              */
-            AtomicTree.prototype.is_equals = function (left, right) {
+            AtomicTree.prototype.is_equal_to = function (left, right) {
                 return std.equal_to(left, right);
             };
             /**
@@ -9483,6 +9965,13 @@ var std;
 (function (std) {
     var base;
     (function (base) {
+        /**
+         * <p> Hash buckets storing {@link MapIterator MapIterators}. </p>
+         *
+         * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
         var MapHashBuckets = (function (_super) {
             __extends(MapHashBuckets, _super);
             function MapHashBuckets(map) {
@@ -9509,6 +9998,10 @@ var std;
     var base;
     (function (base) {
         /**
+         * <p> A red-black Tree storing {@link MapIterator MapIterators}. </p>
+         *
+         * <p> <img src="../assets/images/design/map_containers.png" width="100%" /> </p>
+         *
          * @author Jeongho Nam <http://samchon.org>
          */
         var PairTree = (function (_super) {
@@ -9541,7 +10034,7 @@ var std;
                     var newNode = null;
                     if (std.equal_to(key, node.value.first))
                         break; // EQUALS, MEANS MATCHED, THEN TERMINATE
-                    else if (std.less(key, node.value.first))
+                    else if (this.compare_(key, node.value.first))
                         newNode = node.left; // LESS, THEN TO THE LEFT
                     else
                         newNode = node.right; // GREATER, THEN TO THE RIGHT
@@ -9562,7 +10055,7 @@ var std;
             /**
              * @inheritdoc
              */
-            PairTree.prototype.is_equals = function (left, right) {
+            PairTree.prototype.is_equal_to = function (left, right) {
                 return std.equal_to(left.first, right.first);
             };
             /**
@@ -9582,6 +10075,13 @@ var std;
 (function (std) {
     var base;
     (function (base) {
+        /**
+         * <p> Hash buckets storing {@link SetIterator SetIterators}. </p>
+         *
+         * <p> <img src="../assets/images/design/set_containers.png" width="100%" /> </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
         var SetHashBuckets = (function (_super) {
             __extends(SetHashBuckets, _super);
             function SetHashBuckets(set) {
@@ -9669,30 +10169,6 @@ var std;
         base.XTreeNode = XTreeNode;
     })(base = std.base || (std.base = {}));
 })(std || (std = {}));
-/*
-//////////////////////////////////////////////////
-// List of ambigious names for notation
-//////////////////////////////////////////////////
-// CLASSES
-// -----------------------------------------------
-    - vector					Vector
-    - deque						Deque
-    - list						List
-    - set						Set
-    - map						Map
-    - multiset					MultiSet
-    - multimap					MultiMap
-    - unordered_set				HashSet
-    - unordered_map				HashMap
-    - unordered_multiset		HashMultiSet
-    - unordered_multimap		HashMultiMap
-
-    - exception...				Exception...
-    - error_code				ErrorCode
-    - error_condition			ErrorCondition
-    - system_error				SystemError
-// -----------------------------------------------
-*/ 
 /// <reference path="../API.ts" />
 var std;
 (function (std) {
@@ -9778,7 +10254,7 @@ var std;
             /////////////////////////////////////
             //  ELEMENT I/O
             /////////////////////////////////////
-            //// ERASE AN ELEMENT
+            // ERASE AN ELEMENT
             var it = map.find(3); // find 3.
             it = map.erase(it); // erase 3. [it] points key 4.
             console.log(it.first); // prints key 4.
@@ -9797,7 +10273,7 @@ var std;
             // key list: [0, 1, -1, 2, 4, 5, 9]
             console.log("has 7:", map.has(7));
             console.log("count 5:", map.count(5));
-            console.log("it is end():", it.equal_to(map.end()));
+            //console.log("it is end():", it.equal_to(map.end()));
             /////////////////////////////////////
             // PRINT ALL ELEMENTS
             /////////////////////////////////////
@@ -9822,6 +10298,7 @@ var std;
                 Its key is 9
             =========================================
             */
+            var tree_map = new std.TreeMap(map.begin(), map.end(), std.greater);
         }
         example.test_hash_map = test_hash_map;
     })(example = std.example || (std.example = {}));
@@ -9859,7 +10336,7 @@ var std;
     (function (example) {
         function sorting() {
             var cubes = new std.Deque();
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 0; i++)
                 cubes.push_back(new Cube());
             ///////////////////////////////
             // SORT BY Cube.less()

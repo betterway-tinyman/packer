@@ -1,1 +1,0 @@
-xcopy ..\ts\*.js html-template\ /s /Y
