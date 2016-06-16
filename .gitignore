@@ -6,38 +6,6 @@ ehthumbs.db
 Desktop.ini
 
 # ======================================================
-#	CPP: VISUAL STUDIO
-# ======================================================
-cpp
-!cpp/src
-!cpp/Packer.sln
-!cpp/Packer.vcxproj
-!release/cpp
-
-# ======================================================
-#	FLEX - FLASH BUILDER
-# ======================================================
-.settings/
-bin/
-bin-debug/
-bin-release/
-html-template/
-*.actionScriptProperties
-*.flexProperties
-*.project
-.DS_Store
-
-# ======================================================
-#	TYPESCRIPT
-# ======================================================
-ts/
-!ts/src
-!ts/include
-!ts/style
-!ts/index.html
-!ts/tsconfig.json
-
-# ======================================================
 #	CUSTOM
 # ======================================================
 *.bat
