@@ -3,11 +3,35 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-if (typeof (exports) != "undefined") {
-    global["std"] = require("typescript-stl");
-}
+if (typeof (exports) != "undefined")
+    try {
+        global["std"] = require("typescript-stl");
+    }
+    catch (e) {
+    }
 /// <reference path="../miscellaneous/node/requires.ts" /> 
 /// <reference path="../../samchon/API.ts" />
+var samchon;
+(function (samchon) {
+    var example;
+    (function (example) {
+        function test_file_reference() {
+            var file = new samchon.library.FileReference();
+            file.addEventListener("select", handle_select);
+            file.addEventListener("complete", handle_complete);
+            file.browse("*.js", "*.ts", "*.txt");
+        }
+        example.test_file_reference = test_file_reference;
+        function handle_select(event) {
+            var file = event.target;
+            file.load();
+        }
+        function handle_complete(event) {
+            var file = event.target;
+            console.log(file.name, file.extension, file.size, file.modificationDate);
+        }
+    })(example = samchon.example || (samchon.example = {}));
+})(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
     var example;
@@ -21,7 +45,7 @@ var samchon;
                         console.log("connected");
                         this_.sendData(new samchon.protocol.Invoke("sendMessage", 99999, "I am JavaScript Client", 3, 7));
                     };
-                this.connector.connect("127.0.0.1", 37888);
+                this.connector.connect("127.0.0.1", 37888, "simulation");
             }
             WebClient.prototype.rotate_interval = function () {
                 console.log("send message");
@@ -647,12 +671,10 @@ var samchon;
          */
         var XMLList = (function (_super) {
             __extends(XMLList, _super);
-            /**
-             * <p> Default Constructor. </p>
-             */
             function XMLList() {
-                _super.call(this);
+                _super.apply(this, arguments);
             }
+            // using super::constructor
             XMLList.prototype.getTag = function () {
                 if (this.size() == 0)
                     return null;
@@ -702,43 +724,15 @@ var samchon;
             __extends(ArrayCollection, _super);
             function ArrayCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
-            // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            ArrayCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            ArrayCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            ArrayCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            ArrayCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
+            // using super::constructor		
             /* =========================================================
                 ELEMENTS I/O
                     - INSERT
@@ -808,17 +802,15 @@ var samchon;
              * @hidden
              */
             ArrayCollection.prototype.notify_insert = function (first, last) {
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @hidden
              */
             ArrayCollection.prototype.notify_erase = function (first, last) {
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -956,8 +948,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" &&
-                        (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string" // NOT STRING, THEN IT MEANS CHILDREN (INT, INDEX)
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         xml.setProperty(key, this[key]);
                     }
                 return xml;
@@ -1225,18 +1218,29 @@ var samchon;
                 configurable: true
             });
             return ProgressEvent;
-        }(BasicEvent));
+        }(library.BasicEvent));
         library.ProgressEvent = ProgressEvent;
     })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
+2;
 /// <reference path="../API.ts" />
 /// <reference path="../library/Event.ts" />
 var samchon;
 (function (samchon) {
     var collection;
     (function (collection) {
+        /**
+         *
+         */
         var CollectionEvent = (function (_super) {
             __extends(CollectionEvent, _super);
+            /**
+             *
+             *
+             * @param type
+             * @param first
+             * @param last
+             */
             function CollectionEvent(type, first, last) {
                 _super.call(this, type);
                 this.first_ = first;
@@ -1257,6 +1261,9 @@ var samchon;
                 configurable: true
             });
             Object.defineProperty(CollectionEvent.prototype, "container", {
+                /**
+                 *
+                 */
                 get: function () {
                     return this.target;
                 },
@@ -1264,6 +1271,9 @@ var samchon;
                 configurable: true
             });
             Object.defineProperty(CollectionEvent.prototype, "first", {
+                /**
+                 *
+                 */
                 get: function () {
                     return this.first_;
                 },
@@ -1271,6 +1281,9 @@ var samchon;
                 configurable: true
             });
             Object.defineProperty(CollectionEvent.prototype, "last", {
+                /**
+                 *
+                 */
                 get: function () {
                     return this.last_;
                 },
@@ -1296,43 +1309,15 @@ var samchon;
             __extends(DequeCollection, _super);
             function DequeCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            DequeCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            DequeCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            DequeCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            DequeCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - INSERT
@@ -1402,17 +1387,15 @@ var samchon;
              * @hidden
              */
             DequeCollection.prototype.notify_insert = function (first, last) {
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @hidden
              */
             DequeCollection.prototype.notify_erase = function (first, last) {
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -1461,43 +1444,15 @@ var samchon;
             __extends(HashMapCollection, _super);
             function HashMapCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            HashMapCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMapCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMapCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMapCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -1509,18 +1464,16 @@ var samchon;
              */
             HashMapCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             HashMapCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -1562,43 +1515,15 @@ var samchon;
             __extends(HashMultiMapCollection, _super);
             function HashMultiMapCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            HashMultiMapCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiMapCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiMapCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiMapCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -1610,18 +1535,16 @@ var samchon;
              */
             HashMultiMapCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             HashMultiMapCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -1670,43 +1593,15 @@ var samchon;
             __extends(HashSetCollection, _super);
             function HashSetCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            HashSetCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashSetCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashSetCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashSetCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -1718,18 +1613,16 @@ var samchon;
              */
             HashSetCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             HashSetCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -1766,67 +1659,15 @@ var samchon;
             __extends(HashMultiSetCollection, _super);
             function HashMultiSetCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /* =========================================================
-                ELEMENTS I/O
-                    - HANDLE_INSERT & HANDLE_ERASE
-            ============================================================
-                HANDLE_INSERT & HANDLE_ERASE
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.handle_insert = function (first, last) {
-                _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
-            };
-            /**
-             * @inheritdoc
-             */
-            HashMultiSetCollection.prototype.handle_erase = function (first, last) {
-                _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
-            };
             /* =========================================================
                 EVENT_DISPATCHER
                     - ACCESSORS
@@ -1875,43 +1716,15 @@ var samchon;
             __extends(ListCollection, _super);
             function ListCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            ListCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            ListCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            ListCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            ListCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - INSERT
@@ -1998,17 +1811,15 @@ var samchon;
              * @hidden
              */
             ListCollection.prototype.notify_insert = function (first, last) {
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @hidden
              */
             ListCollection.prototype.notify_erase = function (first, last) {
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -2057,43 +1868,15 @@ var samchon;
             __extends(TreeMapCollection, _super);
             function TreeMapCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            TreeMapCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMapCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMapCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMapCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -2105,18 +1888,16 @@ var samchon;
              */
             TreeMapCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             TreeMapCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -2158,43 +1939,15 @@ var samchon;
             __extends(TreeMultiMapCollection, _super);
             function TreeMultiMapCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            TreeMultiMapCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiMapCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiMapCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiMapCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -2206,18 +1959,16 @@ var samchon;
              */
             TreeMultiMapCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             TreeMultiMapCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -2266,67 +2017,15 @@ var samchon;
             __extends(TreeSetCollection, _super);
             function TreeSetCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
-            /* =========================================================
-                ELEMENTS I/O
-                    - HANDLE_INSERT & HANDLE_ERASE
-            ============================================================
-                HANDLE_INSERT & HANDLE_ERASE
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.handle_insert = function (first, last) {
-                _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeSetCollection.prototype.handle_erase = function (first, last) {
-                _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
-            };
             /* =========================================================
                 EVENT_DISPATCHER
                     - ACCESSORS
@@ -2367,43 +2066,15 @@ var samchon;
             __extends(TreeMultiSetCollection, _super);
             function TreeMultiSetCollection() {
                 _super.apply(this, arguments);
-                this.insert_handler_ = null;
-                this.erase_handler_ = null;
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
                 this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
             }
-            /* =========================================================
-                CONSTRUCTORS & ACCESSORS
-            ============================================================
+            /* ---------------------------------------------------------
                 CONSTRUCTORS
             --------------------------------------------------------- */
             // using super::constructor
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            TreeMultiSetCollection.prototype.set_insert_handler = function (listener) {
-                this.insert_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiSetCollection.prototype.set_erase_handler = function (listener) {
-                this.erase_handler_ = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiSetCollection.prototype.get_insert_handler = function () {
-                return this.insert_handler_;
-            };
-            /**
-             * @inheritdoc
-             */
-            TreeMultiSetCollection.prototype.get_erase_handler = function () {
-                return this.erase_handler_;
-            };
             /* =========================================================
                 ELEMENTS I/O
                     - HANDLE_INSERT & HANDLE_ERASE
@@ -2415,18 +2086,16 @@ var samchon;
              */
             TreeMultiSetCollection.prototype.handle_insert = function (first, last) {
                 _super.prototype.handle_insert.call(this, first, last);
-                if (this.insert_handler_ != null)
-                    this.insert_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
             };
             /**
              * @inheritdoc
              */
             TreeMultiSetCollection.prototype.handle_erase = function (first, last) {
                 _super.prototype.handle_erase.call(this, first, last);
-                if (this.erase_handler_ != null)
-                    this.erase_handler_(first, last);
-                this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
             };
             /* =========================================================
                 EVENT_DISPATCHER
@@ -2459,6 +2128,182 @@ var samchon;
             return TreeMultiSetCollection;
         }(std.TreeMultiSet));
         collection.TreeMultiSetCollection = TreeMultiSetCollection;
+    })(collection = samchon.collection || (samchon.collection = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../API.ts" />
+/// <reference path="../library/XML.ts" />
+var samchon;
+(function (samchon) {
+    var collection;
+    (function (collection) {
+        var XMLListCollection = (function (_super) {
+            __extends(XMLListCollection, _super);
+            function XMLListCollection() {
+                _super.apply(this, arguments);
+                /**
+                 * A chain object taking responsibility of dispatching events.
+                 */
+                this.event_dispatcher_ = new samchon.library.EventDispatcher(this);
+            }
+            /* ---------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------- */
+            // using super::constructor
+            /* =========================================================
+                ELEMENTS I/O
+                    - INSERT
+                    - ERASE
+                    - NOTIFIER
+            ============================================================
+                INSERT
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.push = function () {
+                var items = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    items[_i - 0] = arguments[_i];
+                }
+                var ret = _super.prototype.push.apply(this, items);
+                this.notify_insert(this.end().advance(-items.length), this.end());
+                return ret;
+            };
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.push_back = function (val) {
+                _super.prototype.push.call(this, val);
+                this.notify_insert(this.end().prev(), this.end());
+            };
+            /**
+             * @hidden
+             */
+            XMLListCollection.prototype.insert_by_repeating_val = function (position, n, val) {
+                var ret = _super.prototype.insert_by_repeating_val.call(this, position, n, val);
+                this.notify_insert(ret, ret.advance(n));
+                return ret;
+            };
+            /**
+             * @hidden
+             */
+            XMLListCollection.prototype.insert_by_range = function (position, begin, end) {
+                var n = this.size();
+                var ret = _super.prototype.insert_by_range.call(this, position, begin, end);
+                n = this.size() - n;
+                this.notify_insert(ret, ret.advance(n));
+                return ret;
+            };
+            /* ---------------------------------------------------------
+                ERASE
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.pop_back = function () {
+                this.notify_erase(this.end().prev(), this.end());
+                _super.prototype.pop_back.call(this);
+            };
+            /**
+             * @hidden
+             */
+            XMLListCollection.prototype.erase_by_range = function (first, last) {
+                this.notify_erase(first, last);
+                return _super.prototype.erase_by_range.call(this, first, last);
+            };
+            /* ---------------------------------------------------------
+                NOTIFIER
+            --------------------------------------------------------- */
+            /**
+             * @hidden
+             */
+            XMLListCollection.prototype.notify_insert = function (first, last) {
+                if (this.hasEventListener(collection.CollectionEvent.INSERT))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.INSERT, first, last));
+            };
+            /**
+             * @hidden
+             */
+            XMLListCollection.prototype.notify_erase = function (first, last) {
+                if (this.hasEventListener(collection.CollectionEvent.ERASE))
+                    this.dispatchEvent(new collection.CollectionEvent(collection.CollectionEvent.ERASE, first, last));
+            };
+            /* =========================================================
+                EVENT_DISPATCHER
+                    - ACCESSORS
+                    - ADD
+                    - REMOVE
+            ============================================================
+                ACCESSORS
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.hasEventListener = function (type) {
+                return this.event_dispatcher_.hasEventListener(type);
+            };
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.dispatchEvent = function (event) {
+                return this.event_dispatcher_.dispatchEvent(event);
+            };
+            XMLListCollection.prototype.addEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.event_dispatcher_.addEventListener(type, listener, thisArg);
+            };
+            XMLListCollection.prototype.removeEventListener = function (type, listener, thisArg) {
+                if (thisArg === void 0) { thisArg = null; }
+                this.event_dispatcher_.removeEventListener(type, listener, thisArg);
+            };
+            /* =========================================================
+                ARRAY'S MEMBERS
+                    - INSERT
+                    - ERASE
+            ============================================================
+                INSERT
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.unshift = function () {
+                var items = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    items[_i - 0] = arguments[_i];
+                }
+                var ret = _super.prototype.unshift.apply(this, items);
+                this.notify_insert(this.begin(), this.begin().advance(items.length));
+                return ret;
+            };
+            /* ---------------------------------------------------------
+                ERASE
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            XMLListCollection.prototype.pop = function () {
+                this.notify_erase(this.end().prev(), this.end());
+                return _super.prototype.pop.call(this);
+            };
+            XMLListCollection.prototype.splice = function (start, deleteCount) {
+                if (deleteCount === void 0) { deleteCount = this.size() - start; }
+                var items = [];
+                for (var _i = 2; _i < arguments.length; _i++) {
+                    items[_i - 2] = arguments[_i];
+                }
+                // FILTER
+                if (start + deleteCount > this.size())
+                    deleteCount = this.size() - start;
+                // NOTIFY ERASE
+                var first = new std.VectorIterator(this, start);
+                var last = first.advance(deleteCount);
+                this.notify_erase(first, last);
+                // CALL SUPER::ERASE
+                return _super.prototype.splice.apply(this, [start, deleteCount].concat(items));
+            };
+            return XMLListCollection;
+        }(samchon.library.XMLList));
+        collection.XMLListCollection = XMLListCollection;
     })(collection = samchon.collection || (samchon.collection = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
@@ -2696,9 +2541,6 @@ var samchon;
                 //it.value.apply(event);
                 return true;
             };
-            /**
-             * @inheritdoc
-             */
             EventDispatcher.prototype.addEventListener = function (type, listener, thisArg) {
                 if (thisArg === void 0) { thisArg = null; }
                 type = type.toLowerCase();
@@ -2711,9 +2553,6 @@ var samchon;
                     listenerSet = this.listeners.get(type);
                 listenerSet.insert(new std.Pair(listener, thisArg));
             };
-            /**
-             * @inheritdoc
-             */
             EventDispatcher.prototype.removeEventListener = function (type, listener, thisArg) {
                 if (thisArg === void 0) { thisArg = null; }
                 type = type.toLowerCase();
@@ -2730,6 +2569,404 @@ var samchon;
             return EventDispatcher;
         }());
         library.EventDispatcher = EventDispatcher;
+    })(library = samchon.library || (samchon.library = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var library;
+    (function (library) {
+        /**
+         * <p> The {@link FileReference} class provides a means to load and save files in browser level. </p>
+         *
+         * <p> The {@link FileReference} class provides a means to {@link load} and {@link save} files in browser level. A
+         * browser-system dialog box prompts the user to select a file to {@link load} or a location for {@link svae}. Each
+         * {@link FileReference} object refers to a single file on the user's disk and has properties that contain
+         * information about the file's size, type, name, creation date, modification date, and creator type (Macintosh only).
+         * </p>
+         *
+         * <p> FileReference instances are created in the following ways: </p>
+         * <ul>
+         *	<li>
+         *		When you use the new operator with the {@link FileReference} constructor:
+         *		<code>var myFileReference = new FileReference();</code>
+         *	</li>
+         *	<li>
+         *		When you call the {@link FileReferenceList.browse} method, which creates an array of {@link FileReference}
+         *		objects.
+         *	</li>
+         * </ul>
+         *
+         * <p> During a load operation, all the properties of a {@link FileReference} object are populated by calls to the
+         * {@link FileReference.browse} or {@link FileReferenceList.browse} methods. During a save operation, the name
+         * property is populated when the select event is dispatched; all other properties are populated when the complete
+         * event is dispatched. </p>
+         *
+         * <p> The {@link browse browse()} method opens an browser-system dialog box that prompts the user to select a file
+         * for {@link load}. The {@link FileReference.browse} method lets the user select a single file; the
+         * {@link FileReferenceList.browse} method lets the user select multiple files. After a successful call to the
+         * {@link browse browse()} method, call the {@link FileReference.load} method to load one file at a time. The
+         * {@link FileReference.save} method prompts the user for a location to save the file and initiates downloading from
+         * a binary or string data. </p>
+         *
+         * <p> The {@link FileReference} and {@link FileReferenceList} classes do not let you set the default file location
+         * for the dialog box that the {@link browse} or {@link save} methods generate. The default location shown in the
+         * dialog box is the most recently browsed folder, if that location can be determined, or the desktop. The classes do
+         * not allow you to read from or write to the transferred file. They do not allow the browser that initiated the
+         * {@link load} or {@link save} to access the loaded or saved file or the file's location on the user's disk. </p>
+         *
+         * @references http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/FileReference.html
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var FileReference = (function (_super) {
+            __extends(FileReference, _super);
+            /**
+             * Default Constructor.
+             */
+            function FileReference() {
+                _super.call(this);
+                this.file_ = null;
+                this.data_ = null;
+            }
+            Object.defineProperty(FileReference.prototype, "data", {
+                /* ---------------------------------------------------------
+                    ACCESSORS
+                --------------------------------------------------------- */
+                /**
+                 * <p> The data from the loaded file after a successful call to the {@link load load()} method. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    return this.data_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FileReference.prototype, "name", {
+                /**
+                 * <p> The name of the file on the local disk. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    var index = this.file_.name.lastIndexOf(".");
+                    if (index == -1)
+                        return this.file_.name;
+                    else
+                        return this.file_.name.substr(0, index);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FileReference.prototype, "extension", {
+                /**
+                 * <p> The filename extension. </p>
+                 *
+                 * <p> A file's extension is the part of the name following (and not including) the final dot (&quot;.&quot;). If
+                 * there is no dot in the filename, the extension is <code>null</code>. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    var index = this.file_.name.lastIndexOf(".");
+                    if (index == -1)
+                        return null;
+                    else
+                        return this.file_.name.substr(index + 1);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FileReference.prototype, "type", {
+                /**
+                 * <p> The file type, metadata of the {@link extension}. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    return this.file_.type;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FileReference.prototype, "size", {
+                /**
+                 * <p> The size of the file on the local disk in bytes. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    return this.file_.size;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FileReference.prototype, "modificationDate", {
+                /**
+                 * <p> The date that the file on the local disk was last modified. </p>
+                 *
+                 * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+                 * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+                 *
+                 * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+                 * </p>
+                 */
+                get: function () {
+                    return this.file_.lastModifiedDate;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /* =========================================================
+                PROCEDURES
+                    - OPEN FILE
+                    - SAVE FILE
+            ============================================================
+                OPEN FILE
+            --------------------------------------------------------- */
+            /**
+             * <p> Displays a file-browsing dialog box that lets the user select a file to upload. The dialog box is native
+             * to the user's browser system. The user can select a file on the local computer or from other systems, for
+             * example, through a UNC path on Windows. </p>
+             *
+             * <p> When you call this method and the user successfully selects a file, the properties of this
+             * {@link FileReference} object are populated with the properties of that file. Each subsequent time that the
+             * {@link FileReference.browse} method is called, the {@link FileReference} object's properties are reset to
+             * the file that the user selects in the dialog box. Only one {@link browse browse()} can be performed at a time
+             * (because only one dialog box can be invoked at a time). </p>
+             *
+             * <p> Using the <i>typeFilter parameter</i>, you can determine which files the dialog box displays. </p>
+             *
+             * @param typeFilter An array of filter strings used to filter the files that are displayed in the dialog box.
+             *					 If you omit this parameter, all files are displayed.
+             */
+            FileReference.prototype.browse = function () {
+                var typeFilter = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    typeFilter[_i - 0] = arguments[_i];
+                }
+                var this_ = this;
+                // CREATE A FILE SELECTOR
+                var input = document.createElement("input");
+                input.type = "file";
+                if (typeFilter.length > 0)
+                    input.accept = typeFilter.toString();
+                // EVENT HANDLER
+                input.onchange = function (event) {
+                    this_.file_ = input.files[0];
+                    this_.dispatchEvent(new library.BasicEvent("select"));
+                };
+                // APEND TO BODY TEMPORARILY
+                input.onclick = function (event) {
+                    document.body.removeChild(event.target);
+                };
+                input.style.display = "none";
+                document.body.appendChild(input);
+                // CLICK DIRECTLY
+                input.click();
+            };
+            /**
+             * <p> Starts the load of a local file selected by a user. </p>
+             *
+             * <p> You must call the {@link FileReference.browse} or {@link FileReferenceList.browse} method before you call
+             * the {@link load load()} method. </p>
+             *
+             * <p> Listeners receive events to indicate the progress, success, or failure of the load. Although you can use
+             * the {@link FileReferenceList} object to let users select multiple files to load, you must {@link load} the
+             * {@link FileReferenceList files} one by one. To {@link load} the files one by one, iterate through the
+             * {@link FileReferenceList.fileList} array of {@link FileReference} objects. </p>
+             *
+             * <p> If the file finishes loading successfully, its contents are stored in the {@link data} property. </p>
+             */
+            FileReference.prototype.load = function () {
+                var this_ = this;
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    this_.data_ = reader.result;
+                    this_.dispatchEvent(new library.BasicEvent("complete"));
+                };
+                reader.readAsText(this.file_);
+            };
+            /* ---------------------------------------------------------
+                SAVE FILE
+            --------------------------------------------------------- */
+            /**
+             * <p> Save a file to local filesystem. </p>
+             *
+             * <p> {@link FileReference.save} implemented the save function by downloading a file from a hidden anchor tag.
+             * However, the plan, future's {@link FileReference} will follow such rule: </p>
+             *
+             * <p> Opens a dialog box that lets the user save a file to the local filesystem. </p>
+             *
+             * <p> The {@link save save()} method first opens an browser-system dialog box that asks the user to enter a
+             * filename and select a location on the local computer to save the file. When the user selects a location and
+             * confirms the save operation (for example, by clicking Save), the save process begins. Listeners receive events
+             * to indicate the progress, success, or failure of the save operation. To ascertain the status of the dialog box
+             * and the save operation after calling {@link save save()}, your code must listen for events such as cancel,
+             * open, progress, and complete. </p>
+             *
+             * <p> When the file is saved successfully, the properties of the {@link FileReference} object are populated with
+             * the properties of the local file. The complete event is dispatched if the save is successful. </p>
+             *
+             * <p> Only one {@link browse browse()} or {@link save()} session can be performed at a time (because only one
+             * dialog box can be invoked at a time). </p>
+             *
+             * @param data The data to be saved. The data can be in one of several formats, and will be treated appropriately.
+             * @param fileName File name to be saved.
+             */
+            FileReference.prototype.save = function (data, fileName) {
+                var blob = new Blob([data], { type: "text/plain" });
+                if (window.navigator.msSaveBlob != undefined) {
+                    // IE ONLY
+                    window.navigator.msSaveBlob(blob, fileName);
+                }
+                else {
+                    // CREATE AN ANCHOR
+                    var anchor = document.createElement("a");
+                    anchor.download = fileName;
+                    anchor.innerHTML = "";
+                    // LINK TO THE BLOB
+                    anchor.href = window.URL.createObjectURL(blob);
+                    // APEND TO BODY TEMPORARILY
+                    anchor.onclick = function (event) {
+                        // CLICKS AND REMOVES IT DIRECTLY
+                        document.body.removeChild(event.target);
+                    };
+                    anchor.style.display = "none";
+                    document.body.appendChild(anchor);
+                    // CLICK DIRECTLY
+                    anchor.click();
+                }
+            };
+            return FileReference;
+        }(library.EventDispatcher));
+        library.FileReference = FileReference;
+        /**
+         * <p> The {@link FileReferenceList} class provides a means to let users select one or more files for
+         * {@link FileReference.load loading}. A {@link FileReferenceList} object represents a group of one or more local
+         * files on the user's disk as an array of {@link FileReference} objects. For detailed information and important
+         * considerations about {@link FileReference} objects and the FileReference class, which you use with
+         * {@link FileReferenceList}, see the {@link FileReference} class. </p>
+         *
+         * <p> To work with the {@link FileReferenceList} class: </p>
+         * <ul>
+         *	<li> Instantiate the class: <code>var myFileRef = new FileReferenceList();</code> </li>
+         *	<li>
+         *		Call the {@link FileReferenceList.browse} method, which opens a dialog box that lets the user select one or
+         *		more files for upload: <code>myFileRef.browse();</code>
+         *	</li>
+         *	<li>
+         *		After the {@link browse browse()} method is called successfully, the {@link fileList} property of the
+         *		{@link FileReferenceList} object is populated with an array of {@link FileReference} objects.
+         *	</li>
+         *	<li> Call {@link FileReference.load} on each element in the {@link fileList} array. </li>
+         * </ul>
+         *
+         * <p> The {@link FileReferenceList} class includes a {@link browse browse()} method and a {@link fileList} property
+         * for working with multiple files. </p>
+         *
+         * @reference http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/FileReferenceList.html
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var FileReferenceList = (function (_super) {
+            __extends(FileReferenceList, _super);
+            /**
+             * Default Constructor.
+             */
+            function FileReferenceList() {
+                _super.call(this);
+                this.file_list = new std.Vector();
+            }
+            Object.defineProperty(FileReferenceList.prototype, "fileList", {
+                /**
+                 * <p> An array of {@link FileReference} objects. </p>
+                 *
+                 * <p> When the {@link FileReferenceList.browse} method is called and the user has selected one or more files
+                 * from the dialog box that the {@link browse browse()} method opens, this property is populated with an array of
+                 * {@link FileReference} objects, each of which represents the files the user selected. </p>
+                 *
+                 * <p> The {@link fileList} property is populated anew each time {@link browse browse()} is called on that
+                 * {@link FileReferenceList} object. </p>
+                 */
+                get: function () {
+                    return this.file_list;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * <p> Displays a file-browsing dialog box that lets the user select one or more local files to upload. The
+             * dialog box is native to the user's browser system.  </p>
+             *
+             * <p> When you call this method and the user successfully selects files, the {@link fileList} property of this
+             * {@link FileReferenceList} object is populated with an array of {@link FileReference} objects, one for each
+             * file that the user selects. Each subsequent time that the {@link FileReferenceList.browse} method is called,
+             * the {@link FileReferenceList.fileList} property is reset to the file(s) that the user selects in the dialog
+             * box. </p>
+             *
+             * <p> Using the <i>typeFilter</i> parameter, you can determine which files the dialog box displays. </p>
+             *
+             * <p> Only one {@link FileReference.browse}, {@link FileReference.load}, or {@link FileReferenceList.browse}
+             * session can be performed at a time on a {@link FileReferenceList} object (because only one dialog box can be
+             * opened at a time). </p>
+             *
+             * @param typeFilter An array of filter strings used to filter the files that are displayed in the dialog box.
+             *					 If you omit this parameter, all files are displayed.
+             */
+            FileReferenceList.prototype.browse = function () {
+                var typeFilter = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    typeFilter[_i - 0] = arguments[_i];
+                }
+                var this_ = this;
+                // CREATE A FILE SELECTOR
+                var input = document.createElement("input");
+                input.type = "file";
+                if (typeFilter.length > 0)
+                    input.accept = typeFilter.toString();
+                // EVENT HANDLER
+                input.onchange = function (event) {
+                    var fileList = input.files;
+                    this_.file_list.clear();
+                    for (var i = 0; i < fileList.length; i++) {
+                        var reference = new FileReference();
+                        reference.file_ = fileList[i];
+                        this_.file_list.push(reference);
+                    }
+                    this_.dispatchEvent(new library.BasicEvent("select"));
+                };
+                // APEND TO BODY TEMPORARILY
+                input.onclick = function (event) {
+                    document.body.removeChild(event.target);
+                };
+                input.style.display = "none";
+                document.body.appendChild(input);
+                // CLICK DIRECTLY
+                input.click();
+            };
+            return FileReferenceList;
+        }(library.EventDispatcher));
+        library.FileReferenceList = FileReferenceList;
     })(library = samchon.library || (samchon.library = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
@@ -3078,9 +3315,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityArray.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityArray.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3088,16 +3333,14 @@ var samchon;
              */
             EntityArray.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityArray.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3111,7 +3354,8 @@ var samchon;
                 // MEMBERS
                 for (var key in this)
                     if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -3171,9 +3415,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityList.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityList.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3181,16 +3433,14 @@ var samchon;
              */
             EntityList.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityList.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3203,8 +3453,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string"
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -3264,9 +3515,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityDeque.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityDeque.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3274,16 +3533,14 @@ var samchon;
              */
             EntityDeque.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityDeque.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3296,8 +3553,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string"
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -3368,9 +3626,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityArrayCollection.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityArrayCollection.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3378,16 +3644,14 @@ var samchon;
              */
             EntityArrayCollection.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityArrayCollection.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3400,8 +3664,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string"
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -3461,9 +3726,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityListCollection.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityListCollection.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3471,16 +3744,14 @@ var samchon;
              */
             EntityListCollection.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityListCollection.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3493,8 +3764,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string"
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -3554,9 +3826,17 @@ var samchon;
             /**
              * @inheritdoc
              */
+            EntityDequeCollection.prototype.find = function (key) {
+                return std.find_if(this.begin(), this.end(), function (entity) {
+                    return std.equal_to(entity.key(), key);
+                });
+            };
+            /**
+             * @inheritdoc
+             */
             EntityDequeCollection.prototype.has = function (key) {
                 return std.any_of(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
@@ -3564,16 +3844,14 @@ var samchon;
              */
             EntityDequeCollection.prototype.count = function (key) {
                 return std.count_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
+                    return std.equal_to(entity.key(), key);
                 });
             };
             /**
              * @inheritdoc
              */
             EntityDequeCollection.prototype.get = function (key) {
-                var it = std.find_if(this.begin(), this.end(), function (entity) {
-                    return entity.key() == key;
-                });
+                var it = this.find(key);
                 if (it.equal_to(this.end()))
                     throw new std.OutOfRange("out of range");
                 return it.value;
@@ -3586,8 +3864,9 @@ var samchon;
                 xml.setTag(this.TAG());
                 // MEMBERS
                 for (var key in this)
-                    if (typeof key == "string" && key != "length" // LENGTH: MEMBER OF AN ARRAY
-                        && (typeof this[key] == "string" || typeof this[key] == "number")) {
+                    if (typeof key == "string"
+                        && (typeof this[key] == "string" || typeof this[key] == "number")
+                        && this.hasOwnProperty(key)) {
                         // ATOMIC
                         xml.setProperty(key, this[key] + "");
                     }
@@ -4139,18 +4418,14 @@ var samchon;
                 if (this.value instanceof samchon.library.XML)
                     this.type = "XML";
             }
+            /**
+             * @inheritdoc
+             */
             InvokeParameter.prototype.construct = function (xml) {
-                if (xml.hasProperty("name") == true)
-                    this.name = xml.getProperty("name");
-                this.type = xml.getProperty("type");
-                if (this.type == "number")
-                    this.value = parseFloat(xml.getValue());
-                else if (this.type == "string")
-                    this.value = xml.getValue();
-                else if (this.type == "XML")
+                this.value = null;
+                _super.prototype.construct.call(this, xml);
+                if (this.type == "XML")
                     this.value = xml.begin().second.at(0);
-                else
-                    this.value = null;
             };
             InvokeParameter.prototype.setValue = function (value) {
                 this.value = value;
@@ -4158,6 +4433,9 @@ var samchon;
             /* -------------------------------------------------------------------
                 GETTERS
             ------------------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
             InvokeParameter.prototype.key = function () {
                 return this.name;
             };
@@ -4182,20 +4460,20 @@ var samchon;
             /* -------------------------------------------------------------------
                 EXPORTERS
             ------------------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
             InvokeParameter.prototype.TAG = function () {
                 return "parameter";
             };
+            /**
+             * @inheritdoc
+             */
             InvokeParameter.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                if (this.name != "")
-                    xml.setProperty("name", this.name);
-                xml.setProperty("type", this.type);
+                var xml = _super.prototype.toXML.call(this);
                 // NOT CONSIDERED ABOUT THE BINARY DATA
-                if (this.type == "number" || this.type == "string")
-                    xml.setValue(this.value + "");
-                else if (this.type == "XML")
-                    xml.push(this.value);
+                (this.type == "XML");
+                xml.push(this.value);
                 return xml;
             };
             return InvokeParameter;
@@ -4258,14 +4536,15 @@ var samchon;
              * 		Local untrusted SWF files may not communicate with the Internet. You can work around
              * 		this limitation by reclassifying the file as local-with-networking or as trusted.
              */
-            ServerConnector.prototype.connect = function (ip, port) {
+            ServerConnector.prototype.connect = function (ip, port, path) {
+                if (path === void 0) { path = ""; }
                 if (ip.indexOf("ws://") == -1) {
                     if (ip.indexOf("://") != -1)
                         throw "only websocket is possible";
                     else
                         ip = "ws://" + ip;
                 }
-                this.socket = new WebSocket(ip + ":" + port);
+                this.socket = new WebSocket(ip + ":" + port + "/" + path);
                 var this_ = this;
                 this.socket.onopen = function (event) {
                     this_.handleConnect(event);

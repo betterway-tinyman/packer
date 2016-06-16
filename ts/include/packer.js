@@ -67,15 +67,15 @@ var boxologic;
     boxologic.Box = Box;
 })(boxologic || (boxologic = {}));
 /**
-* <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
-*
-* <ul>
-*	<li> Original Boxologic: https://github.com/exad/boxologic </li>
-* </ul>
-*
-* @author Bill Knechtel, <br>
-*		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
-*/
+ * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
+ *
+ * <ul>
+ *	<li> Original Boxologic: https://github.com/exad/boxologic </li>
+ * </ul>
+ *
+ * @author Bill Knechtel, <br>
+ *		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
+ */
 var boxologic;
 (function (boxologic) {
     /**
@@ -1049,6 +1049,294 @@ var boxologic;
     }());
     boxologic.Scrap = Scrap;
 })(boxologic || (boxologic = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var Editor = (function (_super) {
+            __extends(Editor, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function Editor() {
+                _super.call(this);
+                this.columns = this.createColumns();
+                this.selected_index = 0;
+            }
+            /* ------------------------------------------------------------
+                ACCESSORSS
+            ------------------------------------------------------------ */
+            Editor.prototype.get_row = function (index) {
+                return this.props.dataProvider.at(index);
+            };
+            Editor.prototype.insert_instance = function (event) {
+                var child = this.props.dataProvider.createChild(null);
+                this.props.dataProvider.push_back(child);
+            };
+            Editor.prototype.erase_instances = function (event) {
+                try {
+                    this.props.dataProvider.erase(this.props.dataProvider.begin().advance(this.selected_index));
+                }
+                catch (exception) {
+                }
+            };
+            /* ------------------------------------------------------------
+                EVENT HANDLERS
+            ------------------------------------------------------------ */
+            Editor.prototype.handle_data_change = function (event) {
+                setTimeout(this.setState.bind(this, {}), 0);
+            };
+            Editor.prototype.handle_row_change = function (event) {
+                Object.assign(this.props.dataProvider.at(event.rowIdx), event.updated);
+            };
+            Editor.prototype.handle_select = function (event) {
+                this.selected_index = event.rowIdx;
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            Editor.prototype.render = function () {
+                this.props.dataProvider.addEventListener("insert", this.handle_data_change, this);
+                this.props.dataProvider.addEventListener("erase", this.handle_data_change, this);
+                var ret = React.createElement("div", null, React.createElement("h3", null, " Type of wrappers to pack "), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.props.dataProvider.size(), columns: this.columns, onRowUpdated: this.handle_row_change.bind(this), onCellSelected: this.handle_select.bind(this), enableCellSelect: true, minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.props.dataProvider.size() * 35)}), React.createElement("p", {style: { textAlign: "right" }}, React.createElement("button", {onClick: this.insert_instance.bind(this)}, "Insert"), React.createElement("button", {onClick: this.erase_instances.bind(this)}, "Erase")));
+                return ret;
+            };
+            return Editor;
+        }(React.Component));
+        packer.Editor = Editor;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer_1) {
+        /**
+         * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var PackerForm = (function (_super) {
+            __extends(PackerForm, _super);
+            function PackerForm(instanceFormArray, wrapperArray) {
+                if (instanceFormArray === void 0) { instanceFormArray = new InstanceFormArray(); }
+                if (wrapperArray === void 0) { wrapperArray = new packer_1.WrapperArray(); }
+                _super.call(this);
+                this.instanceFormArray = instanceFormArray;
+                this.wrapperArray = wrapperArray;
+            }
+            PackerForm.prototype.construct = function (xml) {
+                this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
+                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
+            };
+            /* -----------------------------------------------------------
+                ACCESSORS
+            ----------------------------------------------------------- */
+            PackerForm.prototype.optimize = function () {
+                var packer = this.toPacker();
+                return packer.optimize();
+            };
+            PackerForm.prototype.getInstanceFormArray = function () {
+                return this.instanceFormArray;
+            };
+            PackerForm.prototype.getWrapperArray = function () {
+                return this.wrapperArray;
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            PackerForm.prototype.TAG = function () {
+                return "packerForm";
+            };
+            PackerForm.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                xml.push(this.instanceFormArray.toXML());
+                xml.push(this.wrapperArray.toXML());
+                return xml;
+            };
+            PackerForm.prototype.toPacker = function () {
+                var packer = new packer_1.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
+                return packer;
+            };
+            return PackerForm;
+        }(samchon.protocol.Entity));
+        packer_1.PackerForm = PackerForm;
+        /**
+         * An array of {@link InstanceForm} objects.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var InstanceFormArray = (function (_super) {
+            __extends(InstanceFormArray, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
+            function InstanceFormArray() {
+                _super.call(this);
+            }
+            InstanceFormArray.prototype.createChild = function (xml) {
+                return new InstanceForm();
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            InstanceFormArray.prototype.TAG = function () {
+                return "instanceFormArray";
+            };
+            InstanceFormArray.prototype.CHILD_TAG = function () {
+                return "instanceForm";
+            };
+            /**
+             * Convert {@link InstanceForm} objects to {@link InstanceArray}.
+             *
+             * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
+             */
+            InstanceFormArray.prototype.toInstanceArray = function () {
+                var instanceArray = new packer_1.InstanceArray();
+                for (var i = 0; i < this.size(); i++) {
+                    var myInstances = this.at(i).toInstanceArray();
+                    instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
+                }
+                return instanceArray;
+            };
+            return InstanceFormArray;
+        }(samchon.protocol.EntityArrayCollection));
+        packer_1.InstanceFormArray = InstanceFormArray;
+        /**
+         * <p> A repeated Instance. </p>
+         *
+         * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking
+         * volume of network message I/O by storing {@link count repeated count}. </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var InstanceForm = (function (_super) {
+            __extends(InstanceForm, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
+            function InstanceForm(instance, count) {
+                if (instance === void 0) { instance = new packer_1.Product("No name", 10, 10, 10); }
+                if (count === void 0) { count = 1; }
+                _super.call(this);
+                this.instance = instance;
+                this.count = count;
+            }
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.construct = function (xml) {
+                _super.prototype.construct.call(this, xml);
+                if (xml.hasProperty("type")) {
+                    this.instance = this.createInstance(xml);
+                    this.instance.construct(xml);
+                }
+                else if (xml.has("instance")) {
+                    var instanceXML = xml.get("instance").at(0);
+                    this.instance = this.createInstance(instanceXML);
+                    this.instance.construct(instanceXML);
+                }
+            };
+            InstanceForm.prototype.createInstance = function (xml) {
+                if (xml.getProperty("type") == "product")
+                    return new packer_1.Product();
+                else
+                    return new packer_1.Wrapper();
+            };
+            /* -----------------------------------------------------------
+                ACCESSORS
+            ----------------------------------------------------------- */
+            InstanceForm.prototype.key = function () {
+                return this.instance.getName();
+            };
+            InstanceForm.prototype.getInstance = function () {
+                return this.instance;
+            };
+            InstanceForm.prototype.getCount = function () {
+                return this.count;
+            };
+            InstanceForm.prototype.setCount = function (val) {
+                this.count = val;
+            };
+            Object.defineProperty(InstanceForm.prototype, "$name", {
+                get: function () { return this.instance.getName(); },
+                set: function (val) { this.instance.setName(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$width", {
+                get: function () { return this.instance.getWidth() + ""; },
+                set: function (val) { this.instance.setWidth(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$height", {
+                get: function () { return this.instance.getHeight() + ""; },
+                set: function (val) { this.instance.setHeight(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$length", {
+                get: function () { return this.instance.getLength() + ""; },
+                set: function (val) { this.instance.setLength(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$count", {
+                get: function () { return this.count + ""; },
+                set: function (val) { this.count = parseInt(val); },
+                enumerable: true,
+                configurable: true
+            });
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.TAG = function () {
+                return "instanceForm";
+            };
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                if (this.instance != null)
+                    xml.push(this.instance.toXML());
+                return xml;
+            };
+            /**
+             * <p> Repeated {@link instance} to {@link InstanceArray}.
+             *
+             * @details
+             * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make
+             * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be
+             * registered on {@link Packer.instanceArray}.
+             *
+             * @return An array of instance containing repeated {@link instance}.
+             */
+            InstanceForm.prototype.toInstanceArray = function () {
+                var instanceArray = new packer_1.InstanceArray();
+                instanceArray.assign(this.count, this.instance);
+                return instanceArray;
+            };
+            return InstanceForm;
+        }(samchon.protocol.Entity));
+        packer_1.InstanceForm = InstanceForm;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
 var bws;
 (function (bws) {
     var packer;
@@ -1094,7 +1382,7 @@ var bws;
                     var wrapper = this.at(i);
                     denominator += wrapper.getContainableVolume();
                     for (var j = 0; j < wrapper.size(); j++)
-                        numerator += wrapper.getContainableVolume();
+                        numerator += wrapper.at(j).getVolume();
                 }
                 return numerator / denominator;
             };
@@ -1114,7 +1402,7 @@ var bws;
                 return "instance";
             };
             return WrapperArray;
-        }(samchon.protocol.EntityArray));
+        }(samchon.protocol.EntityArrayCollection));
         packer.WrapperArray = WrapperArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -1144,11 +1432,11 @@ var bws;
                 // INSTANCE AND WRAPPER IS CORRESPOND, 1:1 RELATIONSHIP.
                 for (var i = 0; i < this.size(); i++) {
                     var wrapper = this.at(i);
-                    if (this.result.has(wrapper.key()) == false) {
+                    if (this.result.has(wrapper.getName()) == false) {
                         var wrapperGroup_1 = new packer.WrapperGroup(wrapper);
-                        this.result.set(wrapper.key(), wrapperGroup_1);
+                        this.result.set(wrapper.getName(), wrapperGroup_1);
                     }
-                    var wrapperGroup = this.result.get(wrapper.key());
+                    var wrapperGroup = this.result.get(wrapper.getName());
                     var instance = this.instanceArray.at(i);
                     if (wrapperGroup.allocate(instance) == false) {
                         // THE INSTANCE IS GREATER THAN THE WRAPPER
@@ -1244,97 +1532,90 @@ var bws;
         packer.InstanceArray = InstanceArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
 var bws;
 (function (bws) {
     var packer;
-    (function (packer_1) {
-        var wrapperArray;
-        function main(str) {
-            ////////////////////////
-            // READ DATA
-            ////////////////////////
-            var packerForm = new packer_1.PackerForm();
-            var xml = new samchon.library.XML(str);
-            if (xml.getTag() == "invoke") {
-                var invoke_1 = new samchon.protocol.Invoke(xml);
-                packerForm.construct(invoke_1.at(0).getValue());
+    (function (packer) {
+        var ItemEditor = (function (_super) {
+            __extends(ItemEditor, _super);
+            function ItemEditor() {
+                _super.apply(this, arguments);
             }
-            else
-                packerForm.construct(xml);
-            ////////////////////////
-            // CONSTRUCT PACKER AND RESULT
-            ////////////////////////
-            var packer = packerForm.toPacker();
-            var result;
-            var invoke;
-            try {
-                result = packer.optimize();
-                invoke = new samchon.protocol.Invoke("setWrapperArray", result.toXML());
+            ItemEditor.prototype.clear = function (event) {
+                this.props.instances.clear();
+                this.props.wrappers.clear();
+            };
+            ItemEditor.prototype.open = function (event) {
+                var this_ = this;
+                var handle_select = function (event) {
+                    file_ref.load();
+                };
+                var handle_complete = function (event) {
+                    var packer_form = new packer.PackerForm();
+                    packer_form.construct(new samchon.library.XML(file_ref.data));
+                    this_.props.instances.assign(packer_form.getInstanceFormArray().begin(), packer_form.getInstanceFormArray().end());
+                    this_.props.wrappers.assign(packer_form.getWrapperArray().begin(), packer_form.getWrapperArray().end());
+                };
+                var file_ref = new samchon.library.FileReference();
+                file_ref.addEventListener("select", handle_select);
+                file_ref.addEventListener("complete", handle_complete);
+                file_ref.browse();
+            };
+            ItemEditor.prototype.save = function (event) {
+                var packer_form = new packer.PackerForm(this.props.instances, this.props.wrappers);
+                var file_ref = new samchon.library.FileReference();
+                file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
+            };
+            ItemEditor.prototype.pack = function (event) {
+                this.props.application.pack();
+            };
+            ItemEditor.prototype.render = function () {
+                return React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/document.png", onClick: this.pack.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File "), React.createElement("td", null, " Pack ")))), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(InstanceEditor, {dataProvider: this.props.instances}), " "), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperEditor, {dataProvider: this.props.wrappers}), " "));
+            };
+            return ItemEditor;
+        }(React.Component));
+        packer.ItemEditor = ItemEditor;
+        var InstanceEditor = (function (_super) {
+            __extends(InstanceEditor, _super);
+            function InstanceEditor() {
+                _super.apply(this, arguments);
             }
-            catch (e) {
-                invoke = new samchon.protocol.Invoke("sendError", e.what(), "Unable to pack.");
+            InstanceEditor.prototype.createColumns = function () {
+                var columns = [
+                    { key: "$name", name: "Name", editable: true, width: 100 },
+                    { key: "$width", name: "Length", editable: true, width: 60 },
+                    { key: "$height", name: "Height", editable: true, width: 60 },
+                    { key: "$length", name: "Length", editable: true, width: 60 },
+                    { key: "$count", name: "Count", editable: true, width: 60 }
+                ];
+                return columns;
+            };
+            return InstanceEditor;
+        }(packer.Editor));
+        packer.InstanceEditor = InstanceEditor;
+        var WrapperEditor = (function (_super) {
+            __extends(WrapperEditor, _super);
+            function WrapperEditor() {
+                _super.apply(this, arguments);
             }
-            ////////////////////////
-            // NOTIFY TO FLEX
-            ////////////////////////
-            var flex = document.getElementById("flex");
-            flex.sendData(invoke.toXML().toString());
-        }
-        packer_1.main = main;
-        function setWrapperArray(str) {
-            wrapperArray = new packer_1.WrapperArray();
-            wrapperArray.construct(new samchon.library.XML(str));
-        }
-        packer_1.setWrapperArray = setWrapperArray;
-        function drawWrapper(wrapperIndex, size) {
-            var wrapper = wrapperArray.at(wrapperIndex);
-            // CLEAR PREVIOUS CANVAS
-            var rightTD = document.getElementById("rightTD");
-            var div = document.createElement('div');
-            rightTD.removeChild(document.body.getElementsByTagName("div")[0]);
-            rightTD.appendChild(div);
-            // CREATE AND PRINT THE NEW CANVAS
-            div.appendChild(wrapper.toCanvas(size));
-        }
-        packer_1.drawWrapper = drawWrapper;
+            WrapperEditor.prototype.createColumns = function () {
+                var columns = [
+                    { key: "$name", name: "name", editable: true, width: 100 },
+                    { key: "$width", name: "length", editable: true, width: 60 },
+                    { key: "$height", name: "height", editable: true, width: 60 },
+                    { key: "$length", name: "length", editable: true, width: 60 },
+                    { key: "$thickness", name: "thickness", editable: true, width: 60 }
+                ];
+                return columns;
+            };
+            return WrapperEditor;
+        }(packer.Editor));
+        packer.WrapperEditor = WrapperEditor;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-function main() {
-    ///////////////////////////
-    // CONSTRUCT OBJECTS
-    ///////////////////////////
-    var wrapperArray = new bws.packer.WrapperArray();
-    var instanceArray = new bws.packer.InstanceArray();
-    // Wrappers
-    wrapperArray.push(new bws.packer.Wrapper("Large", 1000, 40, 40, 15, 0), new bws.packer.Wrapper("Medium", 700, 20, 20, 10, 0), new bws.packer.Wrapper("Small", 500, 15, 15, 8, 0));
-    ///////
-    // Each Instance is repeated #15
-    ///////
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Eraser", 1, 2, 5));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Book", 15, 30, 3));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Drink", 3, 3, 10));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Umbrella", 5, 5, 20));
-    // Wrappers also can be packed into another Wrapper.
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Notebook-Box", 2000, 30, 40, 4, 2));
-    instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Tablet-Box", 2500, 20, 28, 2, 0));
-    ///////////////////////////
-    // BEGINS PACKING
-    ///////////////////////////
-    // CONSTRUCT PACKER
-    var packer = new bws.packer.Packer(wrapperArray, instanceArray);
-    ///////
-    // PACK (OPTIMIZE)
-    ///////
-    var result = packer.optimize();
-    console.log(result);
-    if (result == null)
-        return;
-    ///////////////////////////
-    // TRACE PACKING RESULT
-    ///////////////////////////
-    var xml = result.toXML();
-    console.log(xml.toString());
-}
 var bws;
 (function (bws) {
     var packer;
@@ -1600,169 +1881,69 @@ var bws;
         packer.Packer = Packer;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
 var bws;
 (function (bws) {
     var packer;
     (function (packer_2) {
-        /**
-         * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var PackerForm = (function (_super) {
-            __extends(PackerForm, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
+        var PackerApplication = (function (_super) {
+            __extends(PackerApplication, _super);
             /**
              * Default Constructor.
              */
-            function PackerForm() {
+            function PackerApplication() {
                 _super.call(this);
-                this.instanceFormArray = new InstanceFormArray();
-                this.wrapperArray = new packer_2.WrapperArray();
+                this.instances = new packer_2.InstanceFormArray();
+                this.wrappers = new packer_2.WrapperArray();
+                this.result = new packer_2.WrapperArray();
+                // INITIAL, EXMAPLE DATA
+                this.wrappers.push(new packer_2.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_2.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_2.Wrapper("Small", 500, 15, 15, 8, 0));
+                this.instances.push(new packer_2.InstanceForm(new packer_2.Product("Eraser", 1, 2, 5), 15), new packer_2.InstanceForm(new packer_2.Product("Book", 15, 30, 3), 15), new packer_2.InstanceForm(new packer_2.Product("Drink", 3, 3, 10), 15), new packer_2.InstanceForm(new packer_2.Product("Umbrella", 5, 5, 20), 15), new packer_2.InstanceForm(new packer_2.Product("Notebook-Box", 30, 40, 4), 15), new packer_2.InstanceForm(new packer_2.Product("Tablet-Box", 20, 28, 2), 15));
             }
-            PackerForm.prototype.construct = function (xml) {
-                this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
-                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
-            };
-            /* -----------------------------------------------------------
-                ACCESSORS
-            ----------------------------------------------------------- */
-            PackerForm.prototype.optimize = function () {
-                var packer = this.toPacker();
-                return packer.optimize();
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            PackerForm.prototype.TAG = function () {
-                return "packerForm";
-            };
-            PackerForm.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                xml.push(this.instanceFormArray.toXML());
-                xml.push(this.wrapperArray.toXML());
-                return xml;
-            };
-            PackerForm.prototype.toPacker = function () {
-                var packer = new packer_2.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
-                return packer;
-            };
-            return PackerForm;
-        }(samchon.protocol.Entity));
-        packer_2.PackerForm = PackerForm;
-        /**
-         * An array of {@link InstanceForm} objects.
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var InstanceFormArray = (function (_super) {
-            __extends(InstanceFormArray, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
-            function InstanceFormArray() {
-                _super.call(this);
-            }
-            InstanceFormArray.prototype.createChild = function (xml) {
-                return new InstanceForm();
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            InstanceFormArray.prototype.TAG = function () {
-                return "instanceFormArray";
-            };
-            InstanceFormArray.prototype.CHILD_TAG = function () {
-                return "instanceForm";
-            };
-            /**
-             * Convert {@link InstanceForm} objects to {@link InstanceArray}.
-             *
-             * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
-             */
-            InstanceFormArray.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
-                for (var i = 0; i < this.size(); i++) {
-                    var myInstances = this.at(i).toInstanceArray();
-                    instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
+            PackerApplication.prototype.pack = function () {
+                /////
+                // FIND THE OPTIMIZED SOLUTION
+                /////
+                var packer = new packer_2.PackerForm(this.instances, this.wrappers).toPacker();
+                var result;
+                try {
+                    result = packer.optimize();
                 }
-                return instanceArray;
-            };
-            return InstanceFormArray;
-        }(samchon.protocol.EntityArray));
-        /**
-         * <p> A repeated Instance. </p>
-         *
-         * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking
-         * volume of network message I/O by storing {@link count repeated count}. </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var InstanceForm = (function (_super) {
-            __extends(InstanceForm, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
-            function InstanceForm() {
-                _super.call(this);
-                this.instance = null;
-                this.count = 1;
-            }
-            InstanceForm.prototype.construct = function (xml) {
-                _super.prototype.construct.call(this, xml);
-                if (xml.hasProperty("type")) {
-                    this.instance = this.createInstance(xml);
-                    this.instance.construct(xml);
+                catch (exception) {
+                    alert(exception.what());
+                    return;
                 }
-                else if (xml.has("instance")) {
-                    var instanceXML = xml.get("instance").at(0);
-                    this.instance = this.createInstance(instanceXML);
-                    this.instance.construct(instanceXML);
-                }
+                this.result.assign(result.begin(), result.end());
+                /////
+                // DRAW THE 1ST WRAPPER
+                /////
+                if (this.result.empty() == true)
+                    return;
+                this.drawWrapper(this.result.front());
+                this.refs["tabNavigator"].setState({ selectedIndex: 1 });
             };
-            InstanceForm.prototype.createInstance = function (xml) {
-                if (xml.getProperty("type") == "product")
-                    return new packer_2.Product();
-                else
-                    return new packer_2.Wrapper();
+            PackerApplication.prototype.drawWrapper = function (wrapper, index) {
+                if (index === void 0) { index = wrapper.size(); }
+                // INITIALIZE
+                var div = document.getElementById("wrapper_viewer");
+                var canvas = wrapper.toCanvas(index); // DRAW
+                // PRINT
+                if (div.hasChildNodes() == true)
+                    div.removeChild(div.childNodes[0]);
+                div.appendChild(canvas);
             };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            InstanceForm.prototype.TAG = function () {
-                return "instanceForm";
+            PackerApplication.prototype.render = function () {
+                var ret = React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }}));
+                return ret;
             };
-            InstanceForm.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                if (this.instance != null)
-                    xml.push(this.instance.toXML());
-                return xml;
+            PackerApplication.main = function () {
+                ReactDOM.render(React.createElement(PackerApplication, null), document.body);
             };
-            /**
-             * <p> Repeated {@link instance} to {@link InstanceArray}.
-             *
-             * @details
-             * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make
-             * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be
-             * registered on {@link Packer.instanceArray}.
-             *
-             * @return An array of instance containing repeated {@link instance}.
-             */
-            InstanceForm.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
-                instanceArray.assign(this.count, this.instance);
-                return instanceArray;
-            };
-            return InstanceForm;
-        }(samchon.protocol.Entity));
+            return PackerApplication;
+        }(React.Component));
+        packer_2.PackerApplication = PackerApplication;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 var bws;
@@ -1777,7 +1958,7 @@ var bws;
         var Product = (function (_super) {
             __extends(Product, _super);
             function Product(name, width, height, length) {
-                if (name === void 0) { name = ""; }
+                if (name === void 0) { name = "No Name"; }
                 if (width === void 0) { width = 0; }
                 if (height === void 0) { height = 0; }
                 if (length === void 0) { length = 0; }
@@ -1806,7 +1987,7 @@ var bws;
                 this.length = length;
             }
             /* -----------------------------------------------------------
-                GETTERS
+                ACCESSORS
             ----------------------------------------------------------- */
             /**
              * Key of a Product is its name.
@@ -1844,6 +2025,30 @@ var bws;
             Product.prototype.getVolume = function () {
                 return this.width * this.height * this.length;
             };
+            /**
+             * @inheritdoc
+             */
+            Product.prototype.setName = function (val) {
+                this.name = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Product.prototype.setWidth = function (val) {
+                this.width = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Product.prototype.setHeight = function (val) {
+                this.height = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Product.prototype.setLength = function (val) {
+                this.length = val;
+            };
             /* -----------------------------------------------------------
                 EXPORTERS
             ----------------------------------------------------------- */
@@ -1859,6 +2064,9 @@ var bws;
             Product.prototype.TAG = function () {
                 return "instance";
             };
+            /**
+             * @inheritdoc
+             */
             Product.prototype.toXML = function () {
                 var xml = _super.prototype.toXML.call(this);
                 xml.setProperty("type", this.TYPE());
@@ -1867,6 +2075,166 @@ var bws;
             return Product;
         }(samchon.protocol.Entity));
         packer.Product = Product;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var ResultViewer = (function (_super) {
+            __extends(ResultViewer, _super);
+            function ResultViewer() {
+                _super.apply(this, arguments);
+            }
+            ResultViewer.prototype.drawWrapper = function (wrapper, index) {
+                if (index === void 0) { index = wrapper.size(); }
+                this.props.application.drawWrapper(wrapper, index);
+            };
+            ResultViewer.prototype.clear = function (event) {
+                this.props.wrappers.clear();
+                this.drawWrapper(new packer.Wrapper());
+                this.refresh();
+            };
+            ResultViewer.prototype.open = function (event) {
+                var this_ = this;
+                var handle_select = function (event) {
+                    file_ref.load();
+                };
+                var handle_complete = function (event) {
+                    this_.props.wrappers.construct(new samchon.library.XML(file_ref.data));
+                    if (this_.props.wrappers.empty() == true)
+                        this_.drawWrapper(new packer.Wrapper());
+                    else
+                        this_.drawWrapper(this_.props.wrappers.front());
+                    this_.refresh();
+                };
+                var file_ref = new samchon.library.FileReference();
+                file_ref.addEventListener("select", handle_select);
+                file_ref.addEventListener("complete", handle_complete);
+                file_ref.browse();
+            };
+            ResultViewer.prototype.save = function (event) {
+                var file_ref = new samchon.library.FileReference();
+                file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
+            };
+            ResultViewer.prototype.refresh = function () {
+                this.refs["wrapperGrid"].setState({});
+                this.refs["wrapGrid"].setState({});
+            };
+            ResultViewer.prototype.render = function () {
+                var wrapper = this.props.wrappers.empty()
+                    ? new packer.Wrapper()
+                    : this.props.wrappers.front();
+                var ret = React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File ")))), React.createElement("hr", null), React.createElement("p", null, " Optimization Result "), React.createElement("ul", null, React.createElement("li", null, " Cost: $ ", this.props.wrappers.getPrice(), " "), React.createElement("li", null, " Space Utilization: ", Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, " % ")), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), " "), React.createElement("hr", null), React.createElement("div", {id: "wrap_grid_div"}, React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})));
+                return ret;
+            };
+            return ResultViewer;
+        }(React.Component));
+        packer.ResultViewer = ResultViewer;
+        var WrapperGrid = (function (_super) {
+            __extends(WrapperGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapperGrid() {
+                _super.call(this);
+                this.selectedIndex = 0;
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$name", name: "Name", width: 120 },
+                        { key: "$scale", name: "Length", width: 90 },
+                        { key: "$spaceUtilization", name: "Space Utilization", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapperGrid.prototype, "wrappers", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    return this.props.viewer.props.wrappers;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapperGrid.prototype.get_row = function (index) {
+                return this.wrappers.at(index);
+            };
+            WrapperGrid.prototype.handle_select = function (event) {
+                this.selectedIndex = event.rowIdx;
+                var wrapper = this.wrappers.at(this.selectedIndex);
+                this.props.viewer.drawWrapper(wrapper);
+                this.props.viewer.refs["wrapGrid"].setState({});
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapperGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, React.createElement("h3", null, " List of wrappers."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
+                return ret;
+            };
+            return WrapperGrid;
+        }(React.Component));
+        var WrapGrid = (function (_super) {
+            __extends(WrapGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapGrid() {
+                _super.call(this);
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$instanceName", name: "Name", width: 120 },
+                        { key: "$layoutScale", name: "layoutScale", width: 90 },
+                        { key: "$position", name: "Position", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapGrid.prototype, "wrapper", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    var wrappers = this.props.viewer.props.wrappers;
+                    try {
+                        var index = this.props.viewer.refs["wrapperGrid"].selectedIndex;
+                        var wrapper = this.props.viewer.props.wrappers.at(index);
+                        return wrapper;
+                    }
+                    catch (exception) {
+                        if (wrappers.empty() == true)
+                            return new packer.Wrapper();
+                        else
+                            return wrappers.front();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapGrid.prototype.get_row = function (index) {
+                return this.wrapper.at(index);
+            };
+            WrapGrid.prototype.handle_select = function (event) {
+                this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, React.createElement("h3", null, " Instances packed in a Wrapper."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
+                return ret;
+            };
+            return WrapGrid;
+        }(React.Component));
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 var bws;
@@ -2128,6 +2496,27 @@ var bws;
             Wrap.prototype.getVolume = function () {
                 return this.instance.getVolume();
             };
+            Object.defineProperty(Wrap.prototype, "$instanceName", {
+                get: function () {
+                    return this.instance.getName();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrap.prototype, "$layoutScale", {
+                get: function () {
+                    return this.getWidth() + ", " + this.getHeight() + ", " + this.getLength();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrap.prototype, "$position", {
+                get: function () {
+                    return this.x + ", " + this.y + ", " + this.z;
+                },
+                enumerable: true,
+                configurable: true
+            });
             /* -----------------------------------------------------------
                 EXPORTERS
             ----------------------------------------------------------- */
@@ -2286,23 +2675,23 @@ var bws;
                  *
                  * <p> The name represents a type of Wrapper and identifies the Wrapper. </p>
                  */
-                this.name = "";
+                this.name = "No Name";
                 /**
                  * Price, cost of using an Wrapper.
                  */
-                this.price = 0.0;
+                this.price = 1000.0;
                 /**
                  * Width of the Wrapper, length on the X-axis in 3D.
                  */
-                this.width_ = 0.0;
+                this.width_ = 10.0;
                 /**
                  * Height of the Wrapper, length on the Y-axis in 3D.
                  */
-                this.height_ = 0.0;
+                this.height_ = 10.0;
                 /**
                  * Length of the Wrapper, length on the Z-axis in 3D.
                  */
-                this.length_ = 0.0;
+                this.length_ = 10.0;
                 /**
                  * <p> Thickness, margin of a Wrapper causes shrinkness of containable volume. </p>
                  *
@@ -2344,10 +2733,12 @@ var bws;
                 return new packer.Wrap(this);
             };
             /* ===========================================================
-                GETTERS
+                ACCESSORS
                     - MEMBERS
                     - DERIVED PROPERTIES
                     - COMPARISON
+                    - SETTERS
+                    - COLUMN ITEMS
             ==============================================================
                 MEMBERS
             ----------------------------------------------------------- */
@@ -2486,6 +2877,98 @@ var bws;
                         return false;
                 return true;
             };
+            /* -----------------------------------------------------------
+                SETTERS
+            ----------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            Wrapper.prototype.setName = function (val) {
+                this.name = val;
+            };
+            /**
+             * Set price.
+             */
+            Wrapper.prototype.setPrice = function (val) {
+                this.price = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Wrapper.prototype.setWidth = function (val) {
+                this.width_ = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Wrapper.prototype.setHeight = function (val) {
+                this.height_ = val;
+            };
+            /**
+             * @inheritdoc
+             */
+            Wrapper.prototype.setLength = function (val) {
+                this.length_ = val;
+            };
+            /**
+             * Set thickness.
+             */
+            Wrapper.prototype.setThickness = function (val) {
+                this.thickness = val;
+            };
+            Object.defineProperty(Wrapper.prototype, "$name", {
+                /* -----------------------------------------------------------
+                    COLUMN ITEMS
+                ----------------------------------------------------------- */
+                get: function () { return this.name; },
+                set: function (val) { this.name = val; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$price", {
+                get: function () { return this.price + ""; },
+                set: function (val) { this.price = parseFloat(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$width", {
+                get: function () { return this.width_ + ""; },
+                set: function (val) { this.width_ = parseFloat(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$height", {
+                get: function () { return this.height_ + ""; },
+                set: function (val) { this.height_ = parseFloat(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$length", {
+                get: function () { return this.length_ + ""; },
+                set: function (val) { this.length_ = parseFloat(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$thickness", {
+                get: function () { return this.thickness + ""; },
+                set: function (val) { this.thickness = parseFloat(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$scale", {
+                get: function () {
+                    return this.width_ + ", " + this.height_ + ", " + this.length_;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Wrapper.prototype, "$spaceUtilization", {
+                get: function () {
+                    return Math.round(this.getUtilization() * 10000) / 100.0 + "%";
+                },
+                enumerable: true,
+                configurable: true
+            });
             /* ===========================================================
                 EXPORTERS
             =========================================================== */
@@ -2731,7 +3214,7 @@ var bws;
              * Key of a WrapperGroup is dependent on its sample.
              */
             WrapperGroup.prototype.key = function () {
-                return this.sample.key();
+                return this.sample.getName();
             };
             /**
              * Get sample.
@@ -2848,4 +3331,49 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var flex;
+(function (flex) {
+    var TabNavigator = (function (_super) {
+        __extends(TabNavigator, _super);
+        function TabNavigator() {
+            _super.apply(this, arguments);
+        }
+        TabNavigator.prototype.render = function () {
+            if (this.state == null)
+                this.state = { selectedIndex: this.props.selectedIndex };
+            if (this.state.selectedIndex == undefined)
+                this.state = { selectedIndex: 0 };
+            var children = this.props.children;
+            var selected = children[this.state.selectedIndex];
+            var tabs = [];
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var className = (i == this.state.selectedIndex) ? "active" : "";
+                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label));
+                tabs.push(label);
+            }
+            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, React.createElement("ul", {className: "tabNavigator_label"}, tabs), selected);
+            return ret;
+        };
+        TabNavigator.prototype.handle_change = function (index, event) {
+            this.setState({ selectedIndex: index });
+        };
+        return TabNavigator;
+    }(React.Component));
+    flex.TabNavigator = TabNavigator;
+    var NavigatorContent = (function (_super) {
+        __extends(NavigatorContent, _super);
+        function NavigatorContent() {
+            _super.apply(this, arguments);
+        }
+        NavigatorContent.prototype.render = function () {
+            return React.createElement("div", {className: "tabNavigator_content"}, this.props.children);
+        };
+        return NavigatorContent;
+    }(React.Component));
+    flex.NavigatorContent = NavigatorContent;
+})(flex || (flex = {}));
 //# sourceMappingURL=packer.js.map

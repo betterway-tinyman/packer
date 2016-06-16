@@ -1,7 +1,7 @@
 ﻿namespace bws.packer
 {
 	export class WrapperArray
-		extends samchon.protocol.EntityArray<Wrapper>
+		extends samchon.protocol.EntityArrayCollection<Wrapper>
 	{
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
@@ -54,7 +54,7 @@
 				
 				denominator += wrapper.getContainableVolume();
 				for (let j = 0; j < wrapper.size(); j++)
-					numerator += wrapper.getContainableVolume();
+					numerator += wrapper.at(j).getVolume();
 			}
 
 			return numerator / denominator;

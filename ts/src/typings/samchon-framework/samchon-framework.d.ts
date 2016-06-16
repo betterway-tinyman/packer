@@ -1,25 +1,3 @@
-// Type definitions for Samchon Framework v1.1.0
-// Project: https://github.com/samchon/framework
-// Definitions by: Jeongho Nam <http://samchon.org>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-// ------------------------------------------------------------------------------------
-// In Samchon Framework, merging multiple 'ts' files to a module is not possible yet.
-// Instead of using "import" instruction, use such trick: 
-//
-// <code>
-// declare var global: any;
-// declare var require: Function;
-//
-// global["samchon"] = require("samchon-framework");
-// let invoke: samchon.protocol.Invoke = new samchon.protocol.Invoke("setValue", 3);
-// </code>
-//
-// Those declaration of global and require can be substituted by using "node.d.ts"
-// ------------------------------------------------------------------------------------
-
-/// <reference path="../typescript-stl/typescript-stl.d.ts" />
-
 /**
  * Samchon Framework, A SDN framework.
  *
@@ -38,6 +16,9 @@ declare namespace samchon.protocol.service {
 declare namespace samchon.protocol.master {
 }
 declare namespace samchon.protocol.slave {
+}
+declare namespace samchon.example {
+    function test_file_reference(): void;
 }
 declare namespace samchon.example {
     function test_web_client(): void;
@@ -378,10 +359,6 @@ declare namespace samchon.library {
      * @author Jeongho Nam <http://samchon.org>
      */
     class XMLList extends std.Vector<XML> {
-        /**
-         * <p> Default Constructor. </p>
-         */
-        constructor();
         getTag(): string;
         /**
          * <p> Convert XMLList to string. </p>
@@ -404,25 +381,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class ArrayCollection<T> extends std.Vector<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): CollectionHandler<T>;
         /**
          * @inheritdoc
          */
@@ -737,7 +699,7 @@ declare namespace samchon.library {
          */
         returnValue: boolean;
     }
-    class ProgressEvent extends BasicEvent {
+    class ProgressEvent extends library.BasicEvent {
         static PROGRESS: string;
         protected numerator_: number;
         protected denominator_: number;
@@ -747,17 +709,45 @@ declare namespace samchon.library {
     }
 }
 declare namespace samchon.collection {
+    /**
+     * Type of function pointer for {@link CollectionEvent CollectionEvents}.
+     */
     interface CollectionEventListener<T> extends EventListener {
         (event: CollectionEvent<T>): void;
     }
+    /**
+     *
+     */
     class CollectionEvent<T> extends library.BasicEvent {
         static INSERT: string;
         static ERASE: string;
+        /**
+         *
+         */
         private first_;
+        /**
+         *
+         */
         private last_;
+        /**
+         *
+         *
+         * @param type
+         * @param first
+         * @param last
+         */
         constructor(type: string, first: std.Iterator<T>, last: std.Iterator<T>);
+        /**
+         *
+         */
         container: ICollection<T>;
+        /**
+         *
+         */
         first: std.Iterator<T>;
+        /**
+         *
+         */
         last: std.Iterator<T>;
     }
 }
@@ -768,25 +758,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class DequeCollection<T> extends std.Deque<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): CollectionHandler<T>;
         /**
          * @inheritdoc
          */
@@ -868,25 +843,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class HashMapCollection<Key, T> extends std.HashMap<Key, T> implements ICollection<std.Pair<Key, T>> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: MapCollectionHandler<Key, T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: MapCollectionHandler<Key, T>): void;
         /**
          * @inheritdoc
          */
@@ -942,25 +902,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class HashMultiMapCollection<Key, T> extends std.HashMap<Key, T> implements ICollection<std.Pair<Key, T>> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: MapCollectionHandler<Key, T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: MapCollectionHandler<Key, T>): void;
         /**
          * @inheritdoc
          */
@@ -1018,25 +963,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class HashSetCollection<T> extends std.TreeSet<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): CollectionHandler<T>;
         /**
          * @inheritdoc
          */
@@ -1087,33 +1017,10 @@ declare namespace samchon.collection {
         removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
     }
     class HashMultiSetCollection<T> extends std.TreeMultiSet<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
-        /**
-         * @inheritdoc
-         */
-        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
         /**
          * @inheritdoc
          */
@@ -1157,22 +1064,12 @@ declare namespace samchon.collection {
     }
 }
 declare namespace samchon.collection {
-    interface CollectionHandler<T> {
-        (first: std.Iterator<T>, last: std.Iterator<T>): void;
-    }
-    interface MapCollectionHandler<Key, T> extends CollectionHandler<std.Pair<Key, T>> {
-        (first: std.MapIterator<Key, T>, last: std.MapIterator<Key, T>): void;
-    }
     /**
      * An interface for {@link IContainer containers} who can detect element I/O events.
      *
      * @author Jeongho Nam <http://samchon.org>
      */
     interface ICollection<T> extends std.base.IContainer<T>, library.IEventDispatcher {
-        get_insert_handler(): CollectionHandler<T>;
-        get_erase_handler(): CollectionHandler<T>;
-        set_insert_handler(listener: CollectionHandler<T>): any;
-        set_erase_handler(listener: CollectionHandler<T>): any;
         /**
          * @inheritdoc
          */
@@ -1181,7 +1078,93 @@ declare namespace samchon.collection {
          * @inheritdoc
          */
         addEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * <p> Registers an event listener object with an EventDispatcher object so that the listener
+         * receives notification of an event. You can register event listeners on all nodes in the display
+         * list for a specific type of event, phase, and priority.
+         *
+         * <p> After you successfully register an event listener, you cannot change its priority through
+         * additional calls to addEventListener(). To change a listener's priority, you must first call
+         * removeEventListener(). Then you can register the listener again with the new priority level. </p>
+         *
+         * <p> Keep in mind that after the listener is registered, subsequent calls to addEventListener()
+         * with a different type or useCapture value result in the creation of a separate listener
+         * registration. For example, if you first register a listener with useCapture set to true,
+         * it listens only during the capture phase. If you call addEventListener() again using the same
+         * listener object, but with useCapture set to false, you have two separate listeners: one that
+         * listens during the capture phase and another that listens during the target and bubbling phases. </p>
+         *
+         * <p> You cannot register an event listener for only the target phase or the bubbling phase.
+         * Those phases are coupled during registration because bubbling applies only to the ancestors of
+         * the target node. </p>
+         *
+         * <p> If you no longer need an event listener, remove it by calling removeEventListener(), or
+         * memory problems could result. Event listeners are not automatically removed from memory because
+         * the garbage collector does not remove the listener as long as the dispatching object exists
+         * (unless the useWeakReference parameter is set to true). </p>
+         *
+         * <p> Copying an EventDispatcher instance does not copy the event listeners attached to it. (If
+         * your newly created node needs an event listener, you must attach the listener after creating
+         * the node.) However, if you move an EventDispatcher instance, the event listeners attached to
+         * it move along with it. </p>
+         *
+         * <p> If the event listener is being registered on a node while an event is also being processed
+         * on this node, the event listener is not triggered during the current phase but may be triggered
+         * during a later phase in the event flow, such as the bubbling phase. </p>
+         *
+         * <p> If an event listener is removed from a node while an event is being processed on the node,
+         * it is still triggered by the current actions. After it is removed, the event listener is never
+         * invoked again (unless it is registered again for future processing). </p>
+         *
+         * @param event The type of event; {@link CollectionEvent.INSERT} or {@link CollectionEvent.ERASE}.
+         * @param listener The listener function that processes the event.
+         *				 This function must accept an Event object as its only parameter and must return
+         *				 nothing.
+         */
         addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        /**
+         * <p> Registers an event listener object with an EventDispatcher object so that the listener
+         * receives notification of an event. You can register event listeners on all nodes in the display
+         * list for a specific type of event, phase, and priority.
+         *
+         * <p> After you successfully register an event listener, you cannot change its priority through
+         * additional calls to addEventListener(). To change a listener's priority, you must first call
+         * removeEventListener(). Then you can register the listener again with the new priority level. </p>
+         *
+         * <p> Keep in mind that after the listener is registered, subsequent calls to addEventListener()
+         * with a different type or useCapture value result in the creation of a separate listener
+         * registration. For example, if you first register a listener with useCapture set to true,
+         * it listens only during the capture phase. If you call addEventListener() again using the same
+         * listener object, but with useCapture set to false, you have two separate listeners: one that
+         * listens during the capture phase and another that listens during the target and bubbling phases. </p>
+         *
+         * <p> You cannot register an event listener for only the target phase or the bubbling phase.
+         * Those phases are coupled during registration because bubbling applies only to the ancestors of
+         * the target node. </p>
+         *
+         * <p> If you no longer need an event listener, remove it by calling removeEventListener(), or
+         * memory problems could result. Event listeners are not automatically removed from memory because
+         * the garbage collector does not remove the listener as long as the dispatching object exists
+         * (unless the useWeakReference parameter is set to true). </p>
+         *
+         * <p> Copying an EventDispatcher instance does not copy the event listeners attached to it. (If
+         * your newly created node needs an event listener, you must attach the listener after creating
+         * the node.) However, if you move an EventDispatcher instance, the event listeners attached to
+         * it move along with it. </p>
+         *
+         * <p> If the event listener is being registered on a node while an event is also being processed
+         * on this node, the event listener is not triggered during the current phase but may be triggered
+         * during a later phase in the event flow, such as the bubbling phase. </p>
+         *
+         * <p> If an event listener is removed from a node while an event is being processed on the node,
+         * it is still triggered by the current actions. After it is removed, the event listener is never
+         * invoked again (unless it is registered again for future processing). </p>
+         *
+         * @param event The type of event; {@link CollectionEvent.INSERT} or {@link CollectionEvent.ERASE}.
+         * @param listener The listener function that processes the event.
+         *				 This function must accept an Event object as its only parameter and must return
+         *				 nothing.
+         */
         addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
         /**
          * @inheritdoc
@@ -1191,7 +1174,21 @@ declare namespace samchon.collection {
          * @inheritdoc
          */
         removeEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * Removes a listener from the EventDispatcher object. If there is no matching listener registered
+         * with the EventDispatcher object, a call to this method has no effect.
+         *
+         * @param type The type of event; {@link CollectionEvent.INSERT} or {@link CollectionEvent.ERASE}.
+         * @param listener The listener object to remove.
+         */
         removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        /**
+         * Removes a listener from the EventDispatcher object. If there is no matching listener registered
+         * with the EventDispatcher object, a call to this method has no effect.
+         *
+         * @param type The type of event; {@link CollectionEvent.INSERT} or {@link CollectionEvent.ERASE}.
+         * @param listener The listener object to remove.
+         */
         removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
     }
 }
@@ -1202,25 +1199,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class ListCollection<T> extends std.List<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: CollectionHandler<T>): void;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): CollectionHandler<T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): CollectionHandler<T>;
         /**
          * @inheritdoc
          */
@@ -1310,25 +1292,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class TreeMapCollection<Key, T> extends std.HashMap<Key, T> implements ICollection<std.Pair<Key, T>> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: MapCollectionHandler<Key, T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: MapCollectionHandler<Key, T>): void;
         /**
          * @inheritdoc
          */
@@ -1384,25 +1351,10 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class TreeMultiMapCollection<Key, T> extends std.HashMap<Key, T> implements ICollection<std.Pair<Key, T>> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
-        /**
-         * @inheritdoc
-         */
-        get_insert_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        get_erase_handler(): MapCollectionHandler<Key, T>;
-        /**
-         * @inheritdoc
-         */
-        set_insert_handler(listener: MapCollectionHandler<Key, T>): void;
-        /**
-         * @inheritdoc
-         */
-        set_erase_handler(listener: MapCollectionHandler<Key, T>): void;
         /**
          * @inheritdoc
          */
@@ -1460,25 +1412,61 @@ declare namespace samchon.collection {
      * @author Jeongho Nam <http://samchon.org>
      */
     class TreeSetCollection<T> extends std.TreeSet<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
         /**
          * @inheritdoc
          */
-        set_insert_handler(listener: CollectionHandler<T>): void;
+        hasEventListener(type: string): boolean;
         /**
          * @inheritdoc
          */
-        set_erase_handler(listener: CollectionHandler<T>): void;
+        dispatchEvent(event: Event): boolean;
         /**
          * @inheritdoc
          */
-        get_insert_handler(): CollectionHandler<T>;
+        addEventListener(type: string, listener: EventListener): void;
         /**
          * @inheritdoc
          */
-        get_erase_handler(): CollectionHandler<T>;
+        addEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        /**
+         * @inheritdoc
+         */
+        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
+    }
+    /**
+     * A {@link TreeMultiSet} who can detect element I/O events.
+     *
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class TreeMultiSetCollection<T> extends std.TreeMultiSet<T> implements ICollection<T> {
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
+        private event_dispatcher_;
         /**
          * @inheritdoc
          */
@@ -1528,39 +1516,45 @@ declare namespace samchon.collection {
          */
         removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
     }
-    /**
-     * A {@link TreeMultiSet} who can detect element I/O events.
-     *
-     * @author Jeongho Nam <http://samchon.org>
-     */
-    class TreeMultiSetCollection<T> extends std.TreeMultiSet<T> implements ICollection<T> {
-        private insert_handler_;
-        private erase_handler_;
+}
+declare namespace samchon.collection {
+    class XMLListCollection extends library.XMLList implements ICollection<library.XML> {
+        /**
+         * A chain object taking responsibility of dispatching events.
+         */
         private event_dispatcher_;
         /**
          * @inheritdoc
          */
-        set_insert_handler(listener: CollectionHandler<T>): void;
+        push<U extends library.XML>(...items: U[]): number;
         /**
          * @inheritdoc
          */
-        set_erase_handler(listener: CollectionHandler<T>): void;
+        push_back(val: library.XML): void;
+        /**
+         * @hidden
+         */
+        protected insert_by_repeating_val(position: std.VectorIterator<library.XML>, n: number, val: library.XML): std.VectorIterator<library.XML>;
+        /**
+         * @hidden
+         */
+        protected insert_by_range<U extends library.XML, InputIterator extends std.Iterator<U>>(position: std.VectorIterator<library.XML>, begin: InputIterator, end: InputIterator): std.VectorIterator<library.XML>;
         /**
          * @inheritdoc
          */
-        get_insert_handler(): CollectionHandler<T>;
+        pop_back(): void;
         /**
-         * @inheritdoc
+         * @hidden
          */
-        get_erase_handler(): CollectionHandler<T>;
+        protected erase_by_range(first: std.VectorIterator<library.XML>, last: std.VectorIterator<library.XML>): std.VectorIterator<library.XML>;
         /**
-         * @inheritdoc
+         * @hidden
          */
-        protected handle_insert(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        private notify_insert(first, last);
         /**
-         * @inheritdoc
+         * @hidden
          */
-        protected handle_erase(first: std.SetIterator<T>, last: std.SetIterator<T>): void;
+        private notify_erase(first, last);
         /**
          * @inheritdoc
          */
@@ -1580,11 +1574,11 @@ declare namespace samchon.collection {
         /**
          * @inheritdoc
          */
-        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<library.XML>): void;
         /**
          * @inheritdoc
          */
-        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
+        addEventListener(type: "insert" | "erase", listener: CollectionEventListener<library.XML>, thisArg: Object): void;
         /**
          * @inheritdoc
          */
@@ -1596,11 +1590,27 @@ declare namespace samchon.collection {
         /**
          * @inheritdoc
          */
-        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>): void;
+        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<library.XML>): void;
         /**
          * @inheritdoc
          */
-        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<T>, thisArg: Object): void;
+        removeEventListener(type: "insert" | "erase", listener: CollectionEventListener<library.XML>, thisArg: Object): void;
+        /**
+         * @inheritdoc
+         */
+        unshift<U extends library.XML>(...items: U[]): number;
+        /**
+         * @inheritdoc
+         */
+        pop(): library.XML;
+        /**
+         * @inheritdoc
+         */
+        splice(start: number): library.XML[];
+        /**
+         * @inheritdoc
+         */
+        splice(start: number, deleteCount: number, ...items: library.XML[]): library.XML[];
     }
 }
 declare namespace samchon.library {
@@ -1727,11 +1737,7 @@ declare namespace samchon.library {
      * class), you can instead implement the IEventDispatcher interface, create an EventDispatcher member,
      * and write simple hooks to route calls into the aggregated EventDispatcher. </p>
      *
-     * <ul>
-     *  <li> Made by AS3 - http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events/IEventDispatcher.html
-     * </ul>
-     *
-     * @see EventDispatcher
+     * @reference http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/events/IEventDispatcher.html
      * @author Migrated by Jeongho Nam <http://samchon.org>
      */
     interface IEventDispatcher {
@@ -1757,7 +1763,51 @@ declare namespace samchon.library {
          *			  dispatched, its target property cannot be changed, so you must create a new copy
          *			  of the event for redispatching to work.
          */
-        dispatchEvent(event: BasicEvent): boolean;
+        dispatchEvent(event: library.BasicEvent): boolean;
+        /**
+         * <p> Registers an event listener object with an EventDispatcher object so that the listener
+         * receives notification of an event. You can register event listeners on all nodes in the display
+         * list for a specific type of event, phase, and priority.
+         *
+         * <p> After you successfully register an event listener, you cannot change its priority through
+         * additional calls to addEventListener(). To change a listener's priority, you must first call
+         * removeEventListener(). Then you can register the listener again with the new priority level. </p>
+         *
+         * <p> Keep in mind that after the listener is registered, subsequent calls to addEventListener()
+         * with a different type or useCapture value result in the creation of a separate listener
+         * registration. For example, if you first register a listener with useCapture set to true,
+         * it listens only during the capture phase. If you call addEventListener() again using the same
+         * listener object, but with useCapture set to false, you have two separate listeners: one that
+         * listens during the capture phase and another that listens during the target and bubbling phases. </p>
+         *
+         * <p> You cannot register an event listener for only the target phase or the bubbling phase.
+         * Those phases are coupled during registration because bubbling applies only to the ancestors of
+         * the target node. </p>
+         *
+         * <p> If you no longer need an event listener, remove it by calling removeEventListener(), or
+         * memory problems could result. Event listeners are not automatically removed from memory because
+         * the garbage collector does not remove the listener as long as the dispatching object exists
+         * (unless the useWeakReference parameter is set to true). </p>
+         *
+         * <p> Copying an EventDispatcher instance does not copy the event listeners attached to it. (If
+         * your newly created node needs an event listener, you must attach the listener after creating
+         * the node.) However, if you move an EventDispatcher instance, the event listeners attached to
+         * it move along with it. </p>
+         *
+         * <p> If the event listener is being registered on a node while an event is also being processed
+         * on this node, the event listener is not triggered during the current phase but may be triggered
+         * during a later phase in the event flow, such as the bubbling phase. </p>
+         *
+         * <p> If an event listener is removed from a node while an event is being processed on the node,
+         * it is still triggered by the current actions. After it is removed, the event listener is never
+         * invoked again (unless it is registered again for future processing). </p>
+         *
+         * @param event The type of event.
+         * @param listener The listener function that processes the event.
+         *				 This function must accept an Event object as its only parameter and must return
+         *				 nothing.
+         */
+        addEventListener(type: string, listener: EventListener): void;
         /**
          * <p> Registers an event listener object with an EventDispatcher object so that the listener
          * receives notification of an event. You can register event listeners on all nodes in the display
@@ -1802,6 +1852,14 @@ declare namespace samchon.library {
          *				 nothing.
          */
         addEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * Removes a listener from the EventDispatcher object. If there is no matching listener registered
+         * with the EventDispatcher object, a call to this method has no effect.
+         *
+         * @param type The type of event.
+         * @param listener The listener object to remove.
+         */
+        removeEventListener(type: string, listener: EventListener): void;
         /**
          * Removes a listener from the EventDispatcher object. If there is no matching listener registered
          * with the EventDispatcher object, a call to this method has no effect.
@@ -1885,11 +1943,264 @@ declare namespace samchon.library {
         /**
          * @inheritdoc
          */
-        addEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        addEventListener(type: string, listener: EventListener): void;
         /**
          * @inheritdoc
          */
-        removeEventListener(type: string, listener: EventListener, thisArg?: Object): void;
+        addEventListener(type: string, listener: EventListener, thisArg: Object): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener): void;
+        /**
+         * @inheritdoc
+         */
+        removeEventListener(type: string, listener: EventListener, thisArg: Object): void;
+    }
+}
+declare namespace samchon.library {
+    /**
+     * <p> The {@link FileReference} class provides a means to load and save files in browser level. </p>
+     *
+     * <p> The {@link FileReference} class provides a means to {@link load} and {@link save} files in browser level. A
+     * browser-system dialog box prompts the user to select a file to {@link load} or a location for {@link svae}. Each
+     * {@link FileReference} object refers to a single file on the user's disk and has properties that contain
+     * information about the file's size, type, name, creation date, modification date, and creator type (Macintosh only).
+     * </p>
+     *
+     * <p> FileReference instances are created in the following ways: </p>
+     * <ul>
+     *	<li>
+     *		When you use the new operator with the {@link FileReference} constructor:
+     *		<code>var myFileReference = new FileReference();</code>
+     *	</li>
+     *	<li>
+     *		When you call the {@link FileReferenceList.browse} method, which creates an array of {@link FileReference}
+     *		objects.
+     *	</li>
+     * </ul>
+     *
+     * <p> During a load operation, all the properties of a {@link FileReference} object are populated by calls to the
+     * {@link FileReference.browse} or {@link FileReferenceList.browse} methods. During a save operation, the name
+     * property is populated when the select event is dispatched; all other properties are populated when the complete
+     * event is dispatched. </p>
+     *
+     * <p> The {@link browse browse()} method opens an browser-system dialog box that prompts the user to select a file
+     * for {@link load}. The {@link FileReference.browse} method lets the user select a single file; the
+     * {@link FileReferenceList.browse} method lets the user select multiple files. After a successful call to the
+     * {@link browse browse()} method, call the {@link FileReference.load} method to load one file at a time. The
+     * {@link FileReference.save} method prompts the user for a location to save the file and initiates downloading from
+     * a binary or string data. </p>
+     *
+     * <p> The {@link FileReference} and {@link FileReferenceList} classes do not let you set the default file location
+     * for the dialog box that the {@link browse} or {@link save} methods generate. The default location shown in the
+     * dialog box is the most recently browsed folder, if that location can be determined, or the desktop. The classes do
+     * not allow you to read from or write to the transferred file. They do not allow the browser that initiated the
+     * {@link load} or {@link save} to access the loaded or saved file or the file's location on the user's disk. </p>
+     *
+     * @references http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/FileReference.html
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class FileReference extends EventDispatcher {
+        /**
+         * @hidden
+         */
+        private file_;
+        /**
+         * @hidden
+         */
+        private data_;
+        /**
+         * Default Constructor.
+         */
+        constructor();
+        /**
+         * <p> The data from the loaded file after a successful call to the {@link load load()} method. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        data: any;
+        /**
+         * <p> The name of the file on the local disk. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        name: string;
+        /**
+         * <p> The filename extension. </p>
+         *
+         * <p> A file's extension is the part of the name following (and not including) the final dot (&quot;.&quot;). If
+         * there is no dot in the filename, the extension is <code>null</code>. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        extension: string;
+        /**
+         * <p> The file type, metadata of the {@link extension}. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        type: string;
+        /**
+         * <p> The size of the file on the local disk in bytes. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        size: number;
+        /**
+         * <p> The date that the file on the local disk was last modified. </p>
+         *
+         * <p> If the {@link FileReference} object was not populated (by a valid call to {@link FileReference.browse}),
+         * an {@link LogicError exception} will be thrown when you try to get the value of this property. </p>
+         *
+         * <p> All the properties of a {@link FileReference} object are populated by calling the {@link browse browse()}.
+         * </p>
+         */
+        modificationDate: Date;
+        /**
+         * <p> Displays a file-browsing dialog box that lets the user select a file to upload. The dialog box is native
+         * to the user's browser system. The user can select a file on the local computer or from other systems, for
+         * example, through a UNC path on Windows. </p>
+         *
+         * <p> When you call this method and the user successfully selects a file, the properties of this
+         * {@link FileReference} object are populated with the properties of that file. Each subsequent time that the
+         * {@link FileReference.browse} method is called, the {@link FileReference} object's properties are reset to
+         * the file that the user selects in the dialog box. Only one {@link browse browse()} can be performed at a time
+         * (because only one dialog box can be invoked at a time). </p>
+         *
+         * <p> Using the <i>typeFilter parameter</i>, you can determine which files the dialog box displays. </p>
+         *
+         * @param typeFilter An array of filter strings used to filter the files that are displayed in the dialog box.
+         *					 If you omit this parameter, all files are displayed.
+         */
+        browse(...typeFilter: string[]): void;
+        /**
+         * <p> Starts the load of a local file selected by a user. </p>
+         *
+         * <p> You must call the {@link FileReference.browse} or {@link FileReferenceList.browse} method before you call
+         * the {@link load load()} method. </p>
+         *
+         * <p> Listeners receive events to indicate the progress, success, or failure of the load. Although you can use
+         * the {@link FileReferenceList} object to let users select multiple files to load, you must {@link load} the
+         * {@link FileReferenceList files} one by one. To {@link load} the files one by one, iterate through the
+         * {@link FileReferenceList.fileList} array of {@link FileReference} objects. </p>
+         *
+         * <p> If the file finishes loading successfully, its contents are stored in the {@link data} property. </p>
+         */
+        load(): void;
+        /**
+         * <p> Save a file to local filesystem. </p>
+         *
+         * <p> {@link FileReference.save} implemented the save function by downloading a file from a hidden anchor tag.
+         * However, the plan, future's {@link FileReference} will follow such rule: </p>
+         *
+         * <p> Opens a dialog box that lets the user save a file to the local filesystem. </p>
+         *
+         * <p> The {@link save save()} method first opens an browser-system dialog box that asks the user to enter a
+         * filename and select a location on the local computer to save the file. When the user selects a location and
+         * confirms the save operation (for example, by clicking Save), the save process begins. Listeners receive events
+         * to indicate the progress, success, or failure of the save operation. To ascertain the status of the dialog box
+         * and the save operation after calling {@link save save()}, your code must listen for events such as cancel,
+         * open, progress, and complete. </p>
+         *
+         * <p> When the file is saved successfully, the properties of the {@link FileReference} object are populated with
+         * the properties of the local file. The complete event is dispatched if the save is successful. </p>
+         *
+         * <p> Only one {@link browse browse()} or {@link save()} session can be performed at a time (because only one
+         * dialog box can be invoked at a time). </p>
+         *
+         * @param data The data to be saved. The data can be in one of several formats, and will be treated appropriately.
+         * @param fileName File name to be saved.
+         */
+        save(data: string, fileName: string): void;
+    }
+    /**
+     * <p> The {@link FileReferenceList} class provides a means to let users select one or more files for
+     * {@link FileReference.load loading}. A {@link FileReferenceList} object represents a group of one or more local
+     * files on the user's disk as an array of {@link FileReference} objects. For detailed information and important
+     * considerations about {@link FileReference} objects and the FileReference class, which you use with
+     * {@link FileReferenceList}, see the {@link FileReference} class. </p>
+     *
+     * <p> To work with the {@link FileReferenceList} class: </p>
+     * <ul>
+     *	<li> Instantiate the class: <code>var myFileRef = new FileReferenceList();</code> </li>
+     *	<li>
+     *		Call the {@link FileReferenceList.browse} method, which opens a dialog box that lets the user select one or
+     *		more files for upload: <code>myFileRef.browse();</code>
+     *	</li>
+     *	<li>
+     *		After the {@link browse browse()} method is called successfully, the {@link fileList} property of the
+     *		{@link FileReferenceList} object is populated with an array of {@link FileReference} objects.
+     *	</li>
+     *	<li> Call {@link FileReference.load} on each element in the {@link fileList} array. </li>
+     * </ul>
+     *
+     * <p> The {@link FileReferenceList} class includes a {@link browse browse()} method and a {@link fileList} property
+     * for working with multiple files. </p>
+     *
+     * @reference http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/FileReferenceList.html
+     * @author Jeongho Nam <http://samchon.org>
+     */
+    class FileReferenceList extends EventDispatcher {
+        /**
+         * @hidden
+         */
+        file_list: std.Vector<FileReference>;
+        /**
+         * Default Constructor.
+         */
+        constructor();
+        /**
+         * <p> An array of {@link FileReference} objects. </p>
+         *
+         * <p> When the {@link FileReferenceList.browse} method is called and the user has selected one or more files
+         * from the dialog box that the {@link browse browse()} method opens, this property is populated with an array of
+         * {@link FileReference} objects, each of which represents the files the user selected. </p>
+         *
+         * <p> The {@link fileList} property is populated anew each time {@link browse browse()} is called on that
+         * {@link FileReferenceList} object. </p>
+         */
+        fileList: std.Vector<FileReference>;
+        /**
+         * <p> Displays a file-browsing dialog box that lets the user select one or more local files to upload. The
+         * dialog box is native to the user's browser system.  </p>
+         *
+         * <p> When you call this method and the user successfully selects files, the {@link fileList} property of this
+         * {@link FileReferenceList} object is populated with an array of {@link FileReference} objects, one for each
+         * file that the user selects. Each subsequent time that the {@link FileReferenceList.browse} method is called,
+         * the {@link FileReferenceList.fileList} property is reset to the file(s) that the user selects in the dialog
+         * box. </p>
+         *
+         * <p> Using the <i>typeFilter</i> parameter, you can determine which files the dialog box displays. </p>
+         *
+         * <p> Only one {@link FileReference.browse}, {@link FileReference.load}, or {@link FileReferenceList.browse}
+         * session can be performed at a time on a {@link FileReferenceList} object (because only one dialog box can be
+         * opened at a time). </p>
+         *
+         * @param typeFilter An array of filter strings used to filter the files that are displayed in the dialog box.
+         *					 If you omit this parameter, all files are displayed.
+         */
+        browse(...typeFilter: string[]): void;
     }
 }
 declare namespace samchon.library {
@@ -2023,7 +2334,7 @@ declare namespace samchon.library {
     }
 }
 declare namespace samchon.protocol {
-    interface IEntityArray<T extends IEntity> extends IEntity, std.base.IContainer<T> {
+    interface IEntityGroup<T extends IEntity> extends IEntity, std.base.IContainer<T> {
         /**
          * <p> Construct data of the Entity from an XML object. </p>
          *
@@ -2046,6 +2357,23 @@ declare namespace samchon.protocol {
          * @return A new child Entity belongs to EntityArray.
          */
         createChild(xml: library.XML): T;
+        /**
+         * <p> Get iterator to element. </p>
+         *
+         * <p> Searches the container for an element with a identifier equivalent to <i>key</i> and returns an
+         * iterator to it if found, otherwise it returns an iterator to {@link end end()}. </p>
+         *
+         * <p> Two keys are considered equivalent if the container's comparison object returns false reflexively
+         * (i.e., no matter the order in which the elements are passed as arguments). </p>
+         *
+         * <p> Another member functions, {@link has has()} and {@link count count()}, can be used to just check
+         * whether a particular <i>key</i> exists. </p>
+         *
+         * @param key Key to be searched for
+         * @return An iterator to the element, if an element with specified <i>key</i> is found, or
+         *		   {@link end end()} otherwise.
+         */
+        find(key: any): std.Iterator<T>;
         /**
          * <p> Whether have the item or not. </p>
          *
@@ -2077,7 +2405,7 @@ declare namespace samchon.protocol {
          *
          * @return A reference object of the mapped value (_Ty)
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * <p> A tag name of children objects. </p>
          */
@@ -2099,7 +2427,7 @@ declare namespace samchon.protocol {
     /**
      * @inheritdoc
      */
-    abstract class EntityArray<T extends IEntity> extends std.Vector<T> implements IEntityArray<T> {
+    abstract class EntityArray<T extends IEntity> extends std.Vector<T> implements IEntityGroup<T> {
         /**
          * @inheritdoc
          */
@@ -2115,6 +2443,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.VectorIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2123,7 +2455,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2140,7 +2472,7 @@ declare namespace samchon.protocol {
     /**
      * @inheritdoc
      */
-    abstract class EntityList<T extends IEntity> extends std.List<T> implements IEntityArray<T> {
+    abstract class EntityList<T extends IEntity> extends std.List<T> implements IEntityGroup<T> {
         /**
          * @inheritdoc
          */
@@ -2156,6 +2488,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.ListIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2164,7 +2500,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2181,7 +2517,7 @@ declare namespace samchon.protocol {
     /**
      * @inheritdoc
      */
-    abstract class EntityDeque<T extends IEntity> extends std.Deque<T> implements IEntityArray<T> {
+    abstract class EntityDeque<T extends IEntity> extends std.Deque<T> implements IEntityGroup<T> {
         /**
          * @inheritdoc
          */
@@ -2197,6 +2533,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.DequeIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2205,7 +2545,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2224,7 +2564,7 @@ declare namespace samchon.protocol {
     /**
      * @inheritdoc
      */
-    interface IEntityCollection<T extends IEntity> extends IEntityArray<T>, collection.ICollection<T> {
+    interface IEntityCollection<T extends IEntity> extends IEntityGroup<T>, collection.ICollection<T> {
     }
     /**
      * @inheritdoc
@@ -2245,6 +2585,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.VectorIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2253,7 +2597,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2286,6 +2630,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.ListIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2294,7 +2642,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2327,6 +2675,10 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
+        find(key: any): std.DequeIterator<T>;
+        /**
+         * @inheritdoc
+         */
         has(key: any): boolean;
         /**
          * @inheritdoc
@@ -2335,7 +2687,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        get(key: string): T;
+        get(key: any): T;
         /**
          * @inheritdoc
          */
@@ -2737,11 +3089,33 @@ declare namespace samchon.protocol {
          * <p> Value of the parameter. </p>
          */
         protected value: any;
+        /**
+         * Default Constructor.
+         */
         constructor();
+        /**
+         * Initialization Constructor without type specification.
+         *
+         * @param name
+         * @param val
+         */
         constructor(name: string, val: any);
+        /**
+         * Initialization Constructor.
+         *
+         * @param name
+         * @param type
+         * @param val
+         */
         constructor(name: string, type: string, val: any);
+        /**
+         * @inheritdoc
+         */
         construct(xml: library.XML): void;
         setValue(value: any): void;
+        /**
+         * @inheritdoc
+         */
         key(): any;
         /**
          * Get name.
@@ -2755,7 +3129,13 @@ declare namespace samchon.protocol {
          * Get value.
          */
         getValue(): any;
+        /**
+         * @inheritdoc
+         */
         TAG(): string;
+        /**
+         * @inheritdoc
+         */
         toXML(): library.XML;
     }
 }
@@ -2782,7 +3162,7 @@ declare namespace samchon.protocol {
         /**
          * <p> A parent object who listens and sends Invoke message. </p>
          *
-         * <ul>z
+         * <ul>
          * 	<li> ServerConnector.replyData(Invoke) -> parent.replyData(Invoke) </li>
          * </ul>
          */
@@ -2823,7 +3203,7 @@ declare namespace samchon.protocol {
          * 		Local untrusted SWF files may not communicate with the Internet. You can work around
          * 		this limitation by reclassifying the file as local-with-networking or as trusted.
          */
-        connect(ip: string, port: number): void;
+        connect(ip: string, port: number, path?: string): void;
         /**
          * <p> Send data to the server. </p>
          */

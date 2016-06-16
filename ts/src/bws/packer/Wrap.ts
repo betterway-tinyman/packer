@@ -100,7 +100,7 @@
 			)
 		{
 			super();
-
+			
 			this.wrapper = wrapper;
 			this.instance = instance;
 			
@@ -374,6 +374,19 @@
 		public getVolume(): number
 		{
 			return this.instance.getVolume();
+		}
+
+		public get $instanceName(): string
+		{
+			return this.instance.getName();
+		}
+		public get $layoutScale(): string
+		{
+			return this.getWidth() + ", " + this.getHeight() + ", " + this.getLength();
+		}
+		public get $position(): string
+		{
+			return this.x + ", " + this.y + ", " + this.z;
 		}
 
 		/* -----------------------------------------------------------

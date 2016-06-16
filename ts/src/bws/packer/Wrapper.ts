@@ -14,27 +14,27 @@
 		 *
 		 * <p> The name represents a type of Wrapper and identifies the Wrapper. </p>
 		 */
-		protected name: string = "";
+		protected name: string = "No Name";
 
 		/**
 		 * Price, cost of using an Wrapper.
 		 */
-		protected price: number = 0.0;
+		protected price: number = 1000.0;
 
 		/**
 		 * Width of the Wrapper, length on the X-axis in 3D.
 		 */
-		protected width_: number = 0.0;
+		protected width_: number = 10.0;
 
 		/**
 		 * Height of the Wrapper, length on the Y-axis in 3D.
 		 */
-		protected height_: number = 0.0;
+		protected height_: number = 10.0;
 
 		/**
 		 * Length of the Wrapper, length on the Z-axis in 3D.
 		 */
-		protected length_: number = 0.0;
+		protected length_: number = 10.0;
 
 		/**
 		 * <p> Thickness, margin of a Wrapper causes shrinkness of containable volume. </p>
@@ -122,10 +122,12 @@
 		}
 
 		/* ===========================================================
-			GETTERS
+			ACCESSORS
 				- MEMBERS
 				- DERIVED PROPERTIES
 				- COMPARISON
+				- SETTERS
+				- COLUMN ITEMS
 		==============================================================
 			MEMBERS
 		----------------------------------------------------------- */
@@ -296,6 +298,83 @@
 					return false;
 
 			return true;
+		}
+
+		/* -----------------------------------------------------------
+			SETTERS
+		----------------------------------------------------------- */
+		/**
+		 * @inheritdoc
+		 */
+		public setName(val: string): void
+		{
+			this.name = val;
+		}
+
+		/**
+		 * Set price.
+		 */
+		public setPrice(val: number): void
+		{
+			this.price = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setWidth(val: number): void
+		{
+			this.width_ = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setHeight(val: number): void
+		{
+			this.height_ = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setLength(val: number): void
+		{
+			this.length_ = val;
+		}
+
+		/**
+		 * Set thickness.
+		 */
+		public setThickness(val: number): void
+		{
+			this.thickness = val;
+		}
+
+		/* -----------------------------------------------------------
+			COLUMN ITEMS
+		----------------------------------------------------------- */
+		public get $name(): string			{	return this.name;					}
+		public get $price(): string			{	return this.price + "";				}
+		public get $width(): string			{	return this.width_ + "";			}
+		public get $height(): string		{	return this.height_ + "";			}
+		public get $length(): string		{	return this.length_ + "";			}
+		public get $thickness(): string		{	return this.thickness + "";			}
+		
+		public set $name(val: string)		{	this.name = val;					}
+		public set $price(val: string)		{	this.price = parseFloat(val);		}
+		public set $width(val: string)		{	this.width_ = parseFloat(val);		}
+		public set $height(val: string)		{	this.height_ = parseFloat(val);		}
+		public set $length(val: string)		{	this.length_ = parseFloat(val);		}
+		public set $thickness(val: string)	{	this.thickness = parseFloat(val);	}
+
+		public get $scale(): string	
+		{
+			return this.width_ + ", " + this.height_ + ", " + this.length_;
+		}
+		public get $spaceUtilization(): string
+		{
+			return Math.round(this.getUtilization() * 10000) / 100.0 + "%";
 		}
 
 		/* ===========================================================

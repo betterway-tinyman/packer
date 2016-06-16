@@ -49,7 +49,7 @@
 		 */
 		public constructor(name: string, width: number, height: number, length: number);
 
-		public constructor(name: string = "", width: number = 0, height: number = 0, length: number = 0)
+		public constructor(name: string = "No Name", width: number = 0, height: number = 0, length: number = 0)
 		{
 			super();
 
@@ -61,7 +61,7 @@
 		}
 
 		/* -----------------------------------------------------------
-			GETTERS
+			ACCESSORS
 		----------------------------------------------------------- */
 		/**
 		 * Key of a Product is its name.
@@ -111,6 +111,38 @@
 			return this.width * this.height * this.length;
 		}
 
+		/**
+		 * @inheritdoc
+		 */
+		public setName(val: string): void
+		{
+			this.name = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setWidth(val: number): void
+		{
+			this.width = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setHeight(val: number): void
+		{
+			this.height = val;
+		}
+
+		/**
+		 * @inheritdoc
+		 */
+		public setLength(val: number): void
+		{
+			this.length = val;
+		}
+
 		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
@@ -130,6 +162,9 @@
 			return "instance";
 		}
 
+		/**
+		 * @inheritdoc
+		 */
 		public toXML(): samchon.library.XML
 		{
 			let xml: samchon.library.XML = super.toXML();

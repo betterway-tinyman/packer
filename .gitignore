@@ -32,7 +32,8 @@ html-template/
 # ======================================================
 ts/
 !ts/src
-!ts/bin
+!ts/include
+!ts/style
 !ts/index.html
 !ts/tsconfig.json
 
@@ -42,3 +43,4 @@ ts/
 *.bat
 *.*ignore
 .gitattribute
+release/demo

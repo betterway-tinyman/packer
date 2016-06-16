@@ -2,6 +2,6 @@
     "compilerOptions": {
         "target": "es5",
         "declaration": true,
-        "outFile": "../release/ts/packer.js"
+        "outFile": "../release/ts/include/packer.js"
     }
 }

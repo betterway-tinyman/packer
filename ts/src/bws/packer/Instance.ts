@@ -39,6 +39,29 @@
 		getVolume(): number;
 
 		/* -----------------------------------------------------------
+			SETTERS
+		----------------------------------------------------------- */
+		/**
+		 * Set name.
+		 */
+		setName(val: string): void;
+
+		/**
+		 * Set width, length on the X-axis in 3D.
+		 */
+		setWidth(val: number): void;
+
+		/**
+		 * Set height, length on the Y-axis in 3D.
+		 */
+		setHeight(val: number): void;
+
+		/**
+		 * Set length, length on the Z-axis in 3D.
+		 */
+		setLength(val: number): void;
+
+		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
 		/**

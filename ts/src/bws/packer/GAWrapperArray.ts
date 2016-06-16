@@ -60,13 +60,13 @@ namespace bws.packer
 			for (let i: number = 0; i < this.size(); i++)
 			{
 				let wrapper: Wrapper = this.at(i);
-				if (this.result.has(wrapper.key()) == false)
+				if (this.result.has(wrapper.getName()) == false)
 				{
 					let wrapperGroup: WrapperGroup = new WrapperGroup(wrapper);
-					this.result.set(wrapper.key(), wrapperGroup);
+					this.result.set(wrapper.getName(), wrapperGroup);
 				}
 
-				let wrapperGroup: WrapperGroup = this.result.get(wrapper.key());
+				let wrapperGroup: WrapperGroup = this.result.get(wrapper.getName());
 				let instance: Instance = this.instanceArray.at(i);
 
 				if (wrapperGroup.allocate(instance) == false)

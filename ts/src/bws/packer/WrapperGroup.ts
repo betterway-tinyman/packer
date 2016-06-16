@@ -84,7 +84,7 @@
 		 */
 		public key(): any
 		{
-			return this.sample.key();
+			return this.sample.getName();
 		}
 
 		/**

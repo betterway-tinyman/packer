@@ -70,7 +70,9 @@ You also can separate cloud server(C++) and clients(Web), let users to connect r
 - TypeScript (JavaScript)
 	- STL for TypeScript (STL containers for TypeScript) - https://github.com/samchon/stl
 	- Samchon Framework (SDN Framework) - https://github.com/samchon/framework
-	- Three.js (JavaScript library handling 3-D objects) - http://threejs.org/
+	- Three.js (JavaScript library handling 3-D objects) - http://threejs.org
+	- React - https://facebook.github.io/react
+	- React-Data-Grid - https://github.com/adazzle/react-data-grid
 
 ## Usage
 ##### TypeScript (JavaScript)
