@@ -67,15 +67,15 @@ var boxologic;
     boxologic.Box = Box;
 })(boxologic || (boxologic = {}));
 /**
-* <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
-*
-* <ul>
-*	<li> Original Boxologic: https://github.com/exad/boxologic </li>
-* </ul>
-*
-* @author Bill Knechtel, <br>
-*		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
-*/
+ * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
+ *
+ * <ul>
+ *	<li> Original Boxologic: https://github.com/exad/boxologic </li>
+ * </ul>
+ *
+ * @author Bill Knechtel, <br>
+ *		   Migrated and Refactored by Jeongho Nam <http://samchon.org>
+ */
 var boxologic;
 (function (boxologic) {
     /**
@@ -1115,6 +1115,231 @@ var bws;
 var bws;
 (function (bws) {
     var packer;
+    (function (packer_1) {
+        /**
+         * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var PackerForm = (function (_super) {
+            __extends(PackerForm, _super);
+            function PackerForm(instanceFormArray, wrapperArray) {
+                if (instanceFormArray === void 0) { instanceFormArray = new InstanceFormArray(); }
+                if (wrapperArray === void 0) { wrapperArray = new packer_1.WrapperArray(); }
+                _super.call(this);
+                this.instanceFormArray = instanceFormArray;
+                this.wrapperArray = wrapperArray;
+            }
+            PackerForm.prototype.construct = function (xml) {
+                this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
+                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
+            };
+            /* -----------------------------------------------------------
+                ACCESSORS
+            ----------------------------------------------------------- */
+            PackerForm.prototype.optimize = function () {
+                var packer = this.toPacker();
+                return packer.optimize();
+            };
+            PackerForm.prototype.getInstanceFormArray = function () {
+                return this.instanceFormArray;
+            };
+            PackerForm.prototype.getWrapperArray = function () {
+                return this.wrapperArray;
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            PackerForm.prototype.TAG = function () {
+                return "packerForm";
+            };
+            PackerForm.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                xml.push(this.instanceFormArray.toXML());
+                xml.push(this.wrapperArray.toXML());
+                return xml;
+            };
+            PackerForm.prototype.toPacker = function () {
+                var packer = new packer_1.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
+                return packer;
+            };
+            return PackerForm;
+        }(samchon.protocol.Entity));
+        packer_1.PackerForm = PackerForm;
+        /**
+         * An array of {@link InstanceForm} objects.
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var InstanceFormArray = (function (_super) {
+            __extends(InstanceFormArray, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
+            function InstanceFormArray() {
+                _super.call(this);
+            }
+            InstanceFormArray.prototype.createChild = function (xml) {
+                return new InstanceForm();
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            InstanceFormArray.prototype.TAG = function () {
+                return "instanceFormArray";
+            };
+            InstanceFormArray.prototype.CHILD_TAG = function () {
+                return "instanceForm";
+            };
+            /**
+             * Convert {@link InstanceForm} objects to {@link InstanceArray}.
+             *
+             * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
+             */
+            InstanceFormArray.prototype.toInstanceArray = function () {
+                var instanceArray = new packer_1.InstanceArray();
+                for (var i = 0; i < this.size(); i++) {
+                    var myInstances = this.at(i).toInstanceArray();
+                    instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
+                }
+                return instanceArray;
+            };
+            return InstanceFormArray;
+        }(samchon.protocol.EntityArrayCollection));
+        packer_1.InstanceFormArray = InstanceFormArray;
+        /**
+         * <p> A repeated Instance. </p>
+         *
+         * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking
+         * volume of network message I/O by storing {@link count repeated count}. </p>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var InstanceForm = (function (_super) {
+            __extends(InstanceForm, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
+            function InstanceForm(instance, count) {
+                if (instance === void 0) { instance = new packer_1.Product("No name", 10, 10, 10); }
+                if (count === void 0) { count = 1; }
+                _super.call(this);
+                this.instance = instance;
+                this.count = count;
+            }
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.construct = function (xml) {
+                _super.prototype.construct.call(this, xml);
+                if (xml.hasProperty("type")) {
+                    this.instance = this.createInstance(xml);
+                    this.instance.construct(xml);
+                }
+                else if (xml.has("instance")) {
+                    var instanceXML = xml.get("instance").at(0);
+                    this.instance = this.createInstance(instanceXML);
+                    this.instance.construct(instanceXML);
+                }
+            };
+            InstanceForm.prototype.createInstance = function (xml) {
+                if (xml.getProperty("type") == "product")
+                    return new packer_1.Product();
+                else
+                    return new packer_1.Wrapper();
+            };
+            /* -----------------------------------------------------------
+                ACCESSORS
+            ----------------------------------------------------------- */
+            InstanceForm.prototype.key = function () {
+                return this.instance.getName();
+            };
+            InstanceForm.prototype.getInstance = function () {
+                return this.instance;
+            };
+            InstanceForm.prototype.getCount = function () {
+                return this.count;
+            };
+            InstanceForm.prototype.setCount = function (val) {
+                this.count = val;
+            };
+            Object.defineProperty(InstanceForm.prototype, "$name", {
+                get: function () { return this.instance.getName(); },
+                set: function (val) { this.instance.setName(val); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$width", {
+                get: function () { return this.instance.getWidth() + ""; },
+                set: function (val) { this.instance.setWidth(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$height", {
+                get: function () { return this.instance.getHeight() + ""; },
+                set: function (val) { this.instance.setHeight(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$length", {
+                get: function () { return this.instance.getLength() + ""; },
+                set: function (val) { this.instance.setLength(parseFloat(val)); },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InstanceForm.prototype, "$count", {
+                get: function () { return this.count + ""; },
+                set: function (val) { this.count = parseInt(val); },
+                enumerable: true,
+                configurable: true
+            });
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.TAG = function () {
+                return "instanceForm";
+            };
+            /**
+             * @inheritdoc
+             */
+            InstanceForm.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                if (this.instance != null)
+                    xml.push(this.instance.toXML());
+                return xml;
+            };
+            /**
+             * <p> Repeated {@link instance} to {@link InstanceArray}.
+             *
+             * @details
+             * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make
+             * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be
+             * registered on {@link Packer.instanceArray}.
+             *
+             * @return An array of instance containing repeated {@link instance}.
+             */
+            InstanceForm.prototype.toInstanceArray = function () {
+                var instanceArray = new packer_1.InstanceArray();
+                instanceArray.assign(this.count, this.instance);
+                return instanceArray;
+            };
+            return InstanceForm;
+        }(samchon.protocol.Entity));
+        packer_1.InstanceForm = InstanceForm;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+var bws;
+(function (bws) {
+    var packer;
     (function (packer) {
         var WrapperArray = (function (_super) {
             __extends(WrapperArray, _super);
@@ -1662,7 +1887,7 @@ var bws;
 var bws;
 (function (bws) {
     var packer;
-    (function (packer_1) {
+    (function (packer_2) {
         var PackerApplication = (function (_super) {
             __extends(PackerApplication, _super);
             /**
@@ -1670,18 +1895,18 @@ var bws;
              */
             function PackerApplication() {
                 _super.call(this);
-                this.instances = new packer_1.InstanceFormArray();
-                this.wrappers = new packer_1.WrapperArray();
-                this.result = new packer_1.WrapperArray();
+                this.instances = new packer_2.InstanceFormArray();
+                this.wrappers = new packer_2.WrapperArray();
+                this.result = new packer_2.WrapperArray();
                 // INITIAL, EXMAPLE DATA
-                this.wrappers.push(new packer_1.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_1.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_1.Wrapper("Small", 500, 15, 15, 8, 0));
-                this.instances.push(new packer_1.InstanceForm(new packer_1.Product("Eraser", 1, 2, 5), 15), new packer_1.InstanceForm(new packer_1.Product("Book", 15, 30, 3), 15), new packer_1.InstanceForm(new packer_1.Product("Drink", 3, 3, 10), 15), new packer_1.InstanceForm(new packer_1.Product("Umbrella", 5, 5, 20), 15), new packer_1.InstanceForm(new packer_1.Product("Notebook-Box", 30, 40, 4), 15), new packer_1.InstanceForm(new packer_1.Product("Tablet-Box", 20, 28, 2), 15));
+                this.wrappers.push(new packer_2.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_2.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_2.Wrapper("Small", 500, 15, 15, 8, 0));
+                this.instances.push(new packer_2.InstanceForm(new packer_2.Product("Eraser", 1, 2, 5), 15), new packer_2.InstanceForm(new packer_2.Product("Book", 15, 30, 3), 15), new packer_2.InstanceForm(new packer_2.Product("Drink", 3, 3, 10), 15), new packer_2.InstanceForm(new packer_2.Product("Umbrella", 5, 5, 20), 15), new packer_2.InstanceForm(new packer_2.Product("Notebook-Box", 30, 40, 4), 15), new packer_2.InstanceForm(new packer_2.Product("Tablet-Box", 20, 28, 2), 15));
             }
             PackerApplication.prototype.pack = function () {
                 /////
                 // FIND THE OPTIMIZED SOLUTION
                 /////
-                var packer = new packer_1.PackerForm(this.instances, this.wrappers).toPacker();
+                var packer = new packer_2.PackerForm(this.instances, this.wrappers).toPacker();
                 var result;
                 try {
                     result = packer.optimize();
@@ -1710,7 +1935,7 @@ var bws;
                 div.appendChild(canvas);
             };
             PackerApplication.prototype.render = function () {
-                var ret = React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_1.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_1.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }}));
+                var ret = React.createElement("div", null, React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, React.createElement("img", {src: "images/redprinting_logo.png", width: "250"}))));
                 return ret;
             };
             PackerApplication.main = function () {
@@ -1718,232 +1943,7 @@ var bws;
             };
             return PackerApplication;
         }(React.Component));
-        packer_1.PackerApplication = PackerApplication;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer_2) {
-        /**
-         * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var PackerForm = (function (_super) {
-            __extends(PackerForm, _super);
-            function PackerForm(instanceFormArray, wrapperArray) {
-                if (instanceFormArray === void 0) { instanceFormArray = new InstanceFormArray(); }
-                if (wrapperArray === void 0) { wrapperArray = new packer_2.WrapperArray(); }
-                _super.call(this);
-                this.instanceFormArray = instanceFormArray;
-                this.wrapperArray = wrapperArray;
-            }
-            PackerForm.prototype.construct = function (xml) {
-                this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
-                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
-            };
-            /* -----------------------------------------------------------
-                ACCESSORS
-            ----------------------------------------------------------- */
-            PackerForm.prototype.optimize = function () {
-                var packer = this.toPacker();
-                return packer.optimize();
-            };
-            PackerForm.prototype.getInstanceFormArray = function () {
-                return this.instanceFormArray;
-            };
-            PackerForm.prototype.getWrapperArray = function () {
-                return this.wrapperArray;
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            PackerForm.prototype.TAG = function () {
-                return "packerForm";
-            };
-            PackerForm.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                xml.push(this.instanceFormArray.toXML());
-                xml.push(this.wrapperArray.toXML());
-                return xml;
-            };
-            PackerForm.prototype.toPacker = function () {
-                var packer = new packer_2.Packer(this.wrapperArray, this.instanceFormArray.toInstanceArray());
-                return packer;
-            };
-            return PackerForm;
-        }(samchon.protocol.Entity));
-        packer_2.PackerForm = PackerForm;
-        /**
-         * An array of {@link InstanceForm} objects.
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var InstanceFormArray = (function (_super) {
-            __extends(InstanceFormArray, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
-            function InstanceFormArray() {
-                _super.call(this);
-            }
-            InstanceFormArray.prototype.createChild = function (xml) {
-                return new InstanceForm();
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            InstanceFormArray.prototype.TAG = function () {
-                return "instanceFormArray";
-            };
-            InstanceFormArray.prototype.CHILD_TAG = function () {
-                return "instanceForm";
-            };
-            /**
-             * Convert {@link InstanceForm} objects to {@link InstanceArray}.
-             *
-             * @return An array of instance containing repeated instances in {@link InstanceForm} objects.
-             */
-            InstanceFormArray.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
-                for (var i = 0; i < this.size(); i++) {
-                    var myInstances = this.at(i).toInstanceArray();
-                    instanceArray.insert(instanceArray.end(), myInstances.begin(), myInstances.end());
-                }
-                return instanceArray;
-            };
-            return InstanceFormArray;
-        }(samchon.protocol.EntityArrayCollection));
-        packer_2.InstanceFormArray = InstanceFormArray;
-        /**
-         * <p> A repeated Instance. </p>
-         *
-         * <p> InstanceForm is an utility class for repeated {@link Instance}. It is designed for shrinking
-         * volume of network message I/O by storing {@link count repeated count}. </p>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var InstanceForm = (function (_super) {
-            __extends(InstanceForm, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
-            function InstanceForm(instance, count) {
-                if (instance === void 0) { instance = new packer_2.Product("No name", 10, 10, 10); }
-                if (count === void 0) { count = 1; }
-                _super.call(this);
-                this.instance = instance;
-                this.count = count;
-            }
-            /**
-             * @inheritdoc
-             */
-            InstanceForm.prototype.construct = function (xml) {
-                _super.prototype.construct.call(this, xml);
-                if (xml.hasProperty("type")) {
-                    this.instance = this.createInstance(xml);
-                    this.instance.construct(xml);
-                }
-                else if (xml.has("instance")) {
-                    var instanceXML = xml.get("instance").at(0);
-                    this.instance = this.createInstance(instanceXML);
-                    this.instance.construct(instanceXML);
-                }
-            };
-            InstanceForm.prototype.createInstance = function (xml) {
-                if (xml.getProperty("type") == "product")
-                    return new packer_2.Product();
-                else
-                    return new packer_2.Wrapper();
-            };
-            /* -----------------------------------------------------------
-                ACCESSORS
-            ----------------------------------------------------------- */
-            InstanceForm.prototype.key = function () {
-                return this.instance.getName();
-            };
-            InstanceForm.prototype.getInstance = function () {
-                return this.instance;
-            };
-            InstanceForm.prototype.getCount = function () {
-                return this.count;
-            };
-            InstanceForm.prototype.setCount = function (val) {
-                this.count = val;
-            };
-            Object.defineProperty(InstanceForm.prototype, "$name", {
-                get: function () { return this.instance.getName(); },
-                set: function (val) { this.instance.setName(val); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(InstanceForm.prototype, "$width", {
-                get: function () { return this.instance.getWidth() + ""; },
-                set: function (val) { this.instance.setWidth(parseFloat(val)); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(InstanceForm.prototype, "$height", {
-                get: function () { return this.instance.getHeight() + ""; },
-                set: function (val) { this.instance.setHeight(parseFloat(val)); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(InstanceForm.prototype, "$length", {
-                get: function () { return this.instance.getLength() + ""; },
-                set: function (val) { this.instance.setLength(parseFloat(val)); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(InstanceForm.prototype, "$count", {
-                get: function () { return this.count + ""; },
-                set: function (val) { this.count = parseInt(val); },
-                enumerable: true,
-                configurable: true
-            });
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            InstanceForm.prototype.TAG = function () {
-                return "instanceForm";
-            };
-            /**
-             * @inheritdoc
-             */
-            InstanceForm.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                if (this.instance != null)
-                    xml.push(this.instance.toXML());
-                return xml;
-            };
-            /**
-             * <p> Repeated {@link instance} to {@link InstanceArray}.
-             *
-             * @details
-             * <p> Contains the {@link instance repeated instance} to an {@link InstanceArray} to make
-             * {@link instance} to participate in the packing process. The returned {@link InstanceArray} will be
-             * registered on {@link Packer.instanceArray}.
-             *
-             * @return An array of instance containing repeated {@link instance}.
-             */
-            InstanceForm.prototype.toInstanceArray = function () {
-                var instanceArray = new packer_2.InstanceArray();
-                instanceArray.assign(this.count, this.instance);
-                return instanceArray;
-            };
-            return InstanceForm;
-        }(samchon.protocol.Entity));
-        packer_2.InstanceForm = InstanceForm;
+        packer_2.PackerApplication = PackerApplication;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 var bws;
@@ -2075,6 +2075,166 @@ var bws;
             return Product;
         }(samchon.protocol.Entity));
         packer.Product = Product;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var ResultViewer = (function (_super) {
+            __extends(ResultViewer, _super);
+            function ResultViewer() {
+                _super.apply(this, arguments);
+            }
+            ResultViewer.prototype.drawWrapper = function (wrapper, index) {
+                if (index === void 0) { index = wrapper.size(); }
+                this.props.application.drawWrapper(wrapper, index);
+            };
+            ResultViewer.prototype.clear = function (event) {
+                this.props.wrappers.clear();
+                this.drawWrapper(new packer.Wrapper());
+                this.refresh();
+            };
+            ResultViewer.prototype.open = function (event) {
+                var this_ = this;
+                var handle_select = function (event) {
+                    file_ref.load();
+                };
+                var handle_complete = function (event) {
+                    this_.props.wrappers.construct(new samchon.library.XML(file_ref.data));
+                    if (this_.props.wrappers.empty() == true)
+                        this_.drawWrapper(new packer.Wrapper());
+                    else
+                        this_.drawWrapper(this_.props.wrappers.front());
+                    this_.refresh();
+                };
+                var file_ref = new samchon.library.FileReference();
+                file_ref.addEventListener("select", handle_select);
+                file_ref.addEventListener("complete", handle_complete);
+                file_ref.browse();
+            };
+            ResultViewer.prototype.save = function (event) {
+                var file_ref = new samchon.library.FileReference();
+                file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
+            };
+            ResultViewer.prototype.refresh = function () {
+                this.refs["wrapperGrid"].setState({});
+                this.refs["wrapGrid"].setState({});
+            };
+            ResultViewer.prototype.render = function () {
+                var wrapper = this.props.wrappers.empty()
+                    ? new packer.Wrapper()
+                    : this.props.wrappers.front();
+                var ret = React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File ")))), React.createElement("hr", null), React.createElement("p", null, " Optimization Result "), React.createElement("ul", null, React.createElement("li", null, " Cost: $ ", this.props.wrappers.getPrice(), " "), React.createElement("li", null, " Space Utilization: ", Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, " % ")), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), " "), React.createElement("hr", null), React.createElement("div", {id: "wrap_grid_div"}, React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})));
+                return ret;
+            };
+            return ResultViewer;
+        }(React.Component));
+        packer.ResultViewer = ResultViewer;
+        var WrapperGrid = (function (_super) {
+            __extends(WrapperGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapperGrid() {
+                _super.call(this);
+                this.selectedIndex = 0;
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$name", name: "Name", width: 120 },
+                        { key: "$scale", name: "Length", width: 90 },
+                        { key: "$spaceUtilization", name: "Space Utilization", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapperGrid.prototype, "wrappers", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    return this.props.viewer.props.wrappers;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapperGrid.prototype.get_row = function (index) {
+                return this.wrappers.at(index);
+            };
+            WrapperGrid.prototype.handle_select = function (event) {
+                this.selectedIndex = event.rowIdx;
+                var wrapper = this.wrappers.at(this.selectedIndex);
+                this.props.viewer.drawWrapper(wrapper);
+                this.props.viewer.refs["wrapGrid"].setState({});
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapperGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, React.createElement("h3", null, " List of wrappers."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
+                return ret;
+            };
+            return WrapperGrid;
+        }(React.Component));
+        var WrapGrid = (function (_super) {
+            __extends(WrapGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapGrid() {
+                _super.call(this);
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$instanceName", name: "Name", width: 120 },
+                        { key: "$layoutScale", name: "layoutScale", width: 90 },
+                        { key: "$position", name: "Position", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapGrid.prototype, "wrapper", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    var wrappers = this.props.viewer.props.wrappers;
+                    try {
+                        var index = this.props.viewer.refs["wrapperGrid"].selectedIndex;
+                        var wrapper = this.props.viewer.props.wrappers.at(index);
+                        return wrapper;
+                    }
+                    catch (exception) {
+                        if (wrappers.empty() == true)
+                            return new packer.Wrapper();
+                        else
+                            return wrappers.front();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapGrid.prototype.get_row = function (index) {
+                return this.wrapper.at(index);
+            };
+            WrapGrid.prototype.handle_select = function (event) {
+                this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, React.createElement("h3", null, " Instances packed in a Wrapper."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
+                return ret;
+            };
+            return WrapGrid;
+        }(React.Component));
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 var bws;
@@ -3169,166 +3329,6 @@ var bws;
             return WrapperGroup;
         }(packer.WrapperArray));
         packer.WrapperGroup = WrapperGroup;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        var ResultViewer = (function (_super) {
-            __extends(ResultViewer, _super);
-            function ResultViewer() {
-                _super.apply(this, arguments);
-            }
-            ResultViewer.prototype.drawWrapper = function (wrapper, index) {
-                if (index === void 0) { index = wrapper.size(); }
-                this.props.application.drawWrapper(wrapper, index);
-            };
-            ResultViewer.prototype.clear = function (event) {
-                this.props.wrappers.clear();
-                this.drawWrapper(new packer.Wrapper());
-                this.refresh();
-            };
-            ResultViewer.prototype.open = function (event) {
-                var this_ = this;
-                var handle_select = function (event) {
-                    file_ref.load();
-                };
-                var handle_complete = function (event) {
-                    this_.props.wrappers.construct(new samchon.library.XML(file_ref.data));
-                    if (this_.props.wrappers.empty() == true)
-                        this_.drawWrapper(new packer.Wrapper());
-                    else
-                        this_.drawWrapper(this_.props.wrappers.front());
-                    this_.refresh();
-                };
-                var file_ref = new samchon.library.FileReference();
-                file_ref.addEventListener("select", handle_select);
-                file_ref.addEventListener("complete", handle_complete);
-                file_ref.browse();
-            };
-            ResultViewer.prototype.save = function (event) {
-                var file_ref = new samchon.library.FileReference();
-                file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
-            };
-            ResultViewer.prototype.refresh = function () {
-                this.refs["wrapperGrid"].setState({});
-                this.refs["wrapGrid"].setState({});
-            };
-            ResultViewer.prototype.render = function () {
-                var wrapper = this.props.wrappers.empty()
-                    ? new packer.Wrapper()
-                    : this.props.wrappers.front();
-                var ret = React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File ")))), React.createElement("hr", null), React.createElement("p", null, " Optimization Result "), React.createElement("ul", null, React.createElement("li", null, " Cost: $ ", this.props.wrappers.getPrice(), " "), React.createElement("li", null, " Space Utilization: ", Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, " % ")), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), " "), React.createElement("hr", null), React.createElement("div", {id: "wrap_grid_div"}, React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})));
-                return ret;
-            };
-            return ResultViewer;
-        }(React.Component));
-        packer.ResultViewer = ResultViewer;
-        var WrapperGrid = (function (_super) {
-            __extends(WrapperGrid, _super);
-            /* ------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------ */
-            /**
-             * Default Constructor.
-             */
-            function WrapperGrid() {
-                _super.call(this);
-                this.selectedIndex = 0;
-                // CONSTRUCT COLUMNS
-                this.columns =
-                    [
-                        { key: "$name", name: "Name", width: 120 },
-                        { key: "$scale", name: "Length", width: 90 },
-                        { key: "$spaceUtilization", name: "Space Utilization", width: 90 }
-                    ];
-            }
-            Object.defineProperty(WrapperGrid.prototype, "wrappers", {
-                /* ------------------------------------------------------------
-                    ACCESSORSS
-                ------------------------------------------------------------ */
-                get: function () {
-                    return this.props.viewer.props.wrappers;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            WrapperGrid.prototype.get_row = function (index) {
-                return this.wrappers.at(index);
-            };
-            WrapperGrid.prototype.handle_select = function (event) {
-                this.selectedIndex = event.rowIdx;
-                var wrapper = this.wrappers.at(this.selectedIndex);
-                this.props.viewer.drawWrapper(wrapper);
-                this.props.viewer.refs["wrapGrid"].setState({});
-            };
-            /* ------------------------------------------------------------
-                EXPORTERS
-            ------------------------------------------------------------ */
-            WrapperGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " List of wrappers."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
-                return ret;
-            };
-            return WrapperGrid;
-        }(React.Component));
-        var WrapGrid = (function (_super) {
-            __extends(WrapGrid, _super);
-            /* ------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------ */
-            /**
-             * Default Constructor.
-             */
-            function WrapGrid() {
-                _super.call(this);
-                // CONSTRUCT COLUMNS
-                this.columns =
-                    [
-                        { key: "$instanceName", name: "Name", width: 120 },
-                        { key: "$layoutScale", name: "layoutScale", width: 90 },
-                        { key: "$position", name: "Position", width: 90 }
-                    ];
-            }
-            Object.defineProperty(WrapGrid.prototype, "wrapper", {
-                /* ------------------------------------------------------------
-                    ACCESSORSS
-                ------------------------------------------------------------ */
-                get: function () {
-                    var wrappers = this.props.viewer.props.wrappers;
-                    try {
-                        var index = this.props.viewer.refs["wrapperGrid"].selectedIndex;
-                        var wrapper = this.props.viewer.props.wrappers.at(index);
-                        return wrapper;
-                    }
-                    catch (exception) {
-                        if (wrappers.empty() == true)
-                            return new packer.Wrapper();
-                        else
-                            return wrappers.front();
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            WrapGrid.prototype.get_row = function (index) {
-                return this.wrapper.at(index);
-            };
-            WrapGrid.prototype.handle_select = function (event) {
-                this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
-            };
-            /* ------------------------------------------------------------
-                EXPORTERS
-            ------------------------------------------------------------ */
-            WrapGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " Instances packed in a Wrapper."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
-                return ret;
-            };
-            return WrapGrid;
-        }(React.Component));
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 // A '.tsx' file enables JSX support in the TypeScript compiler, 

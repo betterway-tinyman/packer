@@ -85,19 +85,27 @@ namespace bws.packer
 		public render(): JSX.Element
 		{
 			let ret: JSX.Element =
-				<div style={{width: "100%", height: "100%", fontSize: 12}}>
-					<flex.TabNavigator ref="tabNavigator" 
-									   style={{ width: 400, height: "100%", float: "left" }}>
-						<flex.NavigatorContent label="First Tab">
-							<ItemEditor application={this}
-										instances={this.instances} wrappers={this.wrappers} />
-						</flex.NavigatorContent>
-						<flex.NavigatorContent label="Second Tab">
-							<ResultViewer application={this} 
-										  wrappers={this.result} />
-						</flex.NavigatorContent>
-					</flex.TabNavigator>
-					<div id="wrapper_viewer" style={{height: "100%", overflow: "hidden"}}>
+				<div>
+					<div style={{width: "100%", height: "100%", fontSize: 12}}>
+						<flex.TabNavigator ref="tabNavigator" 
+										   style={{ width: 400, height: "100%", float: "left" }}>
+							<flex.NavigatorContent label="First Tab">
+								<ItemEditor application={this}
+											instances={this.instances} wrappers={this.wrappers} />
+							</flex.NavigatorContent>
+							<flex.NavigatorContent label="Second Tab">
+								<ResultViewer application={this} 
+											  wrappers={this.result} />
+							</flex.NavigatorContent>
+						</flex.TabNavigator>
+						<div id="wrapper_viewer" style={{height: "100%", overflow: "hidden"}}>
+						</div>
+					</div>
+					<div style={{position: "absolute", right: 10, bottom: 10}}>
+						<a href="http://redprinting.co.kr/" target="_blank">
+							<img src="images/redprinting_logo.png"
+								 width="250" />
+						</a>
 					</div>
 				</div>;
 			
