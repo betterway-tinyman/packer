@@ -6,7 +6,7 @@
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class Wrapper
-		extends samchon.protocol.EntityArray<Wrap>
+		extends samchon.protocol.EntityDeque<Wrap>
 		implements Instance
 	{
 		/**
@@ -24,17 +24,17 @@
 		/**
 		 * Width of the Wrapper, length on the X-axis in 3D.
 		 */
-		protected width_: number = 10.0;
+		protected width: number = 10.0;
 
 		/**
 		 * Height of the Wrapper, length on the Y-axis in 3D.
 		 */
-		protected height_: number = 10.0;
+		protected height: number = 10.0;
 
 		/**
 		 * Length of the Wrapper, length on the Z-axis in 3D.
 		 */
-		protected length_: number = 10.0;
+		protected length: number = 10.0;
 
 		/**
 		 * <p> Thickness, margin of a Wrapper causes shrinkness of containable volume. </p>
@@ -84,9 +84,9 @@
 				this.name = wrapper.name;
 				this.price = wrapper.price;
 
-				this.width_ = wrapper.width_;
-				this.height_ = wrapper.height_;
-				this.length_ = wrapper.length_;
+				this.width = wrapper.width;
+				this.height = wrapper.height;
+				this.length = wrapper.length;
 				this.thickness = wrapper.thickness;
 			}
 			else if (args.length == 6)
@@ -94,23 +94,11 @@
 				this.name = args[0];
 				this.price = args[1];
 
-				this.width_ = args[2];
-				this.height_ = args[3];
-				this.length_ = args[4];
+				this.width = args[2];
+				this.height = args[3];
+				this.length = args[4];
 				this.thickness = args[5];
 			}
-		}
-
-		/**
-		 * @inheritdoc
-		 */
-		public construct(xml: samchon.library.XML): void
-		{
-			super.construct(xml);
-
-			this.width_ = parseFloat(xml.getProperty("width"));
-			this.height_ = parseFloat(xml.getProperty("height"));
-			this.length_ = parseFloat(xml.getProperty("length"));
 		}
 
 		/**
@@ -160,7 +148,7 @@
 		 */
 		public getWidth(): number
 		{
-			return this.width_;
+			return this.width;
 		}
 
 		/**
@@ -168,7 +156,7 @@
 		 */
 		public getHeight(): number
 		{
-			return this.height_;
+			return this.height;
 		}
 
 		/**
@@ -176,7 +164,7 @@
 		 */
 		public getLength(): number
 		{
-			return this.length_;
+			return this.length;
 		}
 		
 		/**
@@ -199,7 +187,7 @@
 		 */
 		public getContainableWidth(): number
 		{
-			return this.width_ - (2 * this.thickness);
+			return this.width - (2 * this.thickness);
 		}
 
 		/**
@@ -211,7 +199,7 @@
 		 */
 		public getContainableHeight(): number
 		{
-			return this.height_ - (2 * this.thickness);
+			return this.height - (2 * this.thickness);
 		}
 		
 		/**
@@ -223,7 +211,7 @@
 		 */
 		public getContainableLength(): number
 		{
-			return this.length_ - (2 * this.thickness);
+			return this.length - (2 * this.thickness);
 		}
 		
 		/**
@@ -237,7 +225,7 @@
 		 */
 		public getVolume(): number
 		{
-			return this.width_ * this.height_ * this.length_;
+			return this.width * this.height * this.length;
 		}
 
 		/**
@@ -272,7 +260,7 @@
 		public equal_to(obj: Wrapper): boolean
 		{
 			return this.price == obj.price
-				&& this.width_ == obj.width_ && this.height_ == obj.height_ && this.length_ == obj.length_ 
+				&& this.width == obj.width && this.height == obj.height && this.length == obj.length 
 				&& this.thickness == obj.thickness;
 		}
 
@@ -324,7 +312,7 @@
 		 */
 		public setWidth(val: number): void
 		{
-			this.width_ = val;
+			this.width = val;
 		}
 
 		/**
@@ -332,7 +320,7 @@
 		 */
 		public setHeight(val: number): void
 		{
-			this.height_ = val;
+			this.height = val;
 		}
 
 		/**
@@ -340,7 +328,7 @@
 		 */
 		public setLength(val: number): void
 		{
-			this.length_ = val;
+			this.length = val;
 		}
 
 		/**
@@ -356,21 +344,21 @@
 		----------------------------------------------------------- */
 		public get $name(): string			{	return this.name;					}
 		public get $price(): string			{	return this.price + "";				}
-		public get $width(): string			{	return this.width_ + "";			}
-		public get $height(): string		{	return this.height_ + "";			}
-		public get $length(): string		{	return this.length_ + "";			}
+		public get $width(): string			{	return this.width + "";			}
+		public get $height(): string		{	return this.height + "";			}
+		public get $length(): string		{	return this.length + "";			}
 		public get $thickness(): string		{	return this.thickness + "";			}
 		
 		public set $name(val: string)		{	this.name = val;					}
 		public set $price(val: string)		{	this.price = parseFloat(val);		}
-		public set $width(val: string)		{	this.width_ = parseFloat(val);		}
-		public set $height(val: string)		{	this.height_ = parseFloat(val);		}
-		public set $length(val: string)		{	this.length_ = parseFloat(val);		}
+		public set $width(val: string)		{	this.width = parseFloat(val);		}
+		public set $height(val: string)		{	this.height = parseFloat(val);		}
+		public set $length(val: string)		{	this.length = parseFloat(val);		}
 		public set $thickness(val: string)	{	this.thickness = parseFloat(val);	}
 
 		public get $scale(): string	
 		{
-			return this.width_ + ", " + this.height_ + ", " + this.length_;
+			return this.width + ", " + this.height + ", " + this.length;
 		}
 		public get $spaceUtilization(): string
 		{
@@ -410,16 +398,6 @@
 		public toXML(): samchon.library.XML
 		{
 			let xml: samchon.library.XML = super.toXML();
-
-			// WIDTH, HEIGHT AND LENGTH
-			xml.setProperty("width", this.width_ + "");
-			xml.setProperty("height", this.height_ + "");
-			xml.setProperty("length", this.length_ + "");
-			xml.eraseProperty("width_");
-			xml.eraseProperty("height_");
-			xml.eraseProperty("length_");
-
-			// TYPE
 			xml.setProperty("type", this.TYPE());
 
 			return xml;
@@ -482,17 +460,17 @@
 				switch (i)
 				{
 					case 1: case 3: case 9: case 12:
-						width = this.width_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+						width = this.width + 2 * Wrapper.BOUNDARY_THICKNESS;
 						height = Wrapper.BOUNDARY_THICKNESS;
 						length = Wrapper.BOUNDARY_THICKNESS;
 						break;
 					case 2: case 4: case 10: case 11: case 10:
-						height = this.height_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+						height = this.height + 2 * Wrapper.BOUNDARY_THICKNESS;
 						width = Wrapper.BOUNDARY_THICKNESS;
 						length = Wrapper.BOUNDARY_THICKNESS;
 						break;
 					default: // 5, 6, 7, 8
-						length = this.length_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+						length = this.length + 2 * Wrapper.BOUNDARY_THICKNESS;
 						width = Wrapper.BOUNDARY_THICKNESS;
 						height = Wrapper.BOUNDARY_THICKNESS;
 						break;
@@ -502,7 +480,7 @@
 				switch (i)
 				{
 					case 4: case 6: case 8: case 11:
-						x = this.width_ + Wrapper.BOUNDARY_THICKNESS;
+						x = this.width + Wrapper.BOUNDARY_THICKNESS;
 						break;
 					default:
 						x = -Wrapper.BOUNDARY_THICKNESS;
@@ -513,7 +491,7 @@
 				switch (i)
 				{
 					case 3: case 7: case 8: case 12:
-						y = this.height_;
+						y = this.height;
 						break;
 					default:
 						y = -Wrapper.BOUNDARY_THICKNESS;
@@ -524,7 +502,7 @@
 				switch (i)
 				{
 					case 9: case 10: case 11: case 12:
-						z = this.length_ + Wrapper.BOUNDARY_THICKNESS;
+						z = this.length + Wrapper.BOUNDARY_THICKNESS;
 						break;
 					default:
 						z = -Wrapper.BOUNDARY_THICKNESS;
@@ -563,7 +541,7 @@
 			if (Wrapper.camera == null) // LAZY CREATION
 			{
 				Wrapper.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
-				Wrapper.camera.position.z = this.length_ * 5;
+				Wrapper.camera.position.z = this.length * 5;
 
 				Wrapper.trackball = new THREE.TrackballControls(Wrapper.camera);
 				Wrapper.trackball.rotateSpeed = 10;

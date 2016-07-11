@@ -46,7 +46,7 @@ namespace bws.packer
 			{
 				this.props.dataProvider.erase(this.props.dataProvider.begin().advance(this.selected_index));
 			}
-			catch (exception) 
+			catch (exception)
 			{
 				// OUT OF RANGE 
 			}

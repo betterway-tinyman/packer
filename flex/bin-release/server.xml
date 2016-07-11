@@ -1,0 +1,10 @@
+<?xml encoding="utf-8" version="1.0" ?>
+<server>
+	<ip>127.0.0.1</ip>
+	<port>37896</port>
+</server>
+
+<!--
+	<ip>172.16.0.209</ip>
+	<ip>127.0.0.1</ip>
+-->

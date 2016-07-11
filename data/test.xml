@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<packerForm>  
+	<instanceFormArray>
+		<instanceForm name="61638 MD 15 Sandal (MD MT)" type="product" width="37" height="57" length="38" count="1"/>
+		<instanceForm name="79652 Savlon Disinfectant Lqd100ml" type="product" width="13" height="36" length="35" count="17"/>
+		<instanceForm name="79651 Savlon Disinfectant Lqd 50ml" type="product" width="19" height="37" length="26" count="3"/>
+	</instanceFormArray>
+	<wrapperArray>
+		<instance name="Roll_cage" type="wrapper" price="500" width="94" height="184" length="88" thickness="0"/>
+	</wrapperArray>
+	<gaParameters generation="500" population="100" tournament="50" mutationRate="0.2"/>
+</packerForm>

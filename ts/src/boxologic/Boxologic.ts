@@ -330,6 +330,8 @@ namespace boxologic
 			this.wrapper.clear();
 			this.leftInstances.clear();
 			
+			this.inspect_validity();
+
 			for (let i: number = 0; i < this.box_array.size(); i++)
 			{
 				let instance: bws.packer.Instance = this.instanceArray.at(i);
@@ -361,6 +363,72 @@ namespace boxologic
 					this.leftInstances.push_back(instance);
 				}
 			}
+		}
+
+		private inspect_validity(): void
+		{
+			let boxes: std.Vector<Box> = new std.Vector<Box>(); // CANDIDATES TO BE PACKED
+
+			for (let i: number = 0; i < this.box_array.size(); i++)
+			{
+				let box: Box = this.box_array.at(i);
+				if (box.is_packed == false)
+					continue;
+
+				if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
+					box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
+					box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length)
+				{
+					// NOT PAKCED OR BE PLACED OUT OF THE PALLET
+					box.is_packed = false;
+					continue;
+				}
+				boxes.push(box);
+			}
+
+			//// FIND OVERLAPS
+			//let is_overlapped: boolean = false;
+			//for (let i: number = 0; i < boxes.size(); i++)
+			//	for (let j: number = 0; j < boxes.size(); j++)
+			//		if (i == j)
+			//			continue;
+			//		else if (boxes[i].hit_test(boxes[j]))
+			//		{
+			//			is_overlapped = true;
+
+			//			boxes[i].overlapped_boxes.insert(boxes[j]);
+			//			boxes[j].overlapped_boxes.insert(boxes[i]);
+			//		}
+
+			//if (is_overlapped == false)
+			//	return;
+
+			//// SORT OVERLAPS
+			//for (let i: number = 0; i < 2; i++)
+			//	std.sort(boxes.begin(), boxes.end(),
+			//		function (x: Box, y: Box): boolean
+			//		{
+			//			if (x.overlapped_boxes.size() == y.overlapped_boxes.size())
+			//				return x.volume > y.volume;
+			//			else
+			//				return x.overlapped_boxes.size() > y.overlapped_boxes.size();
+			//		}
+			//	);
+
+			//for (let i: number = 0; i < boxes.size(); i++)
+			//	if (boxes[i].overlapped_boxes.empty() == true)
+			//		continue;
+			//	else
+			//	{
+			//		// ERASE FROM NEIGHBORS
+			//		let overlapped_boxes = boxes[i].overlapped_boxes;
+
+			//		for (let it = overlapped_boxes.begin(); !it.equal_to(overlapped_boxes.end()); it = it.next())
+			//			boxes[i].overlapped_boxes.erase(boxes[i]);
+					
+			//		// ERASE FROM PALLET
+			//		boxes[i].is_packed = false;
+			//	}
 		}
 
 		/* ===========================================================

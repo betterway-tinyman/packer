@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Form xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import org.samchon.library.utils.GAParameters;
+			
+			public function init():void
+			{
+				this.setParameters(new GAParameters(500, 50, 20, .2));
+			}
+			
+			public function setParameters(params:GAParameters):void
+			{
+				generationStepper.value = params.getGeneration();
+				populationStepper.value = params.getPopulation();
+				tournamentStepper.value = params.getTournament();
+				mutateStepper.value = params.getMutationRate() * 100.0;
+			}
+			
+			public function toParameters():GAParameters
+			{
+				var params:GAParameters = 
+					new GAParameters
+					(
+						generationStepper.value,
+						populationStepper.value,
+						tournamentStepper.value,
+						mutateStepper.value / 100.0
+					);
+				return params;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:FormItem label="Generations" height="25">
+		<s:NumericStepper id="generationStepper"
+						  value="200"
+						  minimum="0" maximum="{int.MAX_VALUE}" />
+	</s:FormItem>
+	<s:FormItem label="Population" height="25">
+		<s:NumericStepper id="populationStepper"
+						  value="50"
+						  minimum="0" maximum="{int.MAX_VALUE}" />
+	</s:FormItem>
+	<s:FormItem label="Tournaments" height="25">
+		<s:NumericStepper id="tournamentStepper"
+						  value="20"
+						  minimum="0" maximum="{int.MAX_VALUE}" />
+	</s:FormItem>
+	<s:FormItem label="Mutation rate" height="25">
+		<s:HGroup verticalAlign="middle">
+			<s:NumericStepper id="mutateStepper"
+							  value="20"
+							  stepSize="0.1"
+							  minimum="0" maximum="100" />
+			<s:Label text="%" />
+		</s:HGroup>
+	</s:FormItem>
+	
+</s:Form>

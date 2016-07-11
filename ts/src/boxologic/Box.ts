@@ -31,6 +31,8 @@ namespace boxologic
 		 */
 		public is_packed: boolean;
 
+		public overlapped_boxes: std.HashSet<Box> = new std.HashSet<Box>();
+
 		/**
 		 * Construct from an instance.
 		 * 
@@ -50,6 +52,31 @@ namespace boxologic
 			this.coz = 0;
 
 			this.is_packed = false;
+		}
+
+		public hit_test(obj: Box): boolean
+		{
+			return (this.cox == obj.cox && this.coy == obj.coy && this.coz == obj.coy) 
+				|| (this.hit_test_single(obj) == false && obj.hit_test_single(this) == false);
+		}
+
+		private hit_test_single(obj: Box): boolean
+		{
+			return this.hit_test_point(obj.cox,						obj.coy,						obj.coz)
+				|| this.hit_test_point(obj.cox + obj.layout_width,	obj.coy,						obj.coz)
+				|| this.hit_test_point(obj.cox,						obj.coy + obj.layout_height,	obj.coz)
+				|| this.hit_test_point(obj.cox,						obj.coy,						obj.coz + obj.layout_length)
+				|| this.hit_test_point(obj.cox + obj.layout_width,	obj.coy + obj.layout_height,	obj.coz)
+				|| this.hit_test_point(obj.cox + obj.layout_width,	obj.coy,						obj.coz + obj.layout_length)
+				|| this.hit_test_point(obj.cox,						obj.coy + obj.layout_height,	obj.coz + obj.layout_length)
+				|| this.hit_test_point(obj.cox + obj.layout_width,	obj.coy + obj.layout_height,	obj.coz + obj.layout_length);
+		}
+
+		private hit_test_point(x: number, y: number, z: number): boolean
+		{
+			return this.cox < x && x < this.cox + this.layout_width 
+				&& this.coy < y && y < this.coy + this.layout_height 
+				&& this.coz < z && z < this.coz + this.layout_length; 
 		}
 	}
 }

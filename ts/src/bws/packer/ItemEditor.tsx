@@ -4,7 +4,7 @@
 
 namespace bws.packer
 {
-	interface ItemEditorProps extends React.Props<ItemEditor>
+	export interface ItemEditorProps extends React.Props<ItemEditor>
 	{
 		application: PackerApplication;
 		instances: InstanceFormArray;

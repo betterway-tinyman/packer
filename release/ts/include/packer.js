@@ -57,11 +57,31 @@ var boxologic;
          */
         function Box(instance) {
             _super.call(this, instance.getWidth(), instance.getHeight(), instance.getLength());
+            this.overlapped_boxes = new std.HashSet();
             this.cox = 0;
             this.coy = 0;
             this.coz = 0;
             this.is_packed = false;
         }
+        Box.prototype.hit_test = function (obj) {
+            return (this.cox == obj.cox && this.coy == obj.coy && this.coz == obj.coy)
+                || (this.hit_test_single(obj) == false && obj.hit_test_single(this) == false);
+        };
+        Box.prototype.hit_test_single = function (obj) {
+            return this.hit_test_point(obj.cox, obj.coy, obj.coz)
+                || this.hit_test_point(obj.cox + obj.layout_width, obj.coy, obj.coz)
+                || this.hit_test_point(obj.cox, obj.coy + obj.layout_height, obj.coz)
+                || this.hit_test_point(obj.cox, obj.coy, obj.coz + obj.layout_length)
+                || this.hit_test_point(obj.cox + obj.layout_width, obj.coy + obj.layout_height, obj.coz)
+                || this.hit_test_point(obj.cox + obj.layout_width, obj.coy, obj.coz + obj.layout_length)
+                || this.hit_test_point(obj.cox, obj.coy + obj.layout_height, obj.coz + obj.layout_length)
+                || this.hit_test_point(obj.cox + obj.layout_width, obj.coy + obj.layout_height, obj.coz + obj.layout_length);
+        };
+        Box.prototype.hit_test_point = function (x, y, z) {
+            return this.cox < x && x < this.cox + this.layout_width
+                && this.coy < y && y < this.coy + this.layout_height
+                && this.coz < z && z < this.coz + this.layout_length;
+        };
         return Box;
     }(boxologic.Instance));
     boxologic.Box = Box;
@@ -151,6 +171,7 @@ var boxologic;
         Boxologic.prototype.decode = function () {
             this.wrapper.clear();
             this.leftInstances.clear();
+            this.inspect_validity();
             for (var i = 0; i < this.box_array.size(); i++) {
                 var instance = this.instanceArray.at(i);
                 var box = this.box_array.at(i);
@@ -166,6 +187,59 @@ var boxologic;
                     this.leftInstances.push_back(instance);
                 }
             }
+        };
+        Boxologic.prototype.inspect_validity = function () {
+            var boxes = new std.Vector(); // CANDIDATES TO BE PACKED
+            for (var i = 0; i < this.box_array.size(); i++) {
+                var box = this.box_array.at(i);
+                if (box.is_packed == false)
+                    continue;
+                if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
+                    box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
+                    box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length) {
+                    // NOT PAKCED OR BE PLACED OUT OF THE PALLET
+                    box.is_packed = false;
+                    continue;
+                }
+                boxes.push(box);
+            }
+            //// FIND OVERLAPS
+            //let is_overlapped: boolean = false;
+            //for (let i: number = 0; i < boxes.size(); i++)
+            //	for (let j: number = 0; j < boxes.size(); j++)
+            //		if (i == j)
+            //			continue;
+            //		else if (boxes[i].hit_test(boxes[j]))
+            //		{
+            //			is_overlapped = true;
+            //			boxes[i].overlapped_boxes.insert(boxes[j]);
+            //			boxes[j].overlapped_boxes.insert(boxes[i]);
+            //		}
+            //if (is_overlapped == false)
+            //	return;
+            //// SORT OVERLAPS
+            //for (let i: number = 0; i < 2; i++)
+            //	std.sort(boxes.begin(), boxes.end(),
+            //		function (x: Box, y: Box): boolean
+            //		{
+            //			if (x.overlapped_boxes.size() == y.overlapped_boxes.size())
+            //				return x.volume > y.volume;
+            //			else
+            //				return x.overlapped_boxes.size() > y.overlapped_boxes.size();
+            //		}
+            //	);
+            //for (let i: number = 0; i < boxes.size(); i++)
+            //	if (boxes[i].overlapped_boxes.empty() == true)
+            //		continue;
+            //	else
+            //	{
+            //		// ERASE FROM NEIGHBORS
+            //		let overlapped_boxes = boxes[i].overlapped_boxes;
+            //		for (let it = overlapped_boxes.begin(); !it.equal_to(overlapped_boxes.end()); it = it.next())
+            //			boxes[i].overlapped_boxes.erase(boxes[i]);
+            //		// ERASE FROM PALLET
+            //		boxes[i].is_packed = false;
+            //	}
         };
         /* ===========================================================
             MAIN PROCEDURES
@@ -2311,15 +2385,15 @@ var bws;
                 /**
                  * Width of the Wrapper, length on the X-axis in 3D.
                  */
-                this.width_ = 10.0;
+                this.width = 10.0;
                 /**
                  * Height of the Wrapper, length on the Y-axis in 3D.
                  */
-                this.height_ = 10.0;
+                this.height = 10.0;
                 /**
                  * Length of the Wrapper, length on the Z-axis in 3D.
                  */
-                this.length_ = 10.0;
+                this.length = 10.0;
                 /**
                  * <p> Thickness, margin of a Wrapper causes shrinkness of containable volume. </p>
                  *
@@ -2331,29 +2405,20 @@ var bws;
                     var wrapper = args[0];
                     this.name = wrapper.name;
                     this.price = wrapper.price;
-                    this.width_ = wrapper.width_;
-                    this.height_ = wrapper.height_;
-                    this.length_ = wrapper.length_;
+                    this.width = wrapper.width;
+                    this.height = wrapper.height;
+                    this.length = wrapper.length;
                     this.thickness = wrapper.thickness;
                 }
                 else if (args.length == 6) {
                     this.name = args[0];
                     this.price = args[1];
-                    this.width_ = args[2];
-                    this.height_ = args[3];
-                    this.length_ = args[4];
+                    this.width = args[2];
+                    this.height = args[3];
+                    this.length = args[4];
                     this.thickness = args[5];
                 }
             }
-            /**
-             * @inheritdoc
-             */
-            Wrapper.prototype.construct = function (xml) {
-                _super.prototype.construct.call(this, xml);
-                this.width_ = parseFloat(xml.getProperty("width"));
-                this.height_ = parseFloat(xml.getProperty("height"));
-                this.length_ = parseFloat(xml.getProperty("length"));
-            };
             /**
              * @inheritdoc
              */
@@ -2392,19 +2457,19 @@ var bws;
              * Get width, length on X-axis in 3D.
              */
             Wrapper.prototype.getWidth = function () {
-                return this.width_;
+                return this.width;
             };
             /**
              * Get height, length on Y-axis in 3D.
              */
             Wrapper.prototype.getHeight = function () {
-                return this.height_;
+                return this.height;
             };
             /**
              * Get length, length on Z-axis in 3D.
              */
             Wrapper.prototype.getLength = function () {
-                return this.length_;
+                return this.length;
             };
             /**
              * Get thickness.
@@ -2423,7 +2488,7 @@ var bws;
              * @return width - (2 x thickness)
              */
             Wrapper.prototype.getContainableWidth = function () {
-                return this.width_ - (2 * this.thickness);
+                return this.width - (2 * this.thickness);
             };
             /**
              * <p> Get (calculate) containable height, length on the Y-axis in 3D. </p>
@@ -2433,7 +2498,7 @@ var bws;
              * @return height - (2 x thickness)
              */
             Wrapper.prototype.getContainableHeight = function () {
-                return this.height_ - (2 * this.thickness);
+                return this.height - (2 * this.thickness);
             };
             /**
              * <p> Get (calculate) containable length, length on the Z-axis in 3D. </p>
@@ -2443,7 +2508,7 @@ var bws;
              * @return length - (2 x thickness)
              */
             Wrapper.prototype.getContainableLength = function () {
-                return this.length_ - (2 * this.thickness);
+                return this.length - (2 * this.thickness);
             };
             /**
              * <p> Get (calculate) volume. </p>
@@ -2455,7 +2520,7 @@ var bws;
              * @return width x height x length
              */
             Wrapper.prototype.getVolume = function () {
-                return this.width_ * this.height_ * this.length_;
+                return this.width * this.height * this.length;
             };
             /**
              * <p> Get (calculate) containable volume. </p>
@@ -2483,7 +2548,7 @@ var bws;
             ----------------------------------------------------------- */
             Wrapper.prototype.equal_to = function (obj) {
                 return this.price == obj.price
-                    && this.width_ == obj.width_ && this.height_ == obj.height_ && this.length_ == obj.length_
+                    && this.width == obj.width && this.height == obj.height && this.length == obj.length
                     && this.thickness == obj.thickness;
             };
             /**
@@ -2524,19 +2589,19 @@ var bws;
              * @inheritdoc
              */
             Wrapper.prototype.setWidth = function (val) {
-                this.width_ = val;
+                this.width = val;
             };
             /**
              * @inheritdoc
              */
             Wrapper.prototype.setHeight = function (val) {
-                this.height_ = val;
+                this.height = val;
             };
             /**
              * @inheritdoc
              */
             Wrapper.prototype.setLength = function (val) {
-                this.length_ = val;
+                this.length = val;
             };
             /**
              * Set thickness.
@@ -2560,20 +2625,20 @@ var bws;
                 configurable: true
             });
             Object.defineProperty(Wrapper.prototype, "$width", {
-                get: function () { return this.width_ + ""; },
-                set: function (val) { this.width_ = parseFloat(val); },
+                get: function () { return this.width + ""; },
+                set: function (val) { this.width = parseFloat(val); },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Wrapper.prototype, "$height", {
-                get: function () { return this.height_ + ""; },
-                set: function (val) { this.height_ = parseFloat(val); },
+                get: function () { return this.height + ""; },
+                set: function (val) { this.height = parseFloat(val); },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Wrapper.prototype, "$length", {
-                get: function () { return this.length_ + ""; },
-                set: function (val) { this.length_ = parseFloat(val); },
+                get: function () { return this.length + ""; },
+                set: function (val) { this.length = parseFloat(val); },
                 enumerable: true,
                 configurable: true
             });
@@ -2585,7 +2650,7 @@ var bws;
             });
             Object.defineProperty(Wrapper.prototype, "$scale", {
                 get: function () {
-                    return this.width_ + ", " + this.height_ + ", " + this.length_;
+                    return this.width + ", " + this.height + ", " + this.length;
                 },
                 enumerable: true,
                 configurable: true
@@ -2623,14 +2688,6 @@ var bws;
              */
             Wrapper.prototype.toXML = function () {
                 var xml = _super.prototype.toXML.call(this);
-                // WIDTH, HEIGHT AND LENGTH
-                xml.setProperty("width", this.width_ + "");
-                xml.setProperty("height", this.height_ + "");
-                xml.setProperty("length", this.length_ + "");
-                xml.eraseProperty("width_");
-                xml.eraseProperty("height_");
-                xml.eraseProperty("length_");
-                // TYPE
                 xml.setProperty("type", this.TYPE());
                 return xml;
             };
@@ -2672,7 +2729,7 @@ var bws;
                         case 3:
                         case 9:
                         case 12:
-                            width = this.width_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+                            width = this.width + 2 * Wrapper.BOUNDARY_THICKNESS;
                             height = Wrapper.BOUNDARY_THICKNESS;
                             length_2 = Wrapper.BOUNDARY_THICKNESS;
                             break;
@@ -2681,12 +2738,12 @@ var bws;
                         case 10:
                         case 11:
                         case 10:
-                            height = this.height_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+                            height = this.height + 2 * Wrapper.BOUNDARY_THICKNESS;
                             width = Wrapper.BOUNDARY_THICKNESS;
                             length_2 = Wrapper.BOUNDARY_THICKNESS;
                             break;
                         default:
-                            length_2 = this.length_ + 2 * Wrapper.BOUNDARY_THICKNESS;
+                            length_2 = this.length + 2 * Wrapper.BOUNDARY_THICKNESS;
                             width = Wrapper.BOUNDARY_THICKNESS;
                             height = Wrapper.BOUNDARY_THICKNESS;
                             break;
@@ -2697,7 +2754,7 @@ var bws;
                         case 6:
                         case 8:
                         case 11:
-                            x = this.width_ + Wrapper.BOUNDARY_THICKNESS;
+                            x = this.width + Wrapper.BOUNDARY_THICKNESS;
                             break;
                         default:
                             x = -Wrapper.BOUNDARY_THICKNESS;
@@ -2709,7 +2766,7 @@ var bws;
                         case 7:
                         case 8:
                         case 12:
-                            y = this.height_;
+                            y = this.height;
                             break;
                         default:
                             y = -Wrapper.BOUNDARY_THICKNESS;
@@ -2721,7 +2778,7 @@ var bws;
                         case 10:
                         case 11:
                         case 12:
-                            z = this.length_ + Wrapper.BOUNDARY_THICKNESS;
+                            z = this.length + Wrapper.BOUNDARY_THICKNESS;
                             break;
                         default:
                             z = -Wrapper.BOUNDARY_THICKNESS;
@@ -2750,7 +2807,7 @@ var bws;
                 // ---------------------------------------
                 if (Wrapper.camera == null) {
                     Wrapper.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
-                    Wrapper.camera.position.z = this.length_ * 5;
+                    Wrapper.camera.position.z = this.length * 5;
                     Wrapper.trackball = new THREE.TrackballControls(Wrapper.camera);
                     Wrapper.trackball.rotateSpeed = 10;
                     Wrapper.trackball.zoomSpeed = 1.2;
@@ -2803,7 +2860,7 @@ var bws;
             Wrapper.trackball = null;
             Wrapper.mouse = null;
             return Wrapper;
-        }(samchon.protocol.EntityArray));
+        }(samchon.protocol.EntityDeque));
         packer.Wrapper = Wrapper;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
