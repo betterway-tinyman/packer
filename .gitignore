@@ -11,4 +11,5 @@ Desktop.ini
 *.bat
 *.*ignore
 .gitattribute
+bin
 release/demo

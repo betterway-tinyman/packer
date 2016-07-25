@@ -1,4 +1,6 @@
-﻿namespace bws.packer
+﻿/// <reference path="API.ts" />
+
+namespace bws.packer
 {
 	/**
 	 * A wrapper wrapping instances.
@@ -99,6 +101,13 @@
 				this.length = args[4];
 				this.thickness = args[5];
 			}
+		}
+
+		public construct(xml: samchon.library.XML): void
+		{
+			super.construct(xml);
+			
+			console.log(xml.getProperty("length"), this.length);
 		}
 
 		/**

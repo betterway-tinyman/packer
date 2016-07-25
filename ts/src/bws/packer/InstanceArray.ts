@@ -1,4 +1,6 @@
-﻿namespace bws.packer
+﻿/// <reference path="API.ts" />
+
+namespace bws.packer
 {
 	/**
 	 * An array of Instance objects.

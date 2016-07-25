@@ -1,4 +1,6 @@
-﻿namespace boxologic
+﻿/// <reference path="../bws/packer/API.ts" />
+
+namespace boxologic
 {
 	/**
 	 * <p> An abstract instance of boxologic. </p>

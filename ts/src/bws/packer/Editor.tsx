@@ -1,4 +1,6 @@
-﻿// A '.tsx' file enables JSX support in the TypeScript compiler, 
+﻿/// <reference path="API.ts" />
+
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
 
@@ -37,7 +39,7 @@ namespace bws.packer
 
 		private insert_instance(event: React.MouseEvent): void
 		{
-			let child: T = this.props.dataProvider.createChild(null);
+			let child: T = this.props.dataProvider["createChild"](null);
 			this.props.dataProvider.push_back(child);
 		}
 		private erase_instances(event: React.MouseEvent): void

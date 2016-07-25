@@ -1,4 +1,6 @@
-﻿namespace bws.packer
+﻿/// <reference path="API.ts" />
+
+namespace bws.packer
 {
 	/**
 	 * Bridge of {@link Packer} for {@link InstanceForm repeated instances}.

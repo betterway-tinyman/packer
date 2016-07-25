@@ -1,4 +1,6 @@
-﻿/**
+﻿/// <reference path="../bws/packer/API.ts" />
+
+/**
  * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
  *
  * <ul>
@@ -367,24 +369,24 @@ namespace boxologic
 
 		private inspect_validity(): void
 		{
-			let boxes: std.Vector<Box> = new std.Vector<Box>(); // CANDIDATES TO BE PACKED
+			//let boxes: std.Vector<Box> = new std.Vector<Box>(); // CANDIDATES TO BE PACKED
 
-			for (let i: number = 0; i < this.box_array.size(); i++)
-			{
-				let box: Box = this.box_array.at(i);
-				if (box.is_packed == false)
-					continue;
+			//for (let i: number = 0; i < this.box_array.size(); i++)
+			//{
+			//	let box: Box = this.box_array.at(i);
+			//	if (box.is_packed == false)
+			//		continue;
 
-				if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
-					box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
-					box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length)
-				{
-					// NOT PAKCED OR BE PLACED OUT OF THE PALLET
-					box.is_packed = false;
-					continue;
-				}
-				boxes.push(box);
-			}
+			//	if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
+			//		box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
+			//		box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length)
+			//	{
+			//		// NOT PAKCED OR BE PLACED OUT OF THE PALLET
+			//		box.is_packed = false;
+			//		continue;
+			//	}
+			//	boxes.push(box);
+			//}
 
 			//// FIND OVERLAPS
 			//let is_overlapped: boolean = false;

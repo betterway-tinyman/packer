@@ -17,11 +17,7 @@ http://redprinting.co.kr/
 
 ## References
 ##### Demo
-<<<<<<< HEAD
 ![Packer Demo GIF](http://betterwaysystems.github.io/packer/demo/video_small.gif "Packer Demo GIF")
-=======
-<img src="http://betterwaysystems.github.io/packer/demo/video_small.gif">
->>>>>>> 62c12dab33cdea6f73ce66cb8548d6b9ab936594
 
   - Web: http://betterwaysystems.github.io/packer/demo
   - Video: http://betterwaysystems.github.io/packer/demo/packer.mp4
@@ -36,20 +32,25 @@ http://redprinting.co.kr/
   - GitHub: https://github.com/exad/boxologic
 
 ## Installation
+##### Node.JS
+``` bash
+npm install -g 3d-bin-packing
+```
+
 ##### TypeScript (JavaScript) only
 If you want the TypeScript (JavaScript) only mode, any installation procedure is not required.
   - http://betterwaysystems.github.io/packer/demo/
   - `release/ts/index.html`
 
 ##### Build Cloud Server
-However, if you want to install the C++ mode, you've to install Visual C++ Redistributable for Visual Studio 2015. After the installation, execute `release/cpp/Packer.exe`. Then a cloud server deducting packer solution will be opened. After running the cloud server, open `release/ts/index.html`.
+However, if you want to install the C++ mode, you've to install Visual C++ Redistributable for Visual Studio 2015. After the installation, execute `release/cpp/Packer.exe`. Then a cloud server deducting packer solution will be opened. After running the cloud server, open `release/browser/index.html`.
 
-You also can separate cloud server(C++) and clients(Web), let users to connect remote Packer server, by editing ip address in  `release/ts/server.xml`
+You also can separate cloud server(C++) and clients(Web), let users to connect remote Packer server, by editing ip address in  `release/browser/server.xml`
 
   - https://www.microsoft.com/en-US/download/details.aspx?id=48145
   - `release/cpp/Packer.exe`
-  - `release/ts/index.html`
-  - `release/ts/server.xml`
+  - `release/browser/index.html`
+  - `release/browser/server.xml`
 
 ## Implementation
 ##### Design
@@ -63,70 +64,72 @@ You also can separate cloud server(C++) and clients(Web), let users to connect r
   1. Act a role of client connecting to C++ server.
   2. Do packing itself without C++ server and do not use genetic algorithm.
     - The optimization result can be inferior than C++
-- Flex
-  - I'm not familiar with HTML5 
-  - To realize item editor faster, I've adopted the Flex.
-  - However, it will be replaced to the HTML5 soon.
 
 ##### Dependency
 - C++
 	- Samchon Framework (SDN Framework) - https://github.com/samchon/framework
-		- Boost.Asio (C++ Socket Library) - http://www.boost.org/
 - TypeScript (JavaScript)
-	- STL for TypeScript (STL containers for TypeScript) - https://github.com/samchon/stl
+	- TypeScript-STL (STL containers and algorithms for TypeScript) - https://github.com/samchon/typescript-stl
 	- Samchon Framework (SDN Framework) - https://github.com/samchon/framework
 	- Three.js (JavaScript library handling 3-D objects) - http://threejs.org
 	- React - https://facebook.github.io/react
 	- React-Data-Grid - https://github.com/adazzle/react-data-grid
 
 ## Usage
-##### TypeScript (JavaScript)
+##### TypeScript (Node.JS)
 ```typescript
+/// <reference path="typings/3d-bin-packing/packer.d.ts" />
+
+import packer = require("3d-bin-packing");
+import samchon = require("samchon-framework");
+
 function main(): void
 {
-	///////////////////////////
-	// CONSTRUCT OBJECTS
-	///////////////////////////
-	let wrapperArray: bws.packer.WrapperArray = new bws.packer.WrapperArray();
-	let instanceArray: bws.packer.InstanceArray = new bws.packer.InstanceArray();
-	
-	// Wrappers
-	wrapperArray.push
-	(
-		new bws.packer.Wrapper("Large", 1000, 40, 40, 15, 0),
-		new bws.packer.Wrapper("Medium", 700, 20, 20, 10, 0),
-		new bws.packer.Wrapper("Small", 500, 15, 15, 8, 0)
-	);
-	
-	///////
-	// Each Instance is repeated #15
-	///////
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Eraser", 1, 2, 5));
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Book", 15, 30, 3));
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Drink", 3, 3, 10));
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Product("Umbrella", 5, 5, 20));
-	
-	// Wrappers also can be packed into another Wrapper.
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Notebook-Box", 2000, 30, 40, 4, 2));
-	instanceArray.insert(instanceArray.end(), 15, new bws.packer.Wrapper("Tablet-Box", 2500, 20, 28, 2, 0));
-	
-	///////////////////////////
-	// BEGINS PACKING
-	///////////////////////////
-	// CONSTRUCT PACKER
-	let packer: bws.packer.Packer = new bws.packer.Packer(wrapperArray, instanceArray);
-	
-	///////
-	// PACK (OPTIMIZE)
-	let result: bws.packer.WrapperArray = packer.optimize();
-	///////
-	
-	///////////////////////////
-	// TRACE PACKING RESULT
-	///////////////////////////
-	let xml: samchon.library.XML = result.toXML();
-	samchon.trace(xml);
+    ///////////////////////////
+    // CONSTRUCT OBJECTS
+    ///////////////////////////
+    let wrapperArray: bws.packer.WrapperArray = new packer.WrapperArray();
+    let instanceArray: bws.packer.InstanceArray = new packer.InstanceArray();
+
+    // Wrappers
+    wrapperArray.push
+    (
+        new packer.Wrapper("Large", 1000, 40, 40, 15, 0),
+        new packer.Wrapper("Medium", 700, 20, 20, 10, 0),
+        new packer.Wrapper("Small", 500, 15, 15, 8, 0)
+    );
+
+    ///////
+    // Each Instance is repeated #15
+    ///////
+    instanceArray.insert(instanceArray.end(), 15, new packer.Product("Eraser", 1, 2, 5));
+    instanceArray.insert(instanceArray.end(), 15, new packer.Product("Book", 15, 30, 3));
+    instanceArray.insert(instanceArray.end(), 15, new packer.Product("Drink", 3, 3, 10));
+    instanceArray.insert(instanceArray.end(), 15, new packer.Product("Umbrella", 5, 5, 20));
+
+    // Wrappers also can be packed into another Wrapper.
+    instanceArray.insert(instanceArray.end(), 15, new packer.Wrapper("Notebook-Box", 2000, 30, 40, 4, 2));
+    instanceArray.insert(instanceArray.end(), 15, new packer.Wrapper("Tablet-Box", 2500, 20, 28, 2, 0));
+
+    ///////////////////////////
+    // BEGINS PACKING
+    ///////////////////////////
+    // CONSTRUCT PACKER
+    let my_packer: bws.packer.Packer = new packer.Packer(wrapperArray, instanceArray);
+
+    ///////
+    // PACK (OPTIMIZE)
+    let result: bws.packer.WrapperArray = my_packer.optimize();
+    ///////
+
+    ///////////////////////////
+    // TRACE PACKING RESULT
+    ///////////////////////////
+    let xml: samchon.library.XML = result.toXML();
+    console.log(xml.toString());
 }
+
+main();
 ```
 
 ##### C++

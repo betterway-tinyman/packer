@@ -1,4 +1,6 @@
-﻿namespace bws.packer
+﻿/// <reference path="API.ts" />
+
+namespace bws.packer
 {
 	/**
 	 * A group of {@link Wrapper Wrappers} with same type.

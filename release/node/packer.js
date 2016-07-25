@@ -3,6 +3,15 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+try {
+    eval("var std = require('typescript-stl')");
+    eval("var samchon = require('samchon-framework')");
+    eval("var React = require('react')");
+    eval("var ReactDataGrid = require('react-data-grid')");
+    eval("var THREE = require('three')");
+}
+catch (exception) { }
+/// <reference path="../bws/packer/API.ts" />
 var boxologic;
 (function (boxologic) {
     /**
@@ -39,6 +48,327 @@ var boxologic;
     }());
     boxologic.Instance = Instance;
 })(boxologic || (boxologic = {}));
+/// <reference path="API.ts" />
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        /**
+         * @brief Packer, a solver of 3d bin packing with multiple wrappers.
+         *
+         * @details
+         * <p> Packer is a facade class supporting packing operations in user side. You can solve a packing problem
+         * by constructing Packer class with {@link WrapperArray wrappers} and {@link InstanceArray instances} to
+         * pack and executing {@link optimize Packer.optimize()} method. </p>
+         *
+         * <p> In background side, deducting packing solution, those algorithms are used. </p>
+         * <ul>
+         *	<li> <a href="http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf" target="_blank">
+         *		Airforce Bin Packing; 3D pallet packing problem: A human intelligence-based heuristic approach </a>
+         *	</li>
+         *	<li> Genetic Algorithm </li>
+         *	<li> Greedy and Back-tracking algorithm </li>
+         * </ul>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var Packer = (function (_super) {
+            __extends(Packer, _super);
+            function Packer(wrapperArray, instanceArray) {
+                if (wrapperArray === void 0) { wrapperArray = null; }
+                if (instanceArray === void 0) { instanceArray = null; }
+                _super.call(this);
+                if (wrapperArray == null && instanceArray == null) {
+                    this.wrapperArray = new packer.WrapperArray();
+                    this.instanceArray = new packer.InstanceArray();
+                }
+                else {
+                    this.wrapperArray = wrapperArray;
+                    this.instanceArray = instanceArray;
+                }
+            }
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.construct = function (xml) {
+                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
+                this.instanceArray.construct(xml.get(this.instanceArray.TAG()).at(0));
+            };
+            /* -----------------------------------------------------------
+                GETTERS
+            ----------------------------------------------------------- */
+            /**
+             * Get wrapperArray.
+             */
+            Packer.prototype.getWrapperArray = function () {
+                return this.wrapperArray;
+            };
+            /**
+             * Get instanceArray.
+             */
+            Packer.prototype.getInstanceArray = function () {
+                return this.instanceArray;
+            };
+            /* -----------------------------------------------------------
+                OPTIMIZERS
+            ----------------------------------------------------------- */
+            /**
+             * <p> Deduct
+             *
+             */
+            Packer.prototype.optimize = function () {
+                if (this.instanceArray.empty() || this.wrapperArray.empty())
+                    throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
+                var wrappers = new packer.WrapperArray(); // TO BE RETURNED
+                if (this.wrapperArray.size() == 1) {
+                    // ONLY A TYPE OF WRAPPER EXISTS,
+                    // OPTMIZE IN LEVEL OF WRAPPER_GROUP AND TERMINATE THE OPTIMIZATION
+                    var wrapperGroup = new packer.WrapperGroup(this.wrapperArray.front());
+                    for (var i = 0; i < this.instanceArray.size(); i++)
+                        if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
+                            throw new std.LogicError("All instances are greater than the wrapper.");
+                    // OPTIMIZE
+                    wrapperGroup.optimize();
+                    // ASSIGN WRAPPERS
+                    wrappers.assign(wrapperGroup.begin(), wrapperGroup.end());
+                }
+                else {
+                    ////////////////////////////////////////
+                    // WITH GENETIC_ALGORITHM
+                    ////////////////////////////////////////
+                    // CONSTRUCT INITIAL SET
+                    var geneArray = this.initGenes();
+                    // EVOLVE
+                    // IN JAVA_SCRIPT VERSION, GENETIC_ALGORITHM IS NOT IMPLEMENTED YET.
+                    // HOWEVER, IN C++ VERSION, IT IS FULLY SUPPORTED
+                    //	http://samchon.github.io/framework/api/cpp/d5/d28/classsamchon_1_1library_1_1GeneticAlgorithm.html
+                    // IT WILL BE SUPPORTED SOON
+                    // FETCH RESULT
+                    var result = geneArray.getResult();
+                    for (var it = result.begin(); !it.equal_to(result.end()); it = it.next())
+                        wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
+                    // TRY TO REPACK
+                    wrappers = this.repack(wrappers);
+                }
+                // SORT THE WRAPPERS BY ITEMS' POSITION
+                for (var i = 0; i < wrappers.size(); i++) {
+                    var wrapper = wrappers[i];
+                    var begin = wrapper.begin();
+                    var end = wrapper.end();
+                    std.sort(wrapper.begin(), wrapper.end(), function (left, right) {
+                        if (left.getZ() != right.getZ())
+                            return left.getZ() < right.getZ();
+                        else if (left.getY() != right.getY())
+                            return left.getY() < right.getY();
+                        else
+                            return left.getX() < right.getX();
+                    });
+                }
+                if (wrappers.empty() == true)
+                    throw new std.LogicError("All instances are greater than the wrapper.");
+                return wrappers;
+            };
+            /**
+             * @brief Initialize sequence list (gene_array).
+             *
+             * @details
+             * <p> Deducts initial sequence list by such assumption: </p>
+             *
+             * <ul>
+             *	<li> Cost of larger wrapper is less than smaller one, within framework of price per volume unit. </li>
+             *	<ul>
+             *		<li> Wrapper Larger: (price: $1,000, volume: 100cm^3 -> price per volume unit: $10 / cm^3) </li>
+             *		<li> Wrapper Smaller: (price: $700, volume: 50cm^3 -> price per volume unit: $14 / cm^3) </li>
+             *		<li> Larger's <u>cost</u> is less than Smaller, within framework of price per volume unit </li>
+             *	</ul>
+             * </ul>
+             *
+             * <p> Method {@link initGenes initGenes()} constructs {@link WrapperGroup WrapperGroups} corresponding
+             * with the {@link wrapperArray} and allocates {@link instanceArray instances} to a {@link WrapperGroup},
+             * has the smallest <u>cost</u> between containbles. </p>
+             *
+             * <p> After executing packing solution by {@link WrapperGroup.optimize WrapperGroup.optimize()}, trying to
+             * {@link repack re-pack} each {@link WrapperGroup} to another type of {@link Wrapper}, deducts the best
+             * solution between them. It's the initial sequence list of genetic algorithm. </p>
+             *
+             * @return Initial sequence list.
+             */
+            Packer.prototype.initGenes = function () {
+                ////////////////////////////////////////////////////
+                // LINEAR OPTIMIZATION
+                ////////////////////////////////////////////////////
+                // CONSTRUCT WRAPPER_GROUPS
+                var wrapperGroups = new std.Vector();
+                for (var i = 0; i < this.wrapperArray.size(); i++) {
+                    var wrapper = this.wrapperArray.at(i);
+                    wrapperGroups.push_back(new packer.WrapperGroup(wrapper));
+                }
+                // ALLOCATE INSTNACES BY AUTHORITY
+                for (var i = 0; i < this.instanceArray.size(); i++) {
+                    var instance = this.instanceArray.at(i);
+                    var minCost = Number.MAX_VALUE;
+                    var minIndex = 0;
+                    for (var j = 0; j < this.wrapperArray.size(); j++) {
+                        var wrapper = this.wrapperArray.at(j);
+                        if (wrapper.containable(instance) == false)
+                            continue; // CANNOT CONTAIN BY ITS GREATER SIZE
+                        var cost = wrapper.getPrice() / wrapper.getContainableVolume();
+                        if (cost < minCost) {
+                            // CURRENT WRAPPER'S PRICE PER UNIT VOLUME IS CHEAPER
+                            minCost = cost;
+                            minIndex = j;
+                        }
+                    }
+                    // ALLOCATE TO A GROUP WHICH HAS THE MOST CHEAPER PRICE PER UNIT VOLUME
+                    var wrapperGroup = wrapperGroups.at(minIndex);
+                    wrapperGroup.allocate(instance);
+                }
+                ////////////////////////////////////////////////////
+                // ADDICTIONAL OPTIMIZATION BY POST-PROCESS
+                ////////////////////////////////////////////////////0
+                // OPTIMIZE WRAPPER_GROUP
+                var wrappers = new packer.WrapperArray();
+                for (var i = 0; i < wrapperGroups.size(); i++) {
+                    var wrapperGroup = wrapperGroups.at(i);
+                    wrapperGroup.optimize();
+                    wrappers.insert(wrappers.end(), wrapperGroup.begin(), wrapperGroup.end());
+                }
+                // DO EARLY POST-PROCESS
+                wrappers = this.repack(wrappers);
+                ////////////////////////////////////////////////////
+                // CONSTRUCT GENE_ARRAY
+                ////////////////////////////////////////////////////
+                // INSTANCES AND GENES
+                var ga_instances = new packer.InstanceArray();
+                var genes = new packer.WrapperArray();
+                for (var i = 0; i < wrappers.size(); i++) {
+                    var wrapper = wrappers.at(i);
+                    for (var j = 0; j < wrapper.size(); j++) {
+                        ga_instances.push_back(wrapper.at(j).getInstance());
+                        genes.push_back(wrapper);
+                    }
+                }
+                // GENE_ARRAY
+                var geneArray = new packer.GAWrapperArray(ga_instances);
+                geneArray.assign(genes.begin(), genes.end());
+                return geneArray;
+            };
+            /**
+             * Try to repack each wrappers to another type.
+             *
+             * @param $wrappers Wrappers to repack.
+             * @return Re-packed wrappers.
+             */
+            Packer.prototype.repack = function ($wrappers) {
+                var result = new packer.WrapperArray();
+                for (var i = 0; i < $wrappers.size(); i++) {
+                    var wrapper = $wrappers.at(i);
+                    var minGroup = new packer.WrapperGroup(wrapper);
+                    minGroup.push_back(wrapper);
+                    for (var j = 0; j < this.wrapperArray.size(); j++) {
+                        var myWrapper = this.wrapperArray.at(j);
+                        if (wrapper.equal_to(myWrapper))
+                            continue;
+                        var valid = true;
+                        // CONSTRUCT GROUP OF TARGET
+                        var myGroup = new packer.WrapperGroup(myWrapper);
+                        for (var k = 0; k < wrapper.size(); k++)
+                            if (myGroup.allocate(wrapper.at(k).getInstance()) == false) {
+                                // IF THERE'S AN INSTANCE CANNOT CONTAIN BY ITS GREATER SIZE
+                                valid = false;
+                                break;
+                            }
+                        // SKIP
+                        if (valid == false)
+                            continue;
+                        // OPTIMIZATION IN LEVEL OF GROUP
+                        myGroup.optimize();
+                        // CURRENT GROUP IS CHEAPER, THEN REPLACE
+                        if (myGroup.getPrice() < minGroup.getPrice())
+                            minGroup = myGroup;
+                    }
+                    result.insert(result.end(), minGroup.begin(), minGroup.end());
+                }
+                return result;
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.TAG = function () {
+                return "packer";
+            };
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                xml.push(this.wrapperArray.toXML());
+                xml.push(this.instanceArray.toXML());
+                return xml;
+            };
+            return Packer;
+        }(samchon.protocol.Entity));
+        packer.Packer = Packer;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="../bws/packer/API.ts" />
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var flex;
+(function (flex) {
+    var TabNavigator = (function (_super) {
+        __extends(TabNavigator, _super);
+        function TabNavigator() {
+            _super.apply(this, arguments);
+        }
+        TabNavigator.prototype.render = function () {
+            if (this.state == null)
+                this.state = { selectedIndex: this.props.selectedIndex };
+            if (this.state.selectedIndex == undefined)
+                this.state = { selectedIndex: 0 };
+            var children = this.props.children;
+            var selected = children[this.state.selectedIndex];
+            var tabs = [];
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var className = (i == this.state.selectedIndex) ? "active" : "";
+                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label));
+                tabs.push(label);
+            }
+            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, React.createElement("ul", {className: "tabNavigator_label"}, tabs), selected);
+            return ret;
+        };
+        TabNavigator.prototype.handle_change = function (index, event) {
+            this.setState({ selectedIndex: index });
+        };
+        return TabNavigator;
+    }(React.Component));
+    flex.TabNavigator = TabNavigator;
+    var NavigatorContent = (function (_super) {
+        __extends(NavigatorContent, _super);
+        function NavigatorContent() {
+            _super.apply(this, arguments);
+        }
+        NavigatorContent.prototype.render = function () {
+            return React.createElement("div", {className: "tabNavigator_content"}, this.props.children);
+        };
+        return NavigatorContent;
+    }(React.Component));
+    flex.NavigatorContent = NavigatorContent;
+})(flex || (flex = {}));
+/// <reference path="bws/packer/API.ts" />
+/// <reference path="boxologic/Instance.ts" />
+/// <reference path="bws/packer/Packer.ts" />
+/// <reference path="flex/TabNavigator.tsx" />
+try {
+    module.exports = bws.packer;
+}
+catch (exception) { }
+/// <reference path="../bws/packer/API.ts" />
 /// <reference path="Instance.ts" />
 var boxologic;
 (function (boxologic) {
@@ -86,6 +416,7 @@ var boxologic;
     }(boxologic.Instance));
     boxologic.Box = Box;
 })(boxologic || (boxologic = {}));
+/// <reference path="../bws/packer/API.ts" />
 /**
  * <p> A set of programs that calculate the best fit for boxes on a pallet migrated from language C. </p>
  *
@@ -189,20 +520,22 @@ var boxologic;
             }
         };
         Boxologic.prototype.inspect_validity = function () {
-            var boxes = new std.Vector(); // CANDIDATES TO BE PACKED
-            for (var i = 0; i < this.box_array.size(); i++) {
-                var box = this.box_array.at(i);
-                if (box.is_packed == false)
-                    continue;
-                if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
-                    box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
-                    box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length) {
-                    // NOT PAKCED OR BE PLACED OUT OF THE PALLET
-                    box.is_packed = false;
-                    continue;
-                }
-                boxes.push(box);
-            }
+            //let boxes: std.Vector<Box> = new std.Vector<Box>(); // CANDIDATES TO BE PACKED
+            //for (let i: number = 0; i < this.box_array.size(); i++)
+            //{
+            //	let box: Box = this.box_array.at(i);
+            //	if (box.is_packed == false)
+            //		continue;
+            //	if (box.cox < 0 || box.cox + box.layout_width > this.pallet.layout_width ||
+            //		box.coy < 0 || box.coy + box.layout_height > this.pallet.layout_height ||
+            //		box.coz < 0 || box.coz + box.layout_length > this.pallet.layout_length)
+            //	{
+            //		// NOT PAKCED OR BE PLACED OUT OF THE PALLET
+            //		box.is_packed = false;
+            //		continue;
+            //	}
+            //	boxes.push(box);
+            //}
             //// FIND OVERLAPS
             //let is_overlapped: boolean = false;
             //for (let i: number = 0; i < boxes.size(); i++)
@@ -1042,6 +1375,7 @@ var boxologic;
     }());
     boxologic.Boxologic = Boxologic;
 })(boxologic || (boxologic = {}));
+/// <reference path="../bws/packer/API.ts" />
 /// <reference path="Instance.ts" />
 var boxologic;
 (function (boxologic) {
@@ -1102,6 +1436,7 @@ var boxologic;
     }(boxologic.Instance));
     boxologic.Pallet = Pallet;
 })(boxologic || (boxologic = {}));
+/// <reference path="../bws/packer/API.ts" />
 var boxologic;
 (function (boxologic) {
     /**
@@ -1123,6 +1458,7 @@ var boxologic;
     }());
     boxologic.Scrap = Scrap;
 })(boxologic || (boxologic = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -1348,6 +1684,7 @@ var bws;
         packer_1.InstanceForm = InstanceForm;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -1417,6 +1754,7 @@ var bws;
         packer.WrapperArray = WrapperArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 /// <reference path="WrapperArray.ts" />
 var bws;
 (function (bws) {
@@ -1491,6 +1829,7 @@ var bws;
         packer.GAWrapperArray = GAWrapperArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -1543,271 +1882,7 @@ var bws;
         packer.InstanceArray = InstanceArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        /**
-         * @brief Packer, a solver of 3d bin packing with multiple wrappers.
-         *
-         * @details
-         * <p> Packer is a facade class supporting packing operations in user side. You can solve a packing problem
-         * by constructing Packer class with {@link WrapperArray wrappers} and {@link InstanceArray instances} to
-         * pack and executing {@link optimize Packer.optimize()} method. </p>
-         *
-         * <p> In background side, deducting packing solution, those algorithms are used. </p>
-         * <ul>
-         *	<li> <a href="http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf" target="_blank">
-         *		Airforce Bin Packing; 3D pallet packing problem: A human intelligence-based heuristic approach </a>
-         *	</li>
-         *	<li> Genetic Algorithm </li>
-         *	<li> Greedy and Back-tracking algorithm </li>
-         * </ul>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var Packer = (function (_super) {
-            __extends(Packer, _super);
-            function Packer(wrapperArray, instanceArray) {
-                if (wrapperArray === void 0) { wrapperArray = null; }
-                if (instanceArray === void 0) { instanceArray = null; }
-                _super.call(this);
-                if (wrapperArray == null && instanceArray == null) {
-                    this.wrapperArray = new packer.WrapperArray();
-                    this.instanceArray = new packer.InstanceArray();
-                }
-                else {
-                    this.wrapperArray = wrapperArray;
-                    this.instanceArray = instanceArray;
-                }
-            }
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.construct = function (xml) {
-                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
-                this.instanceArray.construct(xml.get(this.instanceArray.TAG()).at(0));
-            };
-            /* -----------------------------------------------------------
-                GETTERS
-            ----------------------------------------------------------- */
-            /**
-             * Get wrapperArray.
-             */
-            Packer.prototype.getWrapperArray = function () {
-                return this.wrapperArray;
-            };
-            /**
-             * Get instanceArray.
-             */
-            Packer.prototype.getInstanceArray = function () {
-                return this.instanceArray;
-            };
-            /* -----------------------------------------------------------
-                OPTIMIZERS
-            ----------------------------------------------------------- */
-            /**
-             * <p> Deduct
-             *
-             */
-            Packer.prototype.optimize = function () {
-                if (this.instanceArray.empty() || this.wrapperArray.empty())
-                    throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
-                var wrappers = new packer.WrapperArray(); // TO BE RETURNED
-                if (this.wrapperArray.size() == 1) {
-                    // ONLY A TYPE OF WRAPPER EXISTS,
-                    // OPTMIZE IN LEVEL OF WRAPPER_GROUP AND TERMINATE THE OPTIMIZATION
-                    var wrapperGroup = new packer.WrapperGroup(this.wrapperArray.front());
-                    for (var i = 0; i < this.instanceArray.size(); i++)
-                        if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
-                            throw new std.LogicError("All instances are greater than the wrapper.");
-                    // OPTIMIZE
-                    wrapperGroup.optimize();
-                    // ASSIGN WRAPPERS
-                    wrappers.assign(wrapperGroup.begin(), wrapperGroup.end());
-                }
-                else {
-                    ////////////////////////////////////////
-                    // WITH GENETIC_ALGORITHM
-                    ////////////////////////////////////////
-                    // CONSTRUCT INITIAL SET
-                    var geneArray = this.initGenes();
-                    // EVOLVE
-                    // IN JAVA_SCRIPT VERSION, GENETIC_ALGORITHM IS NOT IMPLEMENTED YET.
-                    // HOWEVER, IN C++ VERSION, IT IS FULLY SUPPORTED
-                    //	http://samchon.github.io/framework/api/cpp/d5/d28/classsamchon_1_1library_1_1GeneticAlgorithm.html
-                    // IT WILL BE SUPPORTED SOON
-                    // FETCH RESULT
-                    var result = geneArray.getResult();
-                    for (var it = result.begin(); !it.equal_to(result.end()); it = it.next())
-                        wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
-                    // TRY TO REPACK
-                    wrappers = this.repack(wrappers);
-                }
-                // SORT THE WRAPPERS BY ITEMS' POSITION
-                for (var i = 0; i < wrappers.size(); i++) {
-                    var wrapper = wrappers[i];
-                    var begin = wrapper.begin();
-                    var end = wrapper.end();
-                    std.sort(wrapper.begin(), wrapper.end(), function (left, right) {
-                        if (left.getZ() != right.getZ())
-                            return left.getZ() < right.getZ();
-                        else if (left.getY() != right.getY())
-                            return left.getY() < right.getY();
-                        else
-                            return left.getX() < right.getX();
-                    });
-                }
-                if (wrappers.empty() == true)
-                    throw new std.LogicError("All instances are greater than the wrapper.");
-                return wrappers;
-            };
-            /**
-             * @brief Initialize sequence list (gene_array).
-             *
-             * @details
-             * <p> Deducts initial sequence list by such assumption: </p>
-             *
-             * <ul>
-             *	<li> Cost of larger wrapper is less than smaller one, within framework of price per volume unit. </li>
-             *	<ul>
-             *		<li> Wrapper Larger: (price: $1,000, volume: 100cm^3 -> price per volume unit: $10 / cm^3) </li>
-             *		<li> Wrapper Smaller: (price: $700, volume: 50cm^3 -> price per volume unit: $14 / cm^3) </li>
-             *		<li> Larger's <u>cost</u> is less than Smaller, within framework of price per volume unit </li>
-             *	</ul>
-             * </ul>
-             *
-             * <p> Method {@link initGenes initGenes()} constructs {@link WrapperGroup WrapperGroups} corresponding
-             * with the {@link wrapperArray} and allocates {@link instanceArray instances} to a {@link WrapperGroup},
-             * has the smallest <u>cost</u> between containbles. </p>
-             *
-             * <p> After executing packing solution by {@link WrapperGroup.optimize WrapperGroup.optimize()}, trying to
-             * {@link repack re-pack} each {@link WrapperGroup} to another type of {@link Wrapper}, deducts the best
-             * solution between them. It's the initial sequence list of genetic algorithm. </p>
-             *
-             * @return Initial sequence list.
-             */
-            Packer.prototype.initGenes = function () {
-                ////////////////////////////////////////////////////
-                // LINEAR OPTIMIZATION
-                ////////////////////////////////////////////////////
-                // CONSTRUCT WRAPPER_GROUPS
-                var wrapperGroups = new std.Vector();
-                for (var i = 0; i < this.wrapperArray.size(); i++) {
-                    var wrapper = this.wrapperArray.at(i);
-                    wrapperGroups.push_back(new packer.WrapperGroup(wrapper));
-                }
-                // ALLOCATE INSTNACES BY AUTHORITY
-                for (var i = 0; i < this.instanceArray.size(); i++) {
-                    var instance = this.instanceArray.at(i);
-                    var minCost = Number.MAX_VALUE;
-                    var minIndex = 0;
-                    for (var j = 0; j < this.wrapperArray.size(); j++) {
-                        var wrapper = this.wrapperArray.at(j);
-                        if (wrapper.containable(instance) == false)
-                            continue; // CANNOT CONTAIN BY ITS GREATER SIZE
-                        var cost = wrapper.getPrice() / wrapper.getContainableVolume();
-                        if (cost < minCost) {
-                            // CURRENT WRAPPER'S PRICE PER UNIT VOLUME IS CHEAPER
-                            minCost = cost;
-                            minIndex = j;
-                        }
-                    }
-                    // ALLOCATE TO A GROUP WHICH HAS THE MOST CHEAPER PRICE PER UNIT VOLUME
-                    var wrapperGroup = wrapperGroups.at(minIndex);
-                    wrapperGroup.allocate(instance);
-                }
-                ////////////////////////////////////////////////////
-                // ADDICTIONAL OPTIMIZATION BY POST-PROCESS
-                ////////////////////////////////////////////////////0
-                // OPTIMIZE WRAPPER_GROUP
-                var wrappers = new packer.WrapperArray();
-                for (var i = 0; i < wrapperGroups.size(); i++) {
-                    var wrapperGroup = wrapperGroups.at(i);
-                    wrapperGroup.optimize();
-                    wrappers.insert(wrappers.end(), wrapperGroup.begin(), wrapperGroup.end());
-                }
-                // DO EARLY POST-PROCESS
-                wrappers = this.repack(wrappers);
-                ////////////////////////////////////////////////////
-                // CONSTRUCT GENE_ARRAY
-                ////////////////////////////////////////////////////
-                // INSTANCES AND GENES
-                var ga_instances = new packer.InstanceArray();
-                var genes = new packer.WrapperArray();
-                for (var i = 0; i < wrappers.size(); i++) {
-                    var wrapper = wrappers.at(i);
-                    for (var j = 0; j < wrapper.size(); j++) {
-                        ga_instances.push_back(wrapper.at(j).getInstance());
-                        genes.push_back(wrapper);
-                    }
-                }
-                // GENE_ARRAY
-                var geneArray = new packer.GAWrapperArray(ga_instances);
-                geneArray.assign(genes.begin(), genes.end());
-                return geneArray;
-            };
-            /**
-             * Try to repack each wrappers to another type.
-             *
-             * @param $wrappers Wrappers to repack.
-             * @return Re-packed wrappers.
-             */
-            Packer.prototype.repack = function ($wrappers) {
-                var result = new packer.WrapperArray();
-                for (var i = 0; i < $wrappers.size(); i++) {
-                    var wrapper = $wrappers.at(i);
-                    var minGroup = new packer.WrapperGroup(wrapper);
-                    minGroup.push_back(wrapper);
-                    for (var j = 0; j < this.wrapperArray.size(); j++) {
-                        var myWrapper = this.wrapperArray.at(j);
-                        if (wrapper.equal_to(myWrapper))
-                            continue;
-                        var valid = true;
-                        // CONSTRUCT GROUP OF TARGET
-                        var myGroup = new packer.WrapperGroup(myWrapper);
-                        for (var k = 0; k < wrapper.size(); k++)
-                            if (myGroup.allocate(wrapper.at(k).getInstance()) == false) {
-                                // IF THERE'S AN INSTANCE CANNOT CONTAIN BY ITS GREATER SIZE
-                                valid = false;
-                                break;
-                            }
-                        // SKIP
-                        if (valid == false)
-                            continue;
-                        // OPTIMIZATION IN LEVEL OF GROUP
-                        myGroup.optimize();
-                        // CURRENT GROUP IS CHEAPER, THEN REPLACE
-                        if (myGroup.getPrice() < minGroup.getPrice())
-                            minGroup = myGroup;
-                    }
-                    result.insert(result.end(), minGroup.begin(), minGroup.end());
-                }
-                return result;
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.TAG = function () {
-                return "packer";
-            };
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                xml.push(this.wrapperArray.toXML());
-                xml.push(this.instanceArray.toXML());
-                return xml;
-            };
-            return Packer;
-        }(samchon.protocol.Entity));
-        packer.Packer = Packer;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -1939,6 +2014,7 @@ var bws;
         packer.Product = Product;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -2355,6 +2431,7 @@ var bws;
         packer.Wrap = Wrap;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -2419,6 +2496,10 @@ var bws;
                     this.thickness = args[5];
                 }
             }
+            Wrapper.prototype.construct = function (xml) {
+                _super.prototype.construct.call(this, xml);
+                console.log(xml.getProperty("length"), this.length);
+            };
             /**
              * @inheritdoc
              */
@@ -2864,6 +2945,7 @@ var bws;
         packer.Wrapper = Wrapper;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -3016,6 +3098,7 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 // A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
@@ -3043,7 +3126,7 @@ var bws;
                 return this.props.dataProvider.at(index);
             };
             Editor.prototype.insert_instance = function (event) {
-                var child = this.props.dataProvider.createChild(null);
+                var child = this.props.dataProvider["createChild"](null);
                 this.props.dataProvider.push_back(child);
             };
             Editor.prototype.erase_instances = function (event) {
@@ -3079,6 +3162,7 @@ var bws;
         packer.Editor = Editor;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 // A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
@@ -3163,6 +3247,7 @@ var bws;
         packer.WrapperEditor = WrapperEditor;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 // A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
@@ -3228,6 +3313,7 @@ var bws;
         packer_2.PackerApplication = PackerApplication;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
+/// <reference path="API.ts" />
 // A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
@@ -3388,48 +3474,3 @@ var bws;
         }(React.Component));
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var flex;
-(function (flex) {
-    var TabNavigator = (function (_super) {
-        __extends(TabNavigator, _super);
-        function TabNavigator() {
-            _super.apply(this, arguments);
-        }
-        TabNavigator.prototype.render = function () {
-            if (this.state == null)
-                this.state = { selectedIndex: this.props.selectedIndex };
-            if (this.state.selectedIndex == undefined)
-                this.state = { selectedIndex: 0 };
-            var children = this.props.children;
-            var selected = children[this.state.selectedIndex];
-            var tabs = [];
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                var className = (i == this.state.selectedIndex) ? "active" : "";
-                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label));
-                tabs.push(label);
-            }
-            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, React.createElement("ul", {className: "tabNavigator_label"}, tabs), selected);
-            return ret;
-        };
-        TabNavigator.prototype.handle_change = function (index, event) {
-            this.setState({ selectedIndex: index });
-        };
-        return TabNavigator;
-    }(React.Component));
-    flex.TabNavigator = TabNavigator;
-    var NavigatorContent = (function (_super) {
-        __extends(NavigatorContent, _super);
-        function NavigatorContent() {
-            _super.apply(this, arguments);
-        }
-        NavigatorContent.prototype.render = function () {
-            return React.createElement("div", {className: "tabNavigator_content"}, this.props.children);
-        };
-        return NavigatorContent;
-    }(React.Component));
-    flex.NavigatorContent = NavigatorContent;
-})(flex || (flex = {}));

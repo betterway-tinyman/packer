@@ -1,4 +1,6 @@
-﻿/// <reference path="Instance.ts" />
+﻿/// <reference path="../bws/packer/API.ts" />
+
+/// <reference path="Instance.ts" />
 
 namespace boxologic
 {

@@ -1,4 +1,6 @@
-﻿namespace boxologic
+﻿/// <reference path="../bws/packer/API.ts" />
+
+namespace boxologic
 {
 	/**
 	 * <p> Cumulated lengths of current layer. </p>

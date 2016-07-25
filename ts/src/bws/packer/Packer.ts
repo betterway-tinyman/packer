@@ -1,4 +1,6 @@
-﻿namespace bws.packer
+﻿/// <reference path="API.ts" />
+
+namespace bws.packer
 {
 	/**
 	 * @brief Packer, a solver of 3d bin packing with multiple wrappers.

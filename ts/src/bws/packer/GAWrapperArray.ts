@@ -1,4 +1,6 @@
-﻿/// <reference path="WrapperArray.ts" />
+﻿/// <reference path="API.ts" />
+
+/// <reference path="WrapperArray.ts" />
 
 namespace bws.packer
 {
