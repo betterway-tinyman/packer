@@ -85,9 +85,9 @@ namespace bws.packer
 
 	export class InstanceEditor extends Editor<InstanceForm>
 	{
-		protected createColumns(): react_data_grid.Column[]
+		protected createColumns(): AdazzleReactDataGrid.Column[]
 		{
-			let columns: react_data_grid.Column[] = 
+			let columns: AdazzleReactDataGrid.Column[] = 
 				[
 					{ key: "$name", name: "Name", editable: true, width: 100 },
 					{ key: "$width", name: "Length", editable: true, width: 60 },
@@ -101,9 +101,9 @@ namespace bws.packer
 
 	export class WrapperEditor extends Editor<Wrapper>
 	{
-		protected createColumns(): react_data_grid.Column[]
+		protected createColumns(): AdazzleReactDataGrid.Column[]
 		{
-			let columns: react_data_grid.Column[] =
+			let columns: AdazzleReactDataGrid.Column[] =
 				[
 					{ key: "$name", name: "name", editable: true, width: 100 },
 					{ key: "$width", name: "length", editable: true, width: 60 },

@@ -102,7 +102,7 @@ namespace bws.packer
 
 	class WrapperGrid extends React.Component<WrapperGridProps, {}>
 	{
-		private columns: react_data_grid.Column[];
+		private columns: AdazzleReactDataGrid.Column[];
 
 		public selectedIndex: number = 0;
 
@@ -138,7 +138,7 @@ namespace bws.packer
 			return this.wrappers.at(index);
 		}
 
-		private handle_select(event: react_data_grid.CellSelectEvent): void
+		private handle_select(event: any): void
 		{
 			this.selectedIndex = event.rowIdx;
 			let wrapper = this.wrappers.at(this.selectedIndex);
@@ -170,7 +170,7 @@ namespace bws.packer
 
 	class WrapGrid extends React.Component<WrapGridProps, {}>
 	{
-		private columns: react_data_grid.Column[];
+		private columns: AdazzleReactDataGrid.Column[];
 
 		/* ------------------------------------------------------------
 			CONSTRUCTORS
@@ -219,7 +219,7 @@ namespace bws.packer
 			return this.wrapper.at(index);
 		}
 
-		private handle_select(event: react_data_grid.CellSelectEvent): void
+		private handle_select(event: any): void
 		{
 			this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
 		}

@@ -7,3 +7,5 @@
 	eval("var THREE = require('three')");
 }
 catch (exception) { }
+
+declare var ReactDataGrid: typeof AdazzleReactDataGrid.ReactDataGrid;

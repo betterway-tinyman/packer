@@ -13,6 +13,7 @@ declare module "3d-bin-packing"
 {
         export = bws.packer;
 }
+declare var ReactDataGrid: typeof AdazzleReactDataGrid.ReactDataGrid;
 declare namespace boxologic {
     /**
      * <p> An abstract instance of boxologic. </p>
@@ -1438,7 +1439,7 @@ declare namespace bws.packer {
          * Default Constructor.
          */
         constructor();
-        protected abstract createColumns(): react_data_grid.Column[];
+        protected abstract createColumns(): AdazzleReactDataGrid.Column[];
         private get_row(index);
         private insert_instance(event);
         private erase_instances(event);
@@ -1462,10 +1463,10 @@ declare namespace bws.packer {
         render(): JSX.Element;
     }
     class InstanceEditor extends Editor<InstanceForm> {
-        protected createColumns(): react_data_grid.Column[];
+        protected createColumns(): AdazzleReactDataGrid.Column[];
     }
     class WrapperEditor extends Editor<Wrapper> {
-        protected createColumns(): react_data_grid.Column[];
+        protected createColumns(): AdazzleReactDataGrid.Column[];
     }
 }
 declare namespace bws.packer {

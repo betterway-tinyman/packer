@@ -9,7 +9,7 @@ namespace bws.packer
 	export abstract class Editor<T extends samchon.protocol.IEntity>
 		extends React.Component<{ dataProvider: samchon.protocol.EntityArrayCollection<T> }, {}>
 	{
-		private columns: react_data_grid.Column[];
+		private columns: AdazzleReactDataGrid.Column[];
 
 		private selected_index: number;
 
@@ -27,7 +27,7 @@ namespace bws.packer
 			this.selected_index = 0;
 		}
 
-		protected abstract createColumns(): react_data_grid.Column[];
+		protected abstract createColumns(): AdazzleReactDataGrid.Column[];
 
 		/* ------------------------------------------------------------
 			ACCESSORSS
@@ -61,12 +61,12 @@ namespace bws.packer
 		{
 			setTimeout(this.setState.bind(this, {}), 0);
 		}
-		private handle_row_change(event: react_data_grid.RowUpdateEvent): void
+		private handle_row_change(event: AdazzleReactDataGrid.RowUpdateEvent): void
 		{
 			(Object as any).assign(this.props.dataProvider.at(event.rowIdx), event.updated);
 		}
 
-		private handle_select(event: react_data_grid.CellSelectEvent): void
+		private handle_select(event: any): void
 		{
 			this.selected_index = event.rowIdx;
 		}
