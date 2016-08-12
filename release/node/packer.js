@@ -477,7 +477,7 @@ var boxologic;
             this.box_array = new std.Vector();
             this.total_box_volume = 0.0;
             this.layer_map = new std.HashMap();
-            this.scrap_list = new std.Vector();
+            this.scrap_list = new std.List();
             // CHILDREN ELEMENTS - BOX
             this.box_array.assign(this.instanceArray.size(), null);
             for (var i = 0; i < this.instanceArray.size(); i++) {
@@ -892,7 +892,6 @@ var boxologic;
                             // CREATE A NEW NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
-                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                 }
@@ -944,7 +943,6 @@ var boxologic;
                             // CREATE A NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
-                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                     else {
@@ -1013,7 +1011,6 @@ var boxologic;
                             // CREATE NODE BETWEEN LEFT AND MIN_Z
                             var scrap = new boxologic.Scrap(prev.value.cumx + this.cbox_layout_width, this.scrap_min_z.value.cumz + this.cbox_layout_length);
                             this.scrap_list.insert(this.scrap_min_z, scrap);
-                            this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
                         }
                     }
                 }
