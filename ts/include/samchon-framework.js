@@ -3441,7 +3441,7 @@ var samchon;
              * <ol>
              *	<li>
              *		The fitness function is evaluated for each individual, providing fitness values, which are then
-             *		normalized. Normalization means dividing the fitness value of each individual by the sum of all fitness
+             *		normalized. ization means dividing the fitness value of each individual by the sum of all fitness
              *		values, so that the sum of all resulting fitness values equals 1.
              *	</li>
              *	<li> The population is sorted by descending fitness values. </li>
@@ -3933,34 +3933,40 @@ var samchon;
             StringUtil.numberFormat = function (val, precision) {
                 if (precision === void 0) { precision = 2; }
                 var str = "";
-                if (precision < 0) {
-                    // WHEN numberFormat(12345, -2) COMES
-                    val = Math.round(val * Math.pow(10, precision)); // Math.round(12345 * 10^-2 = 123)
-                    val = val / Math.pow(10, precision); // 123 / 10^-2 = 12300
-                }
-                // CHECK IS NEGATIVE
+                // FIRST, DO ROUND-OFF
+                val = Math.round(val * Math.pow(10, precision));
+                val = val / Math.pow(10, precision);
+                // SEPERATE NUMBERS
                 var is_negative = (val < 0);
-                val = Math.abs(val);
-                // PRECISION
-                if (precision > 0 && val != Math.floor(val)) {
-                    var rounded = val - Math.floor(val);
-                    rounded = Math.round(rounded * Math.pow(10, precision));
-                    str += "." + rounded;
-                }
+                var natural = Math.floor(Math.abs(val));
+                var fraction = Math.abs(val) - Math.floor(Math.abs(val));
                 // NATURAL NUMBER
-                var cipher_count = Math.floor(Math.log(val) / Math.log(10)) + 1;
-                for (var i = 0; i < cipher_count; i++) {
-                    var cipher = Math.floor(val % Math.pow(10, i + 1));
-                    cipher = Math.floor(cipher / Math.pow(10, i));
-                    // PUSH FRONT TO THE STRING
-                    str = cipher + str;
-                    // IS MULTIPLIER OF 3
-                    if ((i + 1) % 3 == 0 && i < cipher_count - 1)
-                        str = "," + str;
+                if (natural == 0)
+                    str = "0";
+                else {
+                    // NOT ZERO
+                    var cipher_count = Math.floor(Math.log(natural) / Math.log(10)) + 1;
+                    for (var i = 0; i <= cipher_count; i++) {
+                        var cipher = Math.floor(natural % Math.pow(10, i + 1));
+                        cipher = Math.floor(cipher / Math.pow(10, i));
+                        if (i == cipher_count && cipher == 0)
+                            continue;
+                        // IS MULTIPLIER OF 3
+                        if (i > 0 && i % 3 == 0)
+                            str = "," + str;
+                        // PUSH FRONT TO THE STRING
+                        str = cipher + str;
+                    }
                 }
                 // NEGATIVE SIGN
                 if (is_negative == true)
                     str = "-" + str;
+                // ADD FRACTION
+                if (precision > 0 && fraction != 0) {
+                    fraction = Math.round(fraction * Math.pow(10, precision));
+                    var zeros = precision - Math.floor(Math.log(fraction) / Math.log(10)) - 1;
+                    str += "." + StringUtil.repeat("0", zeros) + fraction;
+                }
                 return str;
             };
             StringUtil.percentFormat = function (val, precision) {
@@ -4135,88 +4141,243 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var NormalCommunicatorBase = (function () {
-            function NormalCommunicatorBase(communicator) {
-                this.communicator = communicator;
-                this.data = "";
-                this.content_size = -1;
+        var CommunicatorBase = (function () {
+            function CommunicatorBase(listener) {
+                if (listener === void 0) { listener = null; }
+                // BASIC MEMBERS
+                this.listener = listener;
+                this.onClose = null;
+                // BINARY INVOKE MEMBERS
+                this.binary_invoke = null;
+                this.binary_parameters = new std.Queue();
+                this.unhandled_invokes = new std.Deque();
             }
-            NormalCommunicatorBase.prototype.listen_piece = function (piece) {
-                this.data += piece;
-                if (this.content_size == -1)
-                    this.listen_header();
+            /* ---------------------------------------------------------
+                ACCESSORS
+            --------------------------------------------------------- */
+            CommunicatorBase.prototype.is_binary_invoke = function () {
+                return (this.binary_invoke != null);
+            };
+            CommunicatorBase.prototype.replyData = function (invoke) {
+                if (this.listener == null)
+                    this.unhandled_invokes.push_back(invoke);
                 else
-                    this.listen_data();
+                    this.listener.replyData(invoke);
             };
-            NormalCommunicatorBase.prototype.listen_header = function () {
-                if (this.data.length < 8)
-                    return;
-                var buffer = new Buffer(this.data);
-                this.data = this.data.substr(8);
-                this.content_size = buffer.readUInt32BE(0, true) * Math.pow(2, 32);
-                this.content_size += buffer.readUInt32BE(4, true);
-                // LEFT BYTES NOT READ YET
-                if (this.data != "")
-                    this.listen_data();
+            CommunicatorBase.prototype.handle_string = function (str) {
+                // REPLIED DATA IS CLEARY BE AN INVOKE MESSAGE
+                var invoke = new protocol.Invoke();
+                invoke.construct(new samchon.library.XML(str));
+                for (var i = 0; i < invoke.size(); i++) {
+                    var parameter = invoke.at(i);
+                    if (parameter.getType() != "ByteArray")
+                        continue;
+                    if (this.binary_invoke == null)
+                        this.binary_invoke = invoke; // INIT BINARY_INVOKE
+                    this.binary_parameters.push(parameter); // ENROLL TO PARAMETERS' QUEUE
+                }
+                // NO BINARY, THEN REPLY DIRECTLY
+                if (this.binary_invoke == null)
+                    this.replyData(invoke);
             };
-            NormalCommunicatorBase.prototype.listen_data = function () {
-                if (this.data.length < this.content_size)
-                    return;
-                var invoke = new protocol.Invoke(new samchon.library.XML(this.data.substr(0, this.content_size)));
-                this.data = this.data.substr(this.content_size);
-                this.content_size = -1;
-                // SHIFT INVOKE MESSAGE TO COMMUNICATOR
-                this.communicator.replyData(invoke);
-                // LEFT BYTES NOT READ YET
-                if (this.data != "")
-                    this.listen_header();
+            CommunicatorBase.prototype.handle_binary = function (binary) {
+                // FETCH A PARAMETER
+                var parameter = this.binary_parameters.front();
+                {
+                    parameter.setValue(binary);
+                }
+                this.binary_parameters.pop();
+                if (this.binary_parameters.empty() == true) {
+                    // NO BINARY PARAMETER LEFT,
+                    var invoke = this.binary_invoke;
+                    this.binary_invoke = null;
+                    // THEN REPLY
+                    this.replyData(invoke);
+                }
             };
-            return NormalCommunicatorBase;
+            return CommunicatorBase;
         }());
-        protocol.NormalCommunicatorBase = NormalCommunicatorBase;
+        protocol.CommunicatorBase = CommunicatorBase;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
-/// <reference path="../API.ts" />
-/// <reference path="NormalCommunicatorBase.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var NormalCommunicator = (function () {
-            function NormalCommunicator() {
-                this.communicator_base = new protocol.NormalCommunicatorBase(this);
-                this.listener = null;
+        var Communicator = (function (_super) {
+            __extends(Communicator, _super);
+            function Communicator() {
+                _super.apply(this, arguments);
+                // SOCKET AND RECEIVED DATA
+                /**
+                 * @hidden
+                 */
                 this.socket = null;
-                this.onClose = null;
+                /**
+                 * @hidden
+                 */
+                this.header_bytes = null;
+                /**
+                 * @hidden
+                 */
+                this.data = null;
+                /**
+                 * @hidden
+                 */
+                this.data_index = -1;
+                /**
+                 * @hidden
+                 */
+                this.listening = false;
             }
-            NormalCommunicator.prototype.close = function () {
-                // HOW TO CLOSE IT?
-            };
-            NormalCommunicator.prototype.start_listen = function () {
-                this.socket.setEncoding("utf8");
-                this.socket.on("data", this.communicator_base.listen_piece.bind(this));
-            };
+            /* ---------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------- */
+            // using super::constructor
             /**
              * @inheritdoc
              */
-            NormalCommunicator.prototype.replyData = function (invoke) {
-                this.listener.replyData(invoke);
+            Communicator.prototype.close = function () {
+                this.socket.end();
             };
+            /**
+             * @hidden
+             */
+            Communicator.prototype.start_listen = function () {
+                if (this.listening == true)
+                    return;
+                this.listening = true;
+                this.socket.on("data", this.listen_piece.bind(this));
+                this.socket.on("error", this.handle_error.bind(this));
+                this.socket.on("end", this.handle_close.bind(this));
+                this.socket.on("close", this.handle_close.bind(this));
+            };
+            /**
+             * @hidden
+             */
+            Communicator.prototype.handle_error = function () {
+                // WHEN ERROR EXISTS, CLOSE EVENT ALSO BEING DISPATCHED
+                // THUS, ANYTHING NEED TO DO
+            };
+            /**
+             * @hidden
+             */
+            Communicator.prototype.handle_close = function () {
+                if (this.onClose != null)
+                    this.onClose();
+            };
+            /* =========================================================
+                SEND & REPLY DATA
+                    - INVOKE MESSAGE CHAIN
+                    - LISTENERS
+            ============================================================
+                INVOKE MESSAGE CHAIN
+            --------------------------------------------------------- */
             /**
              * @inheritdoc
              */
-            NormalCommunicator.prototype.sendData = function (invoke) {
-                var buffer = new Buffer(8);
+            Communicator.prototype.sendData = function (invoke) {
+                ////////
+                // SEND STRING
+                ////////
+                var str_header = new Buffer(8);
                 var str = invoke.toXML().toString();
                 // WRITE CONTENT SIZE TO HEADER BUFFER
-                buffer.writeUInt32BE(0x00000000, 0, true);
-                buffer.writeUInt32BE(str.length, 4, true);
-                this.socket.write(buffer); // SEND SIZE HEADER
-                this.socket.write(str); // SEND DATA
+                str_header.writeUInt32BE(0, 0);
+                str_header.writeUInt32BE(str.length, 4);
+                this.socket.write(str_header); // SEND SIZE HEADER
+                this.socket.write(str, "binary"); // TEXT IS AFTER
+                for (var i = 0; i < invoke.size(); i++) {
+                    var parameter = invoke.at(i);
+                    if (parameter.getType() != "ByteArray")
+                        continue;
+                    ////////
+                    // SEND BINARY
+                    ////////
+                    var binary_header = new Buffer(8);
+                    var binary = parameter.getValue();
+                    binary_header.writeUInt32BE(0, 0);
+                    binary_header.writeUInt32BE(binary.byteLength, 4);
+                    this.socket.write(binary_header); // SEND SIZE HEADER
+                    this.socket.write(binary); // BINARY IS AFTER
+                }
             };
-            return NormalCommunicator;
-        }());
-        protocol.NormalCommunicator = NormalCommunicator;
+            /* ---------------------------------------------------------
+                LISTENERS
+            --------------------------------------------------------- */
+            /**
+             * @hidden
+             */
+            Communicator.prototype.listen_piece = function (piece) {
+                // DETERMINE WHICH TO LISTEN
+                if (this.data == null)
+                    this.listen_header(piece, 0);
+                else
+                    this.listen_data(piece, 0);
+            };
+            /**
+             * @hidden
+             */
+            Communicator.prototype.listen_header = function (piece, piece_index) {
+                if (this.header_bytes != null) {
+                    // ATTACH RESERVED HEADER BYTE TO PIECE
+                    this.header_bytes.copy(piece, piece_index, // FRONT OF THE PIECE
+                    0, this.header_bytes.byteLength // ALL BYTES FROM this.header_bytes
+                    );
+                    this.header_bytes = null; // TRUNCATE
+                }
+                if (piece_index > piece.byteLength - 8) {
+                    // IF LEFT BYTES ARE UNDER 8, THEN RESERVE THE LEFT BYTES
+                    this.header_bytes = new Buffer(8);
+                    piece.copy(this.header_bytes, 0, // TO THE NEWLY CREATED HEADER
+                    piece_index, piece.byteLength - piece_index // LEFT BYTES
+                    );
+                    return;
+                }
+                // READ CONTENT SIZE AND INIT DATA
+                var content_size = piece.readUInt32BE(piece_index + 4);
+                {
+                    this.data = new Buffer(content_size);
+                    this.data_index = 0;
+                    piece_index += 8;
+                }
+                // IF LEFT BYTES ARE, THEN LISTEN DATA
+                if (piece_index < piece.byteLength)
+                    this.listen_data(piece, piece_index);
+            };
+            /**
+             * @hidden
+             */
+            Communicator.prototype.listen_data = function (piece, piece_index) {
+                // BYTES TO INSERT
+                var inserted_bytes = Math.min(this.data.byteLength - this.data_index, // LEFT BYTES TO FILL
+                piece.byteLength - piece_index // LEFT BYTES IN THE PIECE
+                );
+                // INSERT PIECE TO THE DATA
+                piece.copy(this.data, this.data_index, // COPY TO THE DATA,
+                piece_index, piece_index + inserted_bytes // LEFT BYTES OF THE PIECE OR FILL
+                );
+                this.data_index += inserted_bytes; // INCREASE OFFSET
+                piece_index += inserted_bytes; // INCREASE OFFSET
+                if (this.data_index == this.data.byteLength) {
+                    /////
+                    // THE DATA IS FULLY FILLED
+                    /////
+                    if (this.is_binary_invoke() == false)
+                        this.handle_string(this.data.toString());
+                    else
+                        this.handle_binary(this.data);
+                    // TRUNCATE DATA
+                    this.data = null;
+                    this.data_index = -1;
+                }
+                // THE PIECE IS NOT EXHAUSTED, THEN CONTINUE READING
+                if (piece_index < piece.byteLength)
+                    this.listen_header(piece, piece_index);
+            };
+            return Communicator;
+        }(protocol.CommunicatorBase));
+        protocol.Communicator = Communicator;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
@@ -4242,54 +4403,22 @@ var samchon;
          *
          * @author Jeongho Nam <http://samchon.org>
          */
-        var WebCommunicator = (function () {
-            /**
-             * Initialization Constructor.
-             *
-             * @param communicator Communicator of web-socket.
-             * @param connection Connection driver, a socket for web-socket.
-             */
+        var WebCommunicator = (function (_super) {
+            __extends(WebCommunicator, _super);
             function WebCommunicator() {
-                this.listener = null;
+                _super.apply(this, arguments);
+                // SOCKET MEMBER
+                /**
+                 * Connection driver, a socket for web-socket.
+                 */
                 this.connection = null;
-                this.onClose = null;
             }
-            /**
-             * Listen message from remoate system.
-             */
-            //public listen(): void
-            //{
-            //	this.connection.on("message", this.handle_message.bind(this));
-            //}
+            // using super::constructor
             /**
              * Close the connection.
              */
             WebCommunicator.prototype.close = function () {
                 this.connection.close();
-            };
-            /**
-             * <p> Handle raw-data received from the remote system. </p>
-             *
-             * <p> Queries raw-data received from the remote system. When the raw-data represents an formal {@link Invoke}
-             * message, then it will be sent to the {@link replyData}. </p>
-             *
-             * @param message A raw-data received from the remote system.
-             */
-            WebCommunicator.prototype.handle_message = function (message) {
-                if (message.type == "utf8")
-                    this.replyData(new protocol.Invoke(new samchon.library.XML(message.utf8Data)));
-                else
-                    message.binaryData;
-            };
-            WebCommunicator.prototype.handle_close = function () {
-                if (this.onClose != null)
-                    this.onClose();
-            };
-            /**
-             * @inheritdoc
-             */
-            WebCommunicator.prototype.replyData = function (invoke) {
-                this.listener.replyData(invoke);
             };
             /**
              * @inheritdoc
@@ -4300,9 +4429,71 @@ var samchon;
                     if (invoke.at(i).getType() == "ByteArray")
                         this.connection.sendBytes(invoke.at(i).getValue());
             };
+            /**
+             * <p> Handle raw-data received from the remote system. </p>
+             *
+             * <p> Queries raw-data received from the remote system. When the raw-data represents an formal {@link Invoke}
+             * message, then it will be sent to the {@link replyData}. </p>
+             *
+             * @param message A raw-data received from the remote system.
+             */
+            WebCommunicator.prototype.handle_message = function (message) {
+                // EXCEPTION HANDLING IS REQUIRED
+                //	- BINARY_INVOKE EXISTS, BUT TEXT MESSAGE HAS COME
+                //	- BINARY_INVOKE IS NOT, BUT BINARY MESSAGE HAS COME
+                if (message.type == "utf8")
+                    this.handle_string(message.utf8Data);
+                else
+                    this.handle_binary(message.binaryData);
+            };
+            WebCommunicator.prototype.handle_close = function () {
+                if (this.onClose != null)
+                    this.onClose();
+            };
             return WebCommunicator;
-        }());
+        }(protocol.CommunicatorBase));
         protocol.WebCommunicator = WebCommunicator;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var SharedWorkerCommunicator = (function (_super) {
+            __extends(SharedWorkerCommunicator, _super);
+            function SharedWorkerCommunicator() {
+                _super.apply(this, arguments);
+            }
+            /* ---------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------- */
+            // using super::constructor
+            SharedWorkerCommunicator.prototype.close = function () {
+                this.port.close();
+                if (this.onClose != null)
+                    this.onClose();
+            };
+            /* ---------------------------------------------------------
+                INVOKE MESSAGE I/O
+            --------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            SharedWorkerCommunicator.prototype.sendData = function (invoke) {
+                this.port.postMessage(invoke.toXML().toString());
+                for (var i = 0; i < invoke.size(); i++)
+                    if (invoke.at(i).getType() == "ByteaArray")
+                        this.port.postMessage(invoke.at(i).getValue());
+            };
+            SharedWorkerCommunicator.prototype.handle_message = function (event) {
+                if (this.is_binary_invoke() == false)
+                    this.handle_string(event.data);
+                else
+                    this.handle_binary(event.data);
+            };
+            return SharedWorkerCommunicator;
+        }(protocol.CommunicatorBase));
+        protocol.SharedWorkerCommunicator = SharedWorkerCommunicator;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
@@ -4311,22 +4502,22 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var NormalClientDriver = (function (_super) {
-            __extends(NormalClientDriver, _super);
-            function NormalClientDriver(socket) {
+        var ClientDriver = (function (_super) {
+            __extends(ClientDriver, _super);
+            function ClientDriver(socket) {
                 _super.call(this);
                 this.socket = socket;
             }
             /**
              * @inheritdoc
              */
-            NormalClientDriver.prototype.listen = function (listener) {
+            ClientDriver.prototype.listen = function (listener) {
                 this.listener = listener;
                 this.start_listen();
             };
-            return NormalClientDriver;
-        }(protocol.NormalCommunicator));
-        protocol.NormalClientDriver = NormalClientDriver;
+            return ClientDriver;
+        }(protocol.Communicator));
+        protocol.ClientDriver = ClientDriver;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
@@ -4347,19 +4538,19 @@ var samchon;
                 this.connection = connection;
                 this.path = path;
                 this.session_id = session_id;
-                this.listening_ = false;
+                this.listening = false;
             }
             /**
              * @inheritdoc
              */
             WebClientDriver.prototype.listen = function (listener) {
                 this.listener = listener;
-                if (this.listening_ == false) {
-                    this.listening_ = true;
-                    this.connection.on("message", this.handle_message.bind(this));
-                    this.connection.on("close", this.handle_close.bind(this));
-                    this.connection.on("error", this.handle_close.bind(this));
-                }
+                if (this.listening == true)
+                    return;
+                this.listening = true;
+                this.connection.on("message", this.handle_message.bind(this));
+                this.connection.on("close", this.handle_close.bind(this));
+                this.connection.on("error", this.handle_close.bind(this));
             };
             /**
              * Get requested path.
@@ -4382,98 +4573,99 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var SharedWorkerClientDriver = (function () {
-            function SharedWorkerClientDriver() {
+        var SharedWorkerClientDriver = (function (_super) {
+            __extends(SharedWorkerClientDriver, _super);
+            function SharedWorkerClientDriver(port) {
+                _super.call(this);
+                this.port = port;
+                this.listening = false;
             }
             /**
              * @inheritdoc
              */
             SharedWorkerClientDriver.prototype.listen = function (listener) {
                 this.listener = listener;
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerClientDriver.prototype.close = function () {
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerClientDriver.prototype.sendData = function (invoke) {
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerClientDriver.prototype.replyData = function (invoke) {
-                this.listener.replyData(invoke);
+                if (this.listening == true)
+                    return;
+                this.listening = true;
+                this.port.onmessage = this.handle_message.bind(this);
             };
             return SharedWorkerClientDriver;
-        }());
+        }(protocol.SharedWorkerCommunicator));
         protocol.SharedWorkerClientDriver = SharedWorkerClientDriver;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
+/// <reference path="Communicator.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
         var DedicatedWorker = (function () {
+            /* ---------------------------------------------------------
+                CONSTRUCTORS
+            --------------------------------------------------------- */
             /**
              * Default Constructor.
              */
             function DedicatedWorker() {
-                this.communicator_base = new protocol.NormalCommunicatorBase(this);
-                onmessage = this.handle_message.bind(this);
+                this.communicator_ = new DedicatedWorkerCommunicator(this);
             }
             DedicatedWorker.prototype.sendData = function (invoke) {
-                var buffer = new Buffer(8);
-                var str = invoke.toXML().toString();
-                // WRITE CONTENT SIZE TO HEADER BUFFER
-                buffer.writeUInt32BE(0x00000000, 0, true);
-                buffer.writeUInt32BE(str.length, 4, true);
-                postMessage(buffer, ""); // SEND SIZE HEADER
-                postMessage(str, ""); // SEND DATA
-            };
-            DedicatedWorker.prototype.handle_message = function (event) {
-                this.communicator_base.listen_piece(event.data);
+                postMessage(invoke.toXML().toString(), "");
+                for (var i = 0; i < invoke.size(); i++)
+                    if (invoke.at(i).getType() == "ByteArray")
+                        postMessage(invoke.at(i).getValue(), "");
             };
             return DedicatedWorker;
         }());
         protocol.DedicatedWorker = DedicatedWorker;
+        /**
+         * @hidden
+         */
+        var DedicatedWorkerCommunicator = (function (_super) {
+            __extends(DedicatedWorkerCommunicator, _super);
+            function DedicatedWorkerCommunicator(listener) {
+                _super.call(this, listener);
+                onmessage = this.handle_message.bind(this);
+            }
+            DedicatedWorkerCommunicator.prototype.close = function () {
+                // IMPOSSIBLE, DEDICATED WORKER ONLY CAN BE CLOSED BY ITS PARENT BROWSER
+            };
+            DedicatedWorkerCommunicator.prototype.sendData = function (invoke) {
+                postMessage(invoke.toXML().toString(), "");
+                for (var i = 0; i < invoke.size(); i++)
+                    if (invoke.at(i).getType() == "ByteArray")
+                        postMessage(invoke.at(i).getValue(), "");
+            };
+            DedicatedWorkerCommunicator.prototype.handle_message = function (event) {
+                if (this.is_binary_invoke() == false)
+                    this.handle_string(event.data);
+                else
+                    this.handle_binary(event.data);
+            };
+            return DedicatedWorkerCommunicator;
+        }(protocol.CommunicatorBase));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var DedicatedWorkerConnector = (function () {
+        var DedicatedWorkerConnector = (function (_super) {
+            __extends(DedicatedWorkerConnector, _super);
             function DedicatedWorkerConnector(listener) {
-                this.listener = listener;
-                this.communicator_base = new protocol.NormalCommunicatorBase(this);
+                _super.call(this, listener);
                 this.worker = null;
                 this.onConnect = null;
                 this.onClose = null;
             }
             /**
-             * <p> Connect to dedicated worker. </p>
-             *
-             * <p> Creates a dedictaed worker with specified <i>jsFile (JavaScript file name)</i> and connect to it. After
-             * the creation and connection, callback function {@link onConnect} is called. Listening data from the connected
-             * dedicated worker also begins. Replied messages from the dedicated worker will be converted to {@link Invoke}
-             * classes and will be shifted to the {@link listener listener}'s {@link IProtocol.replyData replyData()} method.
-             * </p>
-             *
-             * <p> If the connection fails immediately, either an event is dispatched or an exception is thrown: an error
-             * event is dispatched if a host was specified, and an exception is thrown if no host was specified. Otherwise,
-             * the status of the connection is reported by an event. If the socket is already connected, the existing
-             * connection is closed first. </p>
-             *
-             * @param jsFile File name of JavaScript. The JavaScript file must have {@link DedicatedWorker} and constructs
-             *				 the class immediately on execution.
+             * @inheritdoc
              */
             DedicatedWorkerConnector.prototype.connect = function (jsFile) {
                 this.worker = new Worker(jsFile);
-                this.worker.addEventListener("message", this.handle_message.bind(this));
+                this.worker.onmessage = this.handle_message.bind(this);
                 if (this.onConnect != null)
                     this.onConnect();
             };
@@ -4481,39 +4673,130 @@ var samchon;
              * @inheritdoc
              */
             DedicatedWorkerConnector.prototype.close = function () {
+                // NOT CONNECTED
                 if (this.worker == null)
                     return;
+                // TERMINATE CONNECTED DEDICATE WORKER
                 this.worker.terminate();
+                // AND NOTIFY THE CLOSING
                 if (this.onClose != null)
                     this.onClose();
             };
-            DedicatedWorkerConnector.prototype.handle_message = function (event) {
-                this.communicator_base.listen_piece(event.data);
+            DedicatedWorkerConnector.prototype.sendData = function (invoke) {
+                this.worker.postMessage(invoke.toXML().toString(), "");
+                for (var i = 0; i < invoke.size(); i++)
+                    if (invoke.at(i).getType() == "ByteArray")
+                        this.worker.postMessage(invoke.at(i).getValue(), "");
             };
-            /**
-             * @inheritdoc
-             */
             DedicatedWorkerConnector.prototype.replyData = function (invoke) {
                 this.listener.replyData(invoke);
             };
-            /**
-             * @inheritdoc
-             */
-            DedicatedWorkerConnector.prototype.sendData = function (invoke) {
-                var buffer = new Buffer(8);
-                var str = invoke.toXML().toString();
-                // WRITE CONTENT SIZE TO HEADER BUFFER
-                buffer.writeUInt32BE(0x00000000, 0, true);
-                buffer.writeUInt32BE(str.length, 4, true);
-                this.worker.postMessage(buffer); // SEND SIZE HEADER
-                this.worker.postMessage(str); // SEND DATA
+            DedicatedWorkerConnector.prototype.handle_message = function (event) {
+                if (this.is_binary_invoke() == false)
+                    this.handle_string(event.data);
+                else
+                    this.handle_binary(event.data);
             };
             return DedicatedWorkerConnector;
-        }());
+        }(protocol.CommunicatorBase));
         protocol.DedicatedWorkerConnector = DedicatedWorkerConnector;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var IEntityGroup;
+        (function (IEntityGroup) {
+            function construct(entity, xml) {
+                entity.clear();
+                /////
+                // MEMBER VARIABLES
+                //	ATOMIC ONLY - STRING, NUMBER AND BOOLEAN
+                /////
+                var property_map = xml.getPropertyMap();
+                var prohibited_names = [];
+                if (entity instanceof std.Vector)
+                    prohibited_names = ["length"];
+                else if (entity instanceof std.List)
+                    prohibited_names = ["size_"];
+                else if (entity instanceof std.Deque)
+                    prohibited_names = ["size_", "capacity_"];
+                for (var it = property_map.begin(); !it.equal_to(property_map.end()); it = it.next()) {
+                    if (entity[it.first] == undefined)
+                        continue;
+                    var prohibited = false;
+                    for (var i = 0; i < prohibited_names.length; i++)
+                        if (prohibited_names[i] == it.first) {
+                            prohibited = true;
+                            break;
+                        }
+                    if (prohibited == true)
+                        continue;
+                    if (typeof entity[it.first] == "string")
+                        entity[it.first] = it.second;
+                    else if (typeof entity[it.first] == "number")
+                        entity[it.first] = Number(it.second);
+                    else if (typeof entity[it.first] == "boolean")
+                        entity[it.first] = (it.second == "true");
+                }
+                ////
+                //CHILDREN
+                ////
+                if (xml.has(entity.CHILD_TAG()) == false)
+                    return;
+                var children = new std.Vector();
+                var xml_list = xml.get(entity.CHILD_TAG());
+                for (var i = 0; i < xml_list.size(); i++) {
+                    var child = entity.createChild(xml_list.at(i));
+                    if (child == null)
+                        continue;
+                    child.construct(xml_list.at(i));
+                    children.push(child);
+                }
+                entity.assign(children.begin(), children.end());
+            }
+            IEntityGroup.construct = construct;
+            function toXML(entity) {
+                var xml = new samchon.library.XML();
+                xml.setTag(entity.TAG());
+                /////
+                // MEMBERS
+                /////
+                var prohibited_names = [];
+                if (entity instanceof std.Vector)
+                    prohibited_names = ["length"];
+                else if (entity instanceof std.List)
+                    prohibited_names = ["size_"];
+                else if (entity instanceof std.Deque)
+                    prohibited_names = ["size_", "capacity_"];
+                for (var key in this)
+                    if (typeof key == "string"
+                        && (typeof entity[key] == "string" || typeof entity[key] == "number" || typeof entity[key] == "boolean")
+                        && entity.hasOwnProperty(key)) {
+                        var prohibited = false;
+                        for (var i = 0; i < prohibited_names.length; i++)
+                            if (prohibited_names[i] == key) {
+                                prohibited = true;
+                                break;
+                            }
+                        if (prohibited == true)
+                            continue;
+                        // ATOMIC
+                        xml.setProperty(key, String(entity[key]));
+                    }
+                /////
+                // CHILDREN
+                /////
+                for (var it = entity.begin(); !it.equal_to(entity.end()); it = it.next())
+                    xml.push(it.value.toXML());
+                return xml;
+            }
+            IEntityGroup.toXML = toXML;
+        })(IEntityGroup = protocol.IEntityGroup || (protocol.IEntityGroup = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
     var protocol;
@@ -4534,30 +4817,7 @@ var samchon;
              * @inheritdoc
              */
             EntityArray.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "length")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    this.push(child);
-                }
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -4609,26 +4869,17 @@ var samchon;
              * @inheritdoc
              */
             EntityArray.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number" || typeof this[key] == "boolean")
-                        && this.hasOwnProperty(key)) {
-                        if (key == "length")
-                            continue;
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityArray;
         }(std.Vector));
         protocol.EntityArray = EntityArray;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
         /**
          * @inheritdoc
          */
@@ -4645,30 +4896,7 @@ var samchon;
              * @inheritdoc
              */
             EntityList.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "size_")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    this.push(child);
-                }
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -4720,24 +4948,17 @@ var samchon;
              * @inheritdoc
              */
             EntityList.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number" || typeof this[key] == "boolean")
-                        && this.hasOwnProperty(key)) {
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityList;
         }(std.List));
         protocol.EntityList = EntityList;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
         /**
          * @inheritdoc
          */
@@ -4754,30 +4975,7 @@ var samchon;
              * @inheritdoc
              */
             EntityDeque.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "size_" || v_it.first == "capacity_")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    this.push(child);
-                }
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -4829,22 +5027,7 @@ var samchon;
              * @inheritdoc
              */
             EntityDeque.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number" || typeof this[key] == "boolean")
-                        && this.hasOwnProperty(key)) {
-                        if (key == "size_" || key == "capacity_")
-                            continue;
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityDeque;
         }(std.Deque));
@@ -4859,7 +5042,6 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        ;
         /**
          * @inheritdoc
          */
@@ -4876,32 +5058,7 @@ var samchon;
              * @inheritdoc
              */
             EntityArrayCollection.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "length")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                var children = [];
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    children.push(child);
-                }
-                this.push.apply(this, children);
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -4953,26 +5110,17 @@ var samchon;
              * @inheritdoc
              */
             EntityArrayCollection.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number")
-                        && this.hasOwnProperty(key)) {
-                        if (key == "length")
-                            continue;
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityArrayCollection;
         }(samchon.collection.ArrayCollection));
         protocol.EntityArrayCollection = EntityArrayCollection;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
         /**
          * @inheritdoc
          */
@@ -4989,32 +5137,7 @@ var samchon;
              * @inheritdoc
              */
             EntityListCollection.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "size_")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                var children = [];
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    children.push(child);
-                }
-                this.push.apply(this, children);
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -5066,26 +5189,17 @@ var samchon;
              * @inheritdoc
              */
             EntityListCollection.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number" || typeof this[key] == "boolean")
-                        && this.hasOwnProperty(key)) {
-                        if (key == "size_")
-                            continue;
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityListCollection;
         }(samchon.collection.ListCollection));
         protocol.EntityListCollection = EntityListCollection;
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
         /**
          * @inheritdoc
          */
@@ -5102,30 +5216,7 @@ var samchon;
              * @inheritdoc
              */
             EntityDequeCollection.prototype.construct = function (xml) {
-                this.clear();
-                // MEMBER VARIABLES; ATOMIC
-                var propertyMap = xml.getPropertyMap();
-                for (var v_it = propertyMap.begin(); v_it.equal_to(propertyMap.end()) != true; v_it = v_it.next()) {
-                    if (v_it.first == "size_" || v_it.first == "capacity_")
-                        continue;
-                    if (typeof this[v_it.first] == "number")
-                        this[v_it.first] = parseFloat(v_it.second);
-                    else if (typeof this[v_it.first] == "string")
-                        this[v_it.first] = v_it.second;
-                    else if (typeof this[v_it.first] == "boolean")
-                        this[v_it.first] = (v_it.second == "true");
-                }
-                //CHILDREN
-                if (xml.has(this.CHILD_TAG()) == false)
-                    return;
-                var xmlList = xml.get(this.CHILD_TAG());
-                for (var i = 0; i < xmlList.size(); i++) {
-                    var child = this.createChild(xmlList.at(i));
-                    if (child == null)
-                        continue;
-                    child.construct(xmlList.at(i));
-                    this.push(child);
-                }
+                protocol.IEntityGroup.construct(this, xml);
             };
             /* ------------------------------------------------------------------
                 GETTERS
@@ -5177,22 +5268,7 @@ var samchon;
              * @inheritdoc
              */
             EntityDequeCollection.prototype.toXML = function () {
-                var xml = new samchon.library.XML();
-                xml.setTag(this.TAG());
-                // MEMBERS
-                for (var key in this)
-                    if (typeof key == "string"
-                        && (typeof this[key] == "string" || typeof this[key] == "number" || typeof this[key] == "boolean")
-                        && this.hasOwnProperty(key)) {
-                        if (key == "size_" || key == "capacity_")
-                            continue;
-                        // ATOMIC
-                        xml.setProperty(key, this[key] + "");
-                    }
-                // CHILDREN
-                for (var it = this.begin(); !it.equal_to(this.end()); it = it.next())
-                    xml.push(it.value.toXML());
-                return xml;
+                return protocol.IEntityGroup.toXML(this);
             };
             return EntityDequeCollection;
         }(samchon.collection.DequeCollection));
@@ -5240,31 +5316,10 @@ var samchon;
                 if (args.length == 0) {
                     this.listener = "";
                 }
-                else if (args.length == 1 && typeof args[0] == "string") {
-                    var listener = args[0];
-                    this.listener = listener;
-                }
-                else if (args.length == 1 && args[0] instanceof samchon.library.XML) {
-                    this.listener = "";
-                    var xml = args[0];
-                    this.construct(xml);
-                }
-                else if (args.length == 1 && args[0] instanceof Invoke) {
-                    var invoke = args[0];
-                    this.listener = invoke.listener;
-                    this.assign(invoke.begin(), invoke.end());
-                }
-                else if (args.length == 3 && args[1] instanceof std.VectorIterator && args[2] instanceof std.VectorIterator) {
-                    var listener = args[0];
-                    var begin = args[1];
-                    var end = args[2];
-                    this.listener = listener;
-                    this.assign(begin, end);
-                }
-                else if (args.length > 1) {
+                else {
                     this.listener = args[0];
                     for (var i = 1; i < args.length; i++)
-                        this.push_back(new protocol.InvokeParameter("", args[i]));
+                        this.push_back(new protocol.InvokeParameter(args[i]));
                 }
             }
             /**
@@ -5337,7 +5392,6 @@ var samchon;
         /**
          * A parameter belongs to an Invoke.
          *
-         * @see Invoke
          * @author Jeongho Nam <http://samchon.org>
          */
         var InvokeParameter = (function (_super) {
@@ -5365,19 +5419,18 @@ var samchon;
                  * <p> Value of the parameter. </p>
                  */
                 this.value = null;
+                // DEFAULT CONSTRUCTOR
                 if (args.length == 0)
                     return;
-                else if (args.length == 2) {
-                    this.name = args[0];
-                    this.value = args[1];
+                // INITIALIZATION CONSTRUCTOR
+                if (args.length == 1) {
+                    this.name = "";
+                    this.setValue(args[0]);
                 }
-                else if (args.length == 3) {
+                else {
                     this.name = args[0];
-                    this.value = args[2];
+                    this.setValue(args[1]);
                 }
-                this.type = typeof this.value;
-                if (this.value instanceof samchon.library.XML)
-                    this.type = "XML";
             }
             /**
              * @inheritdoc
@@ -5388,12 +5441,18 @@ var samchon;
                 if (this.type == "XML")
                     this.value = xml.begin().second.front();
                 else if (this.type == "number")
-                    this.value = parseFloat(xml.getValue());
-                else
+                    this.value = Number(xml.getValue());
+                else if (this.type == "string")
                     this.value = xml.getValue();
             };
             InvokeParameter.prototype.setValue = function (value) {
                 this.value = value;
+                if (value instanceof samchon.library.XML)
+                    this.type = "XML";
+                else if (value instanceof Uint8Array)
+                    this.type = "ByteArray";
+                else
+                    this.type = typeof value;
             };
             /* -------------------------------------------------------------------
                 GETTERS
@@ -5499,8 +5558,8 @@ var samchon;
             InvokeHistory.prototype.getEndTime = function () {
                 return this.endTime;
             };
-            InvokeHistory.prototype.getElapsedTime = function () {
-                return this.endTime.getTime() - this.startTime.getTime();
+            InvokeHistory.prototype.computeElapsedTime = function () {
+                return Math.max(this.endTime.getTime() - this.startTime.getTime(), 1);
             };
             /* ---------------------------------------------------------
                 EXPORTERS
@@ -5527,30 +5586,30 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var NormalServer = (function () {
-            function NormalServer() {
+        var Server = (function () {
+            function Server() {
             }
             /**
              * @inheritdoc
              */
-            NormalServer.prototype.open = function (port) {
+            Server.prototype.open = function (port) {
                 this.server = net.createServer(this.handle_connect.bind(this));
                 this.server.listen(port);
             };
             /**
              * @inheritdoc
              */
-            NormalServer.prototype.close = function () {
+            Server.prototype.close = function () {
                 this.server.close();
             };
-            NormalServer.prototype.handle_connect = function (socket) {
-                var clientDriver = new protocol.NormalClientDriver(socket);
+            Server.prototype.handle_connect = function (socket) {
+                var clientDriver = new protocol.ClientDriver(socket);
                 ;
                 this.addClient(clientDriver);
             };
-            return NormalServer;
+            return Server;
         }());
-        protocol.NormalServer = NormalServer;
+        protocol.Server = Server;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
@@ -5636,11 +5695,18 @@ var samchon;
              * @inheritdoc
              */
             SharedWorkerServer.prototype.open = function () {
+                self.addEventListener("connect", this.handle_connect.bind(this));
             };
             /**
              * @inheritdoc
              */
             SharedWorkerServer.prototype.close = function () {
+                // MAY IMPOSSIBLE
+            };
+            SharedWorkerServer.prototype.handle_connect = function (event) {
+                var port = event.ports[event.ports.length - 1];
+                var driver = new protocol.SharedWorkerClientDriver(port);
+                this.addClient(driver);
             };
             return SharedWorkerServer;
         }());
@@ -5654,14 +5720,14 @@ var samchon;
     var protocol;
     (function (protocol) {
         /**
-         * <p> A substitute {@link NormalServer}. </p>
+         * <p> A substitute {@link Server}. </p>
          *
-         * <p> {@link NormalServerBase} is a substitute class who subrogates {@link NormalServer}'s responsibility. </p>
+         * <p> {@link ServerBase} is a substitute class who subrogates {@link Server}'s responsibility. </p>
          *
          * <p> The easiest way to defning a server class following normal protocol of Samchon Framework is to extending
-         * {@link NormalServer}. However, it is impossible (that is, if the class is already extending another class), you can
-         * instead implement the {@link IServer} interface, create a {@link NormalServerBase} member, and write simple hooks
-         * to route calls into the aggregated {@link NormalServerBase}. </p>
+         * {@link Server}. However, it is impossible (that is, if the class is already extending another class), you can
+         * instead implement the {@link IServer} interface, create a {@link ServerBase} member, and write simple hooks
+         * to route calls into the aggregated {@link ServerBase}. </p>
          *
          * <p> {@link ExternalClientArray} can be a good example using this {@link IServerBase}. </p>
          * <ul>
@@ -5671,9 +5737,9 @@ var samchon;
          * <code>
         class MyServer extends Something implements IServer
         {
-            private server_base: NormalServerBase = new NormalServerBase(this);
+            private server_base: ServerBase = new ServerBase(this);
     
-            public addClient(driver: NormalClientDriver): void
+            public addClient(driver: ClientDriver): void
             {
                 // WHAT TO DO WHEN A CLIENT HAS CONNECTED
             }
@@ -5691,18 +5757,18 @@ var samchon;
          *
          * @author Jeongho Nam <http://samchon.org>
          */
-        var NormalServerBase = (function (_super) {
-            __extends(NormalServerBase, _super);
-            function NormalServerBase(target) {
+        var ServerBase = (function (_super) {
+            __extends(ServerBase, _super);
+            function ServerBase(target) {
                 _super.call(this);
                 this.target = target;
             }
-            NormalServerBase.prototype.addClient = function (driver) {
+            ServerBase.prototype.addClient = function (driver) {
                 this.target.addClient(driver);
             };
-            return NormalServerBase;
-        }(protocol.NormalServer));
-        protocol.NormalServerBase = NormalServerBase;
+            return ServerBase;
+        }(protocol.Server));
+        protocol.ServerBase = ServerBase;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
@@ -5824,19 +5890,18 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var NormalServerConnector = (function (_super) {
-            __extends(NormalServerConnector, _super);
-            function NormalServerConnector(listener) {
-                _super.call(this);
-                this.listener = listener;
+        var ServerConnector = (function (_super) {
+            __extends(ServerConnector, _super);
+            function ServerConnector(listener) {
+                _super.call(this, listener);
             }
             /**
              * @inheritdoc
              */
-            NormalServerConnector.prototype.connect = function (ip, port) {
+            ServerConnector.prototype.connect = function (ip, port) {
                 this.socket = net.connect({ host: ip, port: port }, this.handle_connect.bind(this));
             };
-            NormalServerConnector.prototype.handle_connect = function () {
+            ServerConnector.prototype.handle_connect = function () {
                 var arg = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     arg[_i - 0] = arguments[_i];
@@ -5845,9 +5910,9 @@ var samchon;
                 if (this.onConnect != null)
                     this.onConnect();
             };
-            return NormalServerConnector;
-        }(protocol.NormalCommunicator));
-        protocol.NormalServerConnector = NormalServerConnector;
+            return ServerConnector;
+        }(protocol.Communicator));
+        protocol.ServerConnector = ServerConnector;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
@@ -5865,8 +5930,7 @@ var samchon;
                 CONSTRUCTORS
             ---------------------------------------------------- */
             function WebServerConnector(listener) {
-                _super.call(this);
-                this.listener = listener;
+                _super.call(this, listener);
                 this.browser_socket = null;
                 this.node_client = null;
                 this.onConnect = null;
@@ -5926,7 +5990,10 @@ var samchon;
                     this.onConnect();
             };
             WebServerConnector.prototype.handle_browser_message = function (event) {
-                this.replyData(new protocol.Invoke(new samchon.library.XML(event.data)));
+                if (this.is_binary_invoke() == false)
+                    this.handle_string(event.data);
+                else
+                    this.handle_binary(event.data);
             };
             WebServerConnector.prototype.handle_node_connect = function (connection) {
                 this.connection = connection;
@@ -5945,52 +6012,353 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var SharedWorkerServerConnector = (function () {
+        var SharedWorkerServerConnector = (function (_super) {
+            __extends(SharedWorkerServerConnector, _super);
             /* ---------------------------------------------------------
                 CONSTRUCTORS AND CONNECTORS
             --------------------------------------------------------- */
             function SharedWorkerServerConnector(listener) {
-                this.listener = listener;
-                this.worker = null;
+                _super.call(this, listener);
+                this.onConnect = null;
             }
             SharedWorkerServerConnector.prototype.connect = function (jsFile) {
-                this.worker = new SharedWorker(jsFile);
-                this.worker.port.addEventListener("message", this.handle_message.bind(this));
-                this.worker.port.start();
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerServerConnector.prototype.close = function () {
-                this.worker.port.close();
-            };
-            /* ---------------------------------------------------------
-                INVOKE MESSAGE CHAIN
-            --------------------------------------------------------- */
-            SharedWorkerServerConnector.prototype.handle_message = function (event) {
-                this.communicator_base.listen_piece(event.data);
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerServerConnector.prototype.replyData = function (invoke) {
-                this.listener.replyData(invoke);
-            };
-            /**
-             * @inheritdoc
-             */
-            SharedWorkerServerConnector.prototype.sendData = function (invoke) {
-                this.worker.port.postMessage(invoke.toXML().toString());
-                for (var i = 0; i < invoke.size(); i++)
-                    if (invoke.at(i).getType() == "ByteaArray")
-                        this.worker.port.postMessage(invoke.at(i).getValue());
+                // CONSTRUCT AND START SHARED-WORKER-SERVER
+                var worker = new SharedWorker(jsFile);
+                // LISTEN MESSAGE
+                this.port = worker.port;
+                this.port.onmessage = this.handle_message.bind(this);
+                // NOTIFY THE CONNECTION
+                if (this.onConnect != null)
+                    this.onConnect();
             };
             return SharedWorkerServerConnector;
-        }());
+        }(protocol.SharedWorkerCommunicator));
         protocol.SharedWorkerServerConnector = SharedWorkerServerConnector;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
+/// <reference path="../../API.ts" />
+/// <reference path="../EntityCollection.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var external;
+        (function (external) {
+            /**
+             * <p> An external system driver. </p>
+             *
+             * <p> The {@link ExternalSystem} class represents an external system, connected and interact with this system.
+             * {@link ExternalSystem} takes full charge of network communication with external system have connected.
+             * Replied {@link Invoke messages} from the external system is shifted to and processed in, children elements of this
+             * class, {@link ExternalSystemRole} objects. </p>
+             *
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		  target="_blank">
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		 style="max-width: 100%" />
+             * </a> </p>
+             *
+             * <h4> Bridge & Proxy Pattern </h4>
+             * <p> The {@link ExternalSystem} class can be a <i>bridge</i> for <i>logical proxy</i>. In framework within user,
+             * which {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
+             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
+             *
+             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
+             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
+             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
+             *
+             * <ul>
+             *	<li>
+             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
+             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
+             *	</li>
+             *	<li>
+             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
+             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
+             *		external system.
+             *	</li>
+             *	<li> Those strategy is called <i>Bridge Pattern</i> and <i>Proxy Pattern</i>. </li>
+             * </ul>
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ExternalSystem = (function (_super) {
+                __extends(ExternalSystem, _super);
+                function ExternalSystem(communicator) {
+                    if (communicator === void 0) { communicator = null; }
+                    _super.call(this);
+                    /**
+                     * @hidden
+                     */
+                    this.external_system_array_ = null;
+                    // COLLECTION EVENT ON ARRAY AND DEQUE IS PRE-PROCESS
+                    // FLAG FOR EARSING IS REQUIRED TO ANTICIPATE INFINITE RECURSION
+                    /**
+                     * @hidden
+                     */
+                    this.erasing_ = false;
+                    this.name = "";
+                    this.communicator = communicator;
+                }
+                Object.defineProperty(ExternalSystem.prototype, "communicator", {
+                    /**
+                     * A network communicator with external system.
+                     */
+                    get: function () {
+                        return this.communicator_;
+                    },
+                    /**
+                     * A network communicator with external system.
+                     */
+                    set: function (val) {
+                        // SET MEMBER
+                        this.communicator_ = val;
+                        if (this.communicator_ == null)
+                            return;
+                        // LISTEN DATA IF ~
+                        if (this.communicator.listen != undefined)
+                            this.communicator.listen(this);
+                        // HANDLE CLOSE
+                        this.communicator_.onClose = this.handle_close.bind(this);
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                /**
+                 * Default Destructor.
+                 */
+                ExternalSystem.prototype.destructor = function () {
+                };
+                /* ---------------------------------------------------------
+                    ACCESSORS
+                --------------------------------------------------------- */
+                /**
+                 * Identifier of {@link ExternalSystem} is its {@link name}.
+                 */
+                ExternalSystem.prototype.key = function () {
+                    return this.name;
+                };
+                /**
+                 * Get {@link name}.
+                 */
+                ExternalSystem.prototype.getName = function () {
+                    return this.name;
+                };
+                /* ---------------------------------------------------------
+                    NETWORK & MESSAGE CHAIN
+                --------------------------------------------------------- */
+                ExternalSystem.prototype.close = function () {
+                    this.communicator.close();
+                };
+                /**
+                 * Send {@link Invoke} message to external system.
+                 *
+                 * @param invoke An {@link Invoke} message to send.
+                 */
+                ExternalSystem.prototype.sendData = function (invoke) {
+                    this.communicator.sendData(invoke);
+                };
+                /**
+                 * Handle an {@Invoke} message have received.
+                 *
+                 * @param invoke An {@link Invoke} message have received.
+                 */
+                ExternalSystem.prototype.replyData = function (invoke) {
+                    invoke.apply(this);
+                    for (var i = 0; i < this.size(); i++)
+                        this.at(i).replyData(invoke);
+                };
+                /* ---------------------------------------------------------
+                    EXPORTERS
+                --------------------------------------------------------- */
+                /**
+                 * Tag name of the {@link ExternalSytem} in {@link XML}.
+                 *
+                 * @return <i>system</i>.
+                 */
+                ExternalSystem.prototype.TAG = function () {
+                    return "system";
+                };
+                /**
+                 * Tag name of {@link ExternalSystemRole children elements} belonged to the {@link ExternalSytem} in {@link XML}.
+                 *
+                 * @return <i>role</i>.
+                 */
+                ExternalSystem.prototype.CHILD_TAG = function () {
+                    return "role";
+                };
+                /**
+                 * @inheritdoc
+                 */
+                ExternalSystem.prototype.toXML = function () {
+                    var xml = _super.prototype.toXML.call(this);
+                    xml.erase("erasing_");
+                    return xml;
+                };
+                Object.defineProperty(ExternalSystem.prototype, "external_system_array", {
+                    /**
+                     * @hidden
+                     */
+                    set: function (system_array) {
+                        ////////
+                        // SOME WEIRDO DEVELOPER CLOSES COMMUNICATOR ON CONSTRUCTION LEVEL
+                        // THUS, IT REQUIRES THOSE INSPECTIONS
+                        ////////
+                        // IF THE CONNECTION WAS CLOSED BY USER IN CONSTRUCTION LEVEL
+                        if (this.erasing_ == true && this.external_system_array_ == null) {
+                            // ERASE THIS SYSTEM IMMEDIATELY
+                            std.remove(system_array.begin(), system_array.end(), this);
+                        }
+                        this.external_system_array_ = system_array;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                /**
+                 * @hidden
+                 */
+                ExternalSystem.prototype.handle_close = function () {
+                    if (this.erasing_ == false && this.external_system_array_ != null)
+                        std.remove(this.external_system_array_.begin(), this.external_system_array_.end(), this);
+                };
+                return ExternalSystem;
+            }(protocol.EntityDequeCollection));
+            external.ExternalSystem = ExternalSystem;
+        })(external = protocol.external || (protocol.external = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="../external/ExternalSystem.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var parallel;
+        (function (parallel) {
+            /**
+             * <p> An external parallel system driver. </p>
+             *
+             *
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ParallelSystem = (function (_super) {
+                __extends(ParallelSystem, _super);
+                /* ---------------------------------------------------------
+                    CONSTRUCTORS
+                --------------------------------------------------------- */
+                /**
+                 * Construct from a {@link ParallelSystemArray}.
+                 *
+                 * @param systemArray A manager containing this {@link ParallelSystem} object.
+                 * @param communicator A communicator who takes full charge of network communication with the external
+                 *					   parallel system.
+                 */
+                function ParallelSystem(systemArray, communicator) {
+                    if (communicator === void 0) { communicator = null; }
+                    _super.call(this, communicator);
+                    // BASIC MEMBERS
+                    this.systemArray = systemArray;
+                    // PERFORMANCE INDEX
+                    this.performance = 1.0;
+                    this.progress_list = new std.HashMap();
+                    this.history_list = new std.HashMap();
+                }
+                /* ---------------------------------------------------------
+                    ACCESSORS
+                --------------------------------------------------------- */
+                /**
+                 * Get manager of this object, {@link systemArray}.
+                 *
+                 * @return A manager containing this {@link ParallelSystem} object.
+                 */
+                ParallelSystem.prototype.getSystemArray = function () {
+                    return this.systemArray;
+                };
+                /**
+                 * Get {@link performant performance index}.
+                 *
+                 * A performance index that indicates how much fast the connected parallel system is.
+                 */
+                ParallelSystem.prototype.getPerformance = function () {
+                    return this.performance;
+                };
+                /* ---------------------------------------------------------
+                    MESSAGE CHAIN
+                --------------------------------------------------------- */
+                /**
+                 * Send an {@link Invoke} message with index of segmentation.
+                 *
+                 * @param invoke An invoke message requesting parallel process.
+                 * @param first Initial piece's index in a section.
+                 * @param last Final piece's index in a section. The ranged used is [<i>first</i>, <i>last</i>), which contains
+                 *			   all the pieces' indices between <i>first</i> and <i>last</i>, including the piece pointed by index
+                 *			   <i>first</i>, but not the piece pointed by the index <i>last</i>.
+                 *
+                 * @see {@link ParallelSystemArray.sendPieceData}
+                 */
+                ParallelSystem.prototype.send_piece_data = function (invoke, first, last) {
+                    // DUPLICATE INVOKE AND ATTACH PIECE INFO
+                    var my_invoke = new protocol.Invoke(invoke.getListener());
+                    {
+                        my_invoke.assign(invoke.begin(), invoke.end());
+                        my_invoke.push_back(new protocol.InvokeParameter("piece_first", first));
+                        my_invoke.push_back(new protocol.InvokeParameter("piece_last", last));
+                    }
+                    // REGISTER THE UID AS PROGRESS
+                    var history = new parallel.PRInvokeHistory(my_invoke);
+                    this.progress_list.insert([history.getUID(), history]);
+                    // SEND DATA
+                    this.sendData(my_invoke);
+                };
+                /**
+                 *
+                 *
+                 * @param xml
+                 *
+                 * @see {@link ParallelSystemArray.notify_end}
+                 */
+                ParallelSystem.prototype.report_invoke_history = function (xml) {
+                    ///////
+                    // CONSTRUCT HISTORY
+                    ///////
+                    var history = new parallel.PRInvokeHistory();
+                    history.construct(xml);
+                    var progress_it = this.progress_list.find(history.getUID());
+                    history["first"] = progress_it.second.getFirst();
+                    history["last"] = progress_it.second.computeSize();
+                    // ERASE FROM ORDINARY PROGRESS AND MIGRATE TO THE HISTORY
+                    this.progress_list.erase(progress_it);
+                    this.history_list.insert([history.getUID(), history]);
+                    // NOTIFY TO THE MANAGER, SYSTEM_ARRAY
+                    this.systemArray["notify_end"](history);
+                };
+                return ParallelSystem;
+            }(protocol.external.ExternalSystem));
+            parallel.ParallelSystem = ParallelSystem;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="../parallel/ParallelSystem.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var distributed;
+        (function (distributed) {
+            var DistributedSystem = (function (_super) {
+                __extends(DistributedSystem, _super);
+                function DistributedSystem() {
+                    _super.apply(this, arguments);
+                }
+                return DistributedSystem;
+            }(protocol.parallel.ParallelSystem));
+            distributed.DistributedSystem = DistributedSystem;
+        })(distributed = protocol.distributed || (protocol.distributed = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
 /// <reference path="../EntityCollection.ts" />
 var samchon;
@@ -6016,9 +6384,9 @@ var samchon;
              *	</li>
              * </ul>
              *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
              *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
              *		 style="max-width: 100%" />
              * </a> </p>
              *
@@ -6056,7 +6424,38 @@ var samchon;
                  */
                 function ExternalSystemArray() {
                     _super.call(this);
+                    this.addEventListener("erase", this.handle_system_erase, this);
                 }
+                /**
+                 * @hidden
+                 */
+                ExternalSystemArray.prototype.handle_system_insert = function (event) {
+                    for (var it = event.first; !it.equal_to(event.last); it = it.next())
+                        it.value["external_system_array"] = this;
+                };
+                /**
+                 * @hidden
+                 */
+                ExternalSystemArray.prototype.handle_system_erase = function (event) {
+                    for (var it = event.first; !it.equal_to(event.last); it = it.next()) {
+                        if (it.value["erasing_"] == true)
+                            continue;
+                        it.value["erasing_"] = true;
+                        it.value.close();
+                        it.value.destructor();
+                    }
+                };
+                /**
+                 * @hidden
+                 */
+                ExternalSystemArray.prototype.handle_system_close = function (system) {
+                    if (system["erasing_"] == true)
+                        return;
+                    system["erasing_"] = true;
+                    system.close();
+                    system.destructor();
+                    std.remove(this.begin(), this.end(), system);
+                };
                 /* ---------------------------------------------------------
                     ACCESSORS
                 --------------------------------------------------------- */
@@ -6128,473 +6527,152 @@ var samchon;
                     return "system";
                 };
                 return ExternalSystemArray;
-            }(protocol.EntityDequeCollection));
+            }(protocol.EntityArrayCollection));
             external.ExternalSystemArray = ExternalSystemArray;
         })(external = protocol.external || (protocol.external = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
-/// <reference path="ExternalSystemArray.ts" />
+/// <reference path="../external/ExternalSystemArray.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var external;
-        (function (external) {
+        var parallel;
+        (function (parallel) {
             /**
-             * <p> An {@link ExternalSystemArray} acceepts {@link ExternalSystem external clients} as a {@link IServer server}. </p>
+             * <p> A manager containing {@link ParallelSystem} objects. </p>
              *
-             * <p> {@link ExternalServerArray} is an abstract class contains, manages and accepts external server drivers,
-             * {@link IExternalServer} objects, as a {@link IServer server}. </p>
              *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		 style="max-width: 100%" />
-             * </a> </p>
-             *
-             * <h4> Proxy Pattern </h4>
-             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
-             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
-             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
-             *
-             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
-             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
-             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
-             *
-             * <ul>
-             *	<li>
-             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
-             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
-             *	</li>
-             *	<li>
-             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
-             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
-             *		external system.
-             *	</li>
-             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
-             * </ul>
              *
              * @author Jeongho Nam <http://samchon.org>
              */
-            var ExternalClientArray = (function (_super) {
-                __extends(ExternalClientArray, _super);
-                /* =========================================================
+            var ParallelSystemArray = (function (_super) {
+                __extends(ParallelSystemArray, _super);
+                /* ---------------------------------------------------------
                     CONSTRUCTORS
-                        - MEMBER
-                        - FACTORY METHOD FOR CHILDREN
-                ============================================================
-                    MEMBER
                 --------------------------------------------------------- */
                 /**
                  * Default Constructor.
                  */
-                function ExternalClientArray() {
+                function ParallelSystemArray() {
                     _super.call(this);
-                    this.server_base = null;
+                    this.history_sequence = 0;
                 }
                 /* ---------------------------------------------------------
-                    FACTORY METHOD FOR CHILDREN
+                    MESSAGE CHAIN
                 --------------------------------------------------------- */
-                ExternalClientArray.prototype.addClient = function (driver) {
-                    var system = this.createExternalClient(driver);
-                    if (system == null)
-                        return;
-                    if (system["communicator"] == null) {
-                        system["communicator"] = driver;
-                        driver.listen(system);
+                /**
+                 *
+                 * @param invoke An invoke message requesting parallel process.
+                 * @param size Number of pieces.
+                 */
+                ParallelSystemArray.prototype.sendSegmentData = function (invoke, size) {
+                    this.sendPieceData(invoke, 0, size);
+                };
+                /**
+                 *
+                 *
+                 * @param invoke An invoke message requesting parallel process.
+                 * @param first Initial piece's index in a section.
+                 * @param last Final piece's index in a section. The ranged used is [<i>first</i>, <i>last</i>), which contains
+                 *			   all the pieces' indices between <i>first</i> and <i>last</i>, including the piece pointed by index
+                 *			   <i>first</i>, but not the piece pointed by the index <i>last</i>.
+                 */
+                ParallelSystemArray.prototype.sendPieceData = function (invoke, first, last) {
+                    invoke.push_back(new protocol.InvokeParameter("invoke_history_uid", ++this.history_sequence));
+                    var size = last - first;
+                    for (var i = 0; i < this.size(); i++) {
+                        var system = this.at(i);
+                        var piece_size = (i == this.size() - 1)
+                            ? size - first
+                            : Math.floor(size / this.size() * system.getPerformance());
+                        if (piece_size == 0)
+                            continue;
+                        system["send_piece_data"](invoke, first, first + piece_size);
+                        first += piece_size;
                     }
-                    this.push_back(system);
                 };
                 /**
-                 * This method is deprecated. Don't use and override this.
                  *
-                 * @return nothing.
-                 */
-                ExternalClientArray.prototype.createChild = function (xml) { return null; };
-                /* ---------------------------------------------------------
-                    METHOD OF SERVER
-                --------------------------------------------------------- */
-                /**
-                 * @inheritdoc
-                 */
-                ExternalClientArray.prototype.open = function (port) {
-                    this.server_base = this.createServerBase();
-                    if (this.server_base == null)
-                        return;
-                    this.server_base.open(port);
-                };
-                /**
-                 * @inheritdoc
-                 */
-                ExternalClientArray.prototype.close = function () {
-                    if (this.server_base != null)
-                        this.server_base.close();
-                };
-                return ExternalClientArray;
-            }(external.ExternalSystemArray));
-            external.ExternalClientArray = ExternalClientArray;
-        })(external = protocol.external || (protocol.external = {}));
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../API.ts" />
-/// <reference path="../EntityCollection.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        var external;
-        (function (external) {
-            /**
-             * <p> An external system driver. </p>
-             *
-             * <p> The {@link ExternalSystem} class represents an external system, connected and interact with this system.
-             * {@link ExternalSystem} takes full charge of network communication with external system have connected.
-             * Replied {@link Invoke messages} from the external system is shifted to and processed in, children elements of this
-             * class, {@link ExternalSystemRole} objects. </p>
-             *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		 style="max-width: 100%" />
-             * </a> </p>
-             *
-             * <h4> Bridge & Proxy Pattern </h4>
-             * <p> The {@link ExternalSystem} class can be a <i>bridge</i> for <i>logical proxy</i>. In framework within user,
-             * which {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
-             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
-             *
-             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
-             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
-             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
-             *
-             * <ul>
-             *	<li>
-             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
-             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
-             *	</li>
-             *	<li>
-             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
-             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
-             *		external system.
-             *	</li>
-             *	<li> Those strategy is called <i>Bridge Pattern</i> and <i>Proxy Pattern</i>. </li>
-             * </ul>
-             *
-             * @author Jeongho Nam <http://samchon.org>
-             */
-            var ExternalSystem = (function (_super) {
-                __extends(ExternalSystem, _super);
-                /* ---------------------------------------------------------
-                    CONSTRUCTORS
-                --------------------------------------------------------- */
-                /**
-                 * Default Constructor.
-                 */
-                function ExternalSystem() {
-                    _super.call(this);
-                    this.name = "";
-                    this.communicator = null;
-                }
-                /* ---------------------------------------------------------
-                    ACCESSORS
-                --------------------------------------------------------- */
-                /**
-                 * Identifier of {@link ExternalSystem} is its {@link name}.
-                 */
-                ExternalSystem.prototype.key = function () {
-                    return this.name;
-                };
-                /**
-                 * Get {@link name}.
-                 */
-                ExternalSystem.prototype.getName = function () {
-                    return this.name;
-                };
-                /* ---------------------------------------------------------
-                    NETWORK & MESSAGE CHAIN
-                --------------------------------------------------------- */
-                /**
-                 * Send {@link Invoke} message to external system.
+                 * @param history
                  *
-                 * @param invoke An {@link Invoke} message to send.
-                 */
-                ExternalSystem.prototype.sendData = function (invoke) {
-                    this.communicator.sendData(invoke);
-                };
-                /**
-                 * Handle an {@Invoke} message have received.
+                 * @return Whether the processes with same uid are all fininsed.
                  *
-                 * @param invoke An {@link Invoke} message have received.
+                 * @see {@link ParallelSystem.report_invoke_history}, {@link normalize_performance}
                  */
-                ExternalSystem.prototype.replyData = function (invoke) {
-                    invoke.apply(this);
+                ParallelSystemArray.prototype.notify_end = function (history) {
+                    var uid = history.getUID();
+                    // ALL THE SUB-TASKS ARE DONE?
                     for (var i = 0; i < this.size(); i++)
-                        this.at(i).replyData(invoke);
-                };
-                /* ---------------------------------------------------------
-                    EXPORTERS
-                --------------------------------------------------------- */
-                /**
-                 * Tag name of the {@link ExternalSytem} in {@link XML}.
-                 *
-                 * @return <i>system</i>.
-                 */
-                ExternalSystem.prototype.TAG = function () {
-                    return "system";
-                };
-                /**
-                 * Tag name of {@link ExternalSystemRole children elements} belonged to the {@link ExternalSytem} in {@link XML}.
-                 *
-                 * @return <i>role</i>.
-                 */
-                ExternalSystem.prototype.CHILD_TAG = function () {
-                    return "role";
-                };
-                return ExternalSystem;
-            }(protocol.EntityDequeCollection));
-            external.ExternalSystem = ExternalSystem;
-        })(external = protocol.external || (protocol.external = {}));
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../API.ts" />
-/// <reference path="ExternalSystem.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        var external;
-        (function (external) {
-            /**
-             * <p> An external server driver. </p>
-             *
-             * <p> The {@link ExternalServer} class represents an external server, connected and interact with this system.
-             * {@link ExternalServer} takes full charge of network communication with external server have connected.
-             * Replied {@link Invoke messages} from the external system is shifted to and processed in, children elements of this
-             * class, {@link ExternalSystemRole} objects. </p>
-             *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		 style="max-width: 100%" />
-             * </a> </p>
-             *
-             * <h4> Bridge & Proxy Pattern </h4>
-             * <p> The {@link ExternalSystem} class can be a <i>bridge</i> for <i>logical proxy</i>. In framework within user,
-             * which {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
-             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
-             *
-             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
-             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
-             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
-             *
-             * <ul>
-             *	<li>
-             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
-             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
-             *	</li>
-             *	<li>
-             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
-             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
-             *		external system.
-             *	</li>
-             *	<li> Those strategy is called <i>Bridge Pattern</i> and <i>Proxy Pattern</i>. </li>
-             * </ul>
-             *
-             * @author Jeongho Nam <http://samchon.org>
-             */
-            var ExternalServer = (function (_super) {
-                __extends(ExternalServer, _super);
-                /**
-                 * Default Constructor.
-                 */
-                function ExternalServer() {
-                    _super.call(this);
-                    this.ip = "";
-                    this.port = 0;
-                }
-                /**
-                 * @inheritdoc
-                 */
-                ExternalServer.prototype.connect = function () {
-                    this.communicator = this.createServerConnector();
-                    this.communicator.connect(this.ip, this.port);
+                        if (this.at(i)["progress_list"].has(uid) == true)
+                            return false; // IT'S ON A PROCESS IN SOME SYSTEM.
+                    ///////
+                    // RE-CALCULATE PERFORMANCE INDEX
+                    ///////
+                    // CONSTRUCT BASIC DATA
+                    var system_pairs = new std.Vector();
+                    var performance_index_averge = 0.0;
+                    for (var i = 0; i < this.size(); i++) {
+                        var system = this.at(i);
+                        if (system["history_list"].has(uid) == false)
+                            continue;
+                        var my_history = system["history_list"].get(uid);
+                        var performance_index = my_history.computeSize() / my_history.computeElapsedTime();
+                        system_pairs.push_back(std.make_pair(system, performance_index));
+                        performance_index_averge += performance_index;
+                    }
+                    performance_index_averge /= system_pairs.size();
+                    // RE-CALCULATE PERFORMANCE INDEX
+                    for (var i = 0; i < system_pairs.size(); i++) {
+                        var system = system_pairs.at(i).first;
+                        var new_performance = system_pairs.at(i).second / performance_index_averge;
+                        var ordinary_ratio = void 0;
+                        if (system["history_list"].size() < 2)
+                            ordinary_ratio = .3;
+                        else
+                            ordinary_ratio = Math.min(0.7, 1.0 / (system["history_list"].size() - 1.0));
+                        system["performance"] = (system["performance"] * ordinary_ratio) + (new_performance * (1 - ordinary_ratio));
+                    }
+                    this.normalize_performance();
+                    return true;
                 };
                 /**
-                 * @inheritdoc
+                 * @see {@link ParallelSystem.performance}
                  */
-                ExternalServer.prototype.getIP = function () {
-                    return this.ip;
-                };
-                /**
-                 * @inheritdoc
-                 */
-                ExternalServer.prototype.getPort = function () {
-                    return this.port;
-                };
-                return ExternalServer;
-            }(external.ExternalSystem));
-            external.ExternalServer = ExternalServer;
-        })(external = protocol.external || (protocol.external = {}));
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../API.ts" />
-/// <reference path="ExternalSystemArray.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        var external;
-        (function (external) {
-            /**
-             * <p> An {@link ExternalSystemArray} connecting to {@link IExternalServer external servers} as a <b>client</b>. </p>
-             *
-             * <p> {@link ExternalServerArray} is an abstract class contains, manages and connects to external server drivers,
-             * {@link IExternalServer} objects, as a <b>client</b>. </p>
-             *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		 style="max-width: 100%" />
-             * </a> </p>
-             *
-             * <h4> Proxy Pattern </h4>
-             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
-             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
-             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
-             *
-             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
-             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
-             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
-             *
-             * <ul>
-             *	<li>
-             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
-             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
-             *	</li>
-             *	<li>
-             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
-             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
-             *		external system.
-             *	</li>
-             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
-             * </ul>
-             *
-             * @author Jeongho Nam <http://samchon.org>
-             */
-            var ExternalServerArray = (function (_super) {
-                __extends(ExternalServerArray, _super);
-                /* ---------------------------------------------------------
-                    CONSTRUCTORS
-                --------------------------------------------------------- */
-                /**
-                 * Default Constructor.
-                 */
-                function ExternalServerArray() {
-                    _super.call(this);
-                }
-                /* ---------------------------------------------------------
-                    CONNECTOR's METHOD
-                --------------------------------------------------------- */
-                /**
-                 * @inheritdoc
-                 */
-                ExternalServerArray.prototype.connect = function () {
+                ParallelSystemArray.prototype.normalize_performance = function () {
+                    // CALC AVERAGE
+                    var average = 0.0;
                     for (var i = 0; i < this.size(); i++)
-                        if (this.at(i)["connect"] != undefined)
-                            this.at(i).connect();
+                        average += this.at(i).getPerformance();
+                    average /= this.size();
+                    // DIVIDE FROM THE AVERAGE
+                    for (var i = 0; i < this.size(); i++)
+                        this.at(i)["performance"] /= average;
                 };
-                return ExternalServerArray;
-            }(external.ExternalSystemArray));
-            external.ExternalServerArray = ExternalServerArray;
-        })(external = protocol.external || (protocol.external = {}));
+                return ParallelSystemArray;
+            }(protocol.external.ExternalSystemArray));
+            parallel.ParallelSystemArray = ParallelSystemArray;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
-/// <reference path="ExternalSystemArray.ts" />
+/// <reference path="../parallel/ParallelSystemArray.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var external;
-        (function (external) {
-            /**
-             * <p> An {@link ExternalSystemArray} connecting to {@link IExternalServer external servers} as a <b>client</b> and
-             * accepts {@link ExternalSystem external clients} as a {@link IServer server}. </p>
-             *
-             * <p> {@link ExternalServerArray} is an abstract class contains, manages and connects to external server drivers,
-             * {@link IExternalServer} objects and accepts external client drivers {@link ExternalSyste} obejcts as a
-             * <b>client</b> and a {@link IServer server} at the same time. </p>
-             *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
-             *		 style="max-width: 100%" />
-             * </a> </p>
-             *
-             * <h4> Proxy Pattern </h4>
-             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
-             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
-             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
-             *
-             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
-             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
-             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
-             *
-             * <ul>
-             *	<li>
-             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
-             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
-             *	</li>
-             *	<li>
-             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
-             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
-             *		external system.
-             *	</li>
-             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
-             * </ul>
-             *
-             * @author Jeongho Nam <http://samchon.org>
-             */
-            var ExternalServerClientArray = (function (_super) {
-                __extends(ExternalServerClientArray, _super);
-                /* ---------------------------------------------------------
-                    CONSTRUCTORS
-                --------------------------------------------------------- */
-                /**
-                 * Default Constructor.
-                 */
-                function ExternalServerClientArray() {
-                    _super.call(this);
+        var distributed;
+        (function (distributed) {
+            var DistributedSystemArray = (function (_super) {
+                __extends(DistributedSystemArray, _super);
+                function DistributedSystemArray() {
+                    _super.apply(this, arguments);
                 }
-                /**
-                 * <p> Factory method of a child Entity. </p>
-                 *
-                 * <p> This method is migrated to {@link createExternalServer createExternalServer()}. Override the
-                 * {@link createExternalServer createExternalServer()}. </p>
-                 *
-                 * @param xml An {@link XML} object represents child element, so that can identify the type of child to create.
-                 *
-                 * @return A new child Entity via {@link createExternalServer createExternalServer()}.
-                 */
-                ExternalServerClientArray.prototype.createChild = function (xml) {
-                    return this.createExternalServer(xml);
-                };
-                /* ---------------------------------------------------------
-                    METHOD OF CLIENT
-                --------------------------------------------------------- */
-                /**
-                 * @inheritdoc
-                 */
-                ExternalServerClientArray.prototype.connect = function () {
-                    for (var i = 0; i < this.size(); i++)
-                        if (this.at(i)["connect"] != undefined)
-                            this.at(i).connect();
-                };
-                return ExternalServerClientArray;
-            }(external.ExternalClientArray));
-            external.ExternalServerClientArray = ExternalServerClientArray;
-        })(external = protocol.external || (protocol.external = {}));
+                return DistributedSystemArray;
+            }(protocol.parallel.ParallelSystemArray));
+            distributed.DistributedSystemArray = DistributedSystemArray;
+        })(distributed = protocol.distributed || (protocol.distributed = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -6611,9 +6689,9 @@ var samchon;
              * <p> The {@link ExternalSystemRole} class represents a role, <i>what to do</i> in an {@link ExternalSystem}.
              * Extends this class and writes some methods related to the role. </p>
              *
-             * <p> <a href="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
              *		  target="_blank">
-             *	<img src="http://samchon.github.io/framework/api/ts/assets/images/design/protocol_external_system.png"
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
              *		 style="max-width: 100%" />
              * </a> </p>
              *
@@ -6716,6 +6794,372 @@ var samchon;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
+/// <reference path="../external/ExternalSystemRole.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var distributed;
+        (function (distributed) {
+            var DistributedSystemRole = (function (_super) {
+                __extends(DistributedSystemRole, _super);
+                function DistributedSystemRole() {
+                    _super.apply(this, arguments);
+                }
+                return DistributedSystemRole;
+            }(protocol.external.ExternalSystemRole));
+            distributed.DistributedSystemRole = DistributedSystemRole;
+        })(distributed = protocol.distributed || (protocol.distributed = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="ExternalSystemArray.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var external;
+        (function (external) {
+            /**
+             * <p> An {@link ExternalSystemArray} acceepts {@link ExternalSystem external clients} as a {@link IServer server}. </p>
+             *
+             * <p> {@link ExternalServerArray} is an abstract class contains, manages and accepts external server drivers,
+             * {@link IExternalServer} objects, as a {@link IServer server}. </p>
+             *
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		  target="_blank">
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		 style="max-width: 100%" />
+             * </a> </p>
+             *
+             * <h4> Proxy Pattern </h4>
+             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
+             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
+             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
+             *
+             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
+             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
+             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
+             *
+             * <ul>
+             *	<li>
+             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
+             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
+             *	</li>
+             *	<li>
+             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
+             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
+             *		external system.
+             *	</li>
+             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
+             * </ul>
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ExternalClientArray = (function (_super) {
+                __extends(ExternalClientArray, _super);
+                /* =========================================================
+                    CONSTRUCTORS
+                        - MEMBER
+                        - FACTORY METHOD FOR CHILDREN
+                ============================================================
+                    MEMBER
+                --------------------------------------------------------- */
+                /**
+                 * Default Constructor.
+                 */
+                function ExternalClientArray() {
+                    _super.call(this);
+                    this.server_base = null;
+                }
+                /* ---------------------------------------------------------
+                    FACTORY METHOD FOR CHILDREN
+                --------------------------------------------------------- */
+                ExternalClientArray.prototype.addClient = function (driver) {
+                    var system = this.createExternalClient(driver);
+                    if (system == null)
+                        return;
+                    // SOME IDIOTS FORGOT TO ENROLLING THIS COMMUNICATOR
+                    if (system["communicator"] == null)
+                        system["communicator"] = driver;
+                    this.push_back(system);
+                };
+                /**
+                 * This method is deprecated. Don't use and override this.
+                 *
+                 * @return null.
+                 */
+                ExternalClientArray.prototype.createChild = function (xml) { return null; };
+                /* ---------------------------------------------------------
+                    METHOD OF SERVER
+                --------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                ExternalClientArray.prototype.open = function (port) {
+                    this.server_base = this.createServerBase();
+                    if (this.server_base == null)
+                        return;
+                    this.server_base.open(port);
+                };
+                /**
+                 * @inheritdoc
+                 */
+                ExternalClientArray.prototype.close = function () {
+                    if (this.server_base != null)
+                        this.server_base.close();
+                };
+                return ExternalClientArray;
+            }(external.ExternalSystemArray));
+            external.ExternalClientArray = ExternalClientArray;
+        })(external = protocol.external || (protocol.external = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="ExternalSystem.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var external;
+        (function (external) {
+            /**
+             * <p> An external server driver. </p>
+             *
+             * <p> The {@link ExternalServer} class represents an external server, connected and interact with this system.
+             * {@link ExternalServer} takes full charge of network communication with external server have connected.
+             * Replied {@link Invoke messages} from the external system is shifted to and processed in, children elements of this
+             * class, {@link ExternalSystemRole} objects. </p>
+             *
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		  target="_blank">
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		 style="max-width: 100%" />
+             * </a> </p>
+             *
+             * <h4> Bridge & Proxy Pattern </h4>
+             * <p> The {@link ExternalSystem} class can be a <i>bridge</i> for <i>logical proxy</i>. In framework within user,
+             * which {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
+             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
+             *
+             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
+             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
+             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
+             *
+             * <ul>
+             *	<li>
+             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
+             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
+             *	</li>
+             *	<li>
+             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
+             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
+             *		external system.
+             *	</li>
+             *	<li> Those strategy is called <i>Bridge Pattern</i> and <i>Proxy Pattern</i>. </li>
+             * </ul>
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ExternalServer = (function (_super) {
+                __extends(ExternalServer, _super);
+                /**
+                 * Default Constructor.
+                 */
+                function ExternalServer() {
+                    _super.call(this);
+                    this.ip = "";
+                    this.port = 0;
+                }
+                /**
+                 * @inheritdoc
+                 */
+                ExternalServer.prototype.connect = function () {
+                    this.communicator = this.createServerConnector();
+                    this.communicator.connect(this.ip, this.port);
+                };
+                /**
+                 * @inheritdoc
+                 */
+                ExternalServer.prototype.getIP = function () {
+                    return this.ip;
+                };
+                /**
+                 * @inheritdoc
+                 */
+                ExternalServer.prototype.getPort = function () {
+                    return this.port;
+                };
+                return ExternalServer;
+            }(external.ExternalSystem));
+            external.ExternalServer = ExternalServer;
+        })(external = protocol.external || (protocol.external = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="ExternalSystemArray.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var external;
+        (function (external) {
+            /**
+             * <p> An {@link ExternalSystemArray} connecting to {@link IExternalServer external servers} as a <b>client</b>. </p>
+             *
+             * <p> {@link ExternalServerArray} is an abstract class contains, manages and connects to external server drivers,
+             * {@link IExternalServer} objects, as a <b>client</b>. </p>
+             *
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		  target="_blank">
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		 style="max-width: 100%" />
+             * </a> </p>
+             *
+             * <h4> Proxy Pattern </h4>
+             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
+             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
+             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
+             *
+             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
+             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
+             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
+             *
+             * <ul>
+             *	<li>
+             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
+             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
+             *	</li>
+             *	<li>
+             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
+             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
+             *		external system.
+             *	</li>
+             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
+             * </ul>
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ExternalServerArray = (function (_super) {
+                __extends(ExternalServerArray, _super);
+                /* ---------------------------------------------------------
+                    CONSTRUCTORS
+                --------------------------------------------------------- */
+                /**
+                 * Default Constructor.
+                 */
+                function ExternalServerArray() {
+                    _super.call(this);
+                }
+                /* ---------------------------------------------------------
+                    CONNECTOR's METHOD
+                --------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                ExternalServerArray.prototype.connect = function () {
+                    for (var i = 0; i < this.size(); i++) {
+                        var system = this.at(i);
+                        if (system["connect"] == undefined)
+                            continue;
+                        system.connect();
+                        system["communicator"].onClose = this.handle_system_close.bind(this, system);
+                    }
+                };
+                return ExternalServerArray;
+            }(external.ExternalSystemArray));
+            external.ExternalServerArray = ExternalServerArray;
+        })(external = protocol.external || (protocol.external = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="ExternalSystemArray.ts" />
+var samchon;
+(function (samchon) {
+    var protocol;
+    (function (protocol) {
+        var external;
+        (function (external) {
+            /**
+             * <p> An {@link ExternalSystemArray} connecting to {@link IExternalServer external servers} as a <b>client</b> and
+             * accepts {@link ExternalSystem external clients} as a {@link IServer server}. </p>
+             *
+             * <p> {@link ExternalServerArray} is an abstract class contains, manages and connects to external server drivers,
+             * {@link IExternalServer} objects and accepts external client drivers {@link ExternalSyste} obejcts as a
+             * <b>client</b> and a {@link IServer server} at the same time. </p>
+             *
+             * <p> <a href="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		  target="_blank">
+             *	<img src="http://samchon.github.io/framework/images/design/ts_class_diagram/protocol_external_system.png"
+             *		 style="max-width: 100%" />
+             * </a> </p>
+             *
+             * <h4> Proxy Pattern </h4>
+             * <p> The {@link ExternalSystemArray} class can use <i>Proxy Pattern</i>. In framework within user, which
+             * {@link ExternalSystem external system} is connected with {@link ExternalSystemArray this system}, it's not
+             * important. Only interested in user's perspective is <i>which can be done</i>. </p>
+             *
+             * <p> By using the <i>logical proxy</i>, user dont't need to know which {@link ExternalSystemRole role} is belonged
+             * to which {@link ExternalSystem system}. Just access to a role directly from {@link ExternalSystemArray.getRole}.
+             * Sends and receives {@link Invoke} message via the {@link ExternalSystemRole role}. </p>
+             *
+             * <ul>
+             *	<li>
+             *		{@link ExternalSystemRole} can be accessed from {@link ExternalSystemArray} directly, without inteferring
+             *		from {@link ExternalSystem}, with {@link ExternalSystemArray.getRole}.
+             *	</li>
+             *	<li>
+             *		When you want to send an {@link Invoke} message to the belonged {@link ExternalSystem system}, just call
+             *		{@link ExternalSystemRole.sendData ExternalSystemRole.sendData()}. Then, the message will be sent to the
+             *		external system.
+             *	</li>
+             *	<li> Those strategy is called <i>Proxy Pattern</i>. </li>
+             * </ul>
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var ExternalServerClientArray = (function (_super) {
+                __extends(ExternalServerClientArray, _super);
+                /* ---------------------------------------------------------
+                    CONSTRUCTORS
+                --------------------------------------------------------- */
+                /**
+                 * Default Constructor.
+                 */
+                function ExternalServerClientArray() {
+                    _super.call(this);
+                }
+                /**
+                 * <p> Factory method of a child Entity. </p>
+                 *
+                 * <p> This method is migrated to {@link createExternalServer createExternalServer()}. Override the
+                 * {@link createExternalServer createExternalServer()}. </p>
+                 *
+                 * @param xml An {@link XML} object represents child element, so that can identify the type of child to create.
+                 *
+                 * @return A new child Entity via {@link createExternalServer createExternalServer()}.
+                 */
+                ExternalServerClientArray.prototype.createChild = function (xml) {
+                    return this.createExternalServer(xml);
+                };
+                /* ---------------------------------------------------------
+                    METHOD OF CLIENT
+                --------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                ExternalServerClientArray.prototype.connect = function () {
+                    for (var i = 0; i < this.size(); i++)
+                        if (this.at(i)["connect"] != undefined)
+                            this.at(i).connect();
+                };
+                return ExternalServerClientArray;
+            }(external.ExternalClientArray));
+            external.ExternalServerClientArray = ExternalServerClientArray;
+        })(external = protocol.external || (protocol.external = {}));
+    })(protocol = samchon.protocol || (samchon.protocol = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
 /// <reference path="../external/ExternalSystem.ts" />
 var samchon;
 (function (samchon) {
@@ -6759,8 +7203,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var external;
+        (function (external) {
             var MediatorSystem = (function (_super) {
                 __extends(MediatorSystem, _super);
                 /* ---------------------------------------------------------
@@ -6771,6 +7215,9 @@ var samchon;
                     this.system_array = systemArray;
                     this.progress_list = new std.HashMap();
                 }
+                /**
+                 * @hidden
+                 */
                 MediatorSystem.prototype.createChild = function (xml) {
                     return null;
                 };
@@ -6789,16 +7236,16 @@ var samchon;
                 };
                 return MediatorSystem;
             }(protocol.slave.SlaveSystem));
-            master.MediatorSystem = MediatorSystem;
-        })(master = protocol.master || (protocol.master = {}));
+            external.MediatorSystem = MediatorSystem;
+        })(external = protocol.external || (protocol.external = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var external;
+        (function (external) {
             var MediatorServer = (function (_super) {
                 __extends(MediatorServer, _super);
                 /* ---------------------------------------------------------
@@ -6808,6 +7255,9 @@ var samchon;
                     _super.call(this, systemArray);
                     this.port = port;
                 }
+                MediatorServer.prototype.createServerBase = function () {
+                    return new protocol.ServerBase(this);
+                };
                 MediatorServer.prototype.addClient = function (driver) {
                     this.communicator = driver;
                     driver.listen(this);
@@ -6829,19 +7279,8 @@ var samchon;
                         this.server_base.close();
                 };
                 return MediatorServer;
-            }(master.MediatorSystem));
-            master.MediatorServer = MediatorServer;
-            var MediatorNormalServer = (function (_super) {
-                __extends(MediatorNormalServer, _super);
-                function MediatorNormalServer() {
-                    _super.apply(this, arguments);
-                }
-                MediatorNormalServer.prototype.createServerBase = function () {
-                    return new protocol.NormalServerBase(this);
-                };
-                return MediatorNormalServer;
-            }(MediatorServer));
-            master.MediatorNormalServer = MediatorNormalServer;
+            }(external.MediatorSystem));
+            external.MediatorServer = MediatorServer;
             var MediatorWebServer = (function (_super) {
                 __extends(MediatorWebServer, _super);
                 function MediatorWebServer() {
@@ -6852,7 +7291,7 @@ var samchon;
                 };
                 return MediatorWebServer;
             }(MediatorServer));
-            master.MediatorWebServer = MediatorWebServer;
+            external.MediatorWebServer = MediatorWebServer;
             var MediatorSharedWorkerServer = (function (_super) {
                 __extends(MediatorSharedWorkerServer, _super);
                 function MediatorSharedWorkerServer() {
@@ -6863,16 +7302,16 @@ var samchon;
                 };
                 return MediatorSharedWorkerServer;
             }(MediatorServer));
-            master.MediatorSharedWorkerServer = MediatorSharedWorkerServer;
-        })(master = protocol.master || (protocol.master = {}));
+            external.MediatorSharedWorkerServer = MediatorSharedWorkerServer;
+        })(external = protocol.external || (protocol.external = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var external;
+        (function (external) {
             var MediatorClient = (function (_super) {
                 __extends(MediatorClient, _super);
                 /* ---------------------------------------------------------
@@ -6883,6 +7322,9 @@ var samchon;
                     this.ip = ip;
                     this.port = port;
                 }
+                MediatorClient.prototype.createServerConnector = function () {
+                    return new protocol.ServerConnector(this);
+                };
                 /* ---------------------------------------------------------
                     ACCESSORS
                 --------------------------------------------------------- */
@@ -6905,42 +7347,37 @@ var samchon;
                     this.communicator.connect(this.ip, this.port);
                 };
                 return MediatorClient;
-            }(master.MediatorSystem));
-            master.MediatorClient = MediatorClient;
-            var MediatorNormalClient = (function (_super) {
-                __extends(MediatorNormalClient, _super);
-                function MediatorNormalClient() {
-                    _super.apply(this, arguments);
-                }
-                MediatorNormalClient.prototype.createServerConnector = function () {
-                    return new protocol.NormalServerConnector(this);
-                };
-                return MediatorNormalClient;
-            }(MediatorClient));
-            master.MediatorNormalClient = MediatorNormalClient;
+            }(external.MediatorSystem));
+            external.MediatorClient = MediatorClient;
             var MediatorWebClient = (function (_super) {
                 __extends(MediatorWebClient, _super);
                 function MediatorWebClient() {
                     _super.apply(this, arguments);
                 }
+                /**
+                 * @inheritdoc
+                 */
                 MediatorWebClient.prototype.createServerConnector = function () {
                     return new protocol.WebServerConnector(this);
                 };
                 return MediatorWebClient;
             }(MediatorClient));
-            master.MediatorWebClient = MediatorWebClient;
+            external.MediatorWebClient = MediatorWebClient;
             var MediatorSharedWorkerClient = (function (_super) {
                 __extends(MediatorSharedWorkerClient, _super);
                 function MediatorSharedWorkerClient() {
                     _super.apply(this, arguments);
                 }
+                /**
+                 * @inheritdoc
+                 */
                 MediatorSharedWorkerClient.prototype.createServerConnector = function () {
                     return new protocol.SharedWorkerServerConnector(this);
                 };
                 return MediatorSharedWorkerClient;
             }(MediatorClient));
-            master.MediatorSharedWorkerClient = MediatorSharedWorkerClient;
-        })(master = protocol.master || (protocol.master = {}));
+            external.MediatorSharedWorkerClient = MediatorSharedWorkerClient;
+        })(external = protocol.external || (protocol.external = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -6949,119 +7386,38 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var PRInvokeHistory = (function (_super) {
                 __extends(PRInvokeHistory, _super);
                 function PRInvokeHistory(invoke) {
                     if (invoke === void 0) { invoke = null; }
                     _super.call(this, invoke);
                     if (invoke == null) {
-                        this.index = 0;
-                        this.size = 0;
+                        this.first = 0;
+                        this.last = 0;
                     }
                     else {
-                        this.index = invoke.get("piece_index").getValue();
-                        this.size = invoke.get("piece_size").getValue();
+                        this.first = invoke.get("piece_first").getValue();
+                        this.last = invoke.get("piece_last").getValue();
                     }
                 }
-                PRInvokeHistory.prototype.getIndex = function () {
-                    return this.index;
+                PRInvokeHistory.prototype.getFirst = function () {
+                    return this.first;
                 };
-                PRInvokeHistory.prototype.getSize = function () {
-                    return this.size;
+                PRInvokeHistory.prototype.getLast = function () {
+                    return this.last;
+                };
+                /**
+                 * Compute number of allocated pieces.
+                 */
+                PRInvokeHistory.prototype.computeSize = function () {
+                    return this.last;
                 };
                 return PRInvokeHistory;
             }(protocol.InvokeHistory));
-            master.PRInvokeHistory = PRInvokeHistory;
-        })(master = protocol.master || (protocol.master = {}));
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../API.ts" />
-/// <reference path="../external/ExternalSystemArray.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        var master;
-        (function (master) {
-            var ParallelSystemArray = (function (_super) {
-                __extends(ParallelSystemArray, _super);
-                /* ---------------------------------------------------------
-                    CONSTRUCTORS
-                --------------------------------------------------------- */
-                /**
-                 * Default Constructor.
-                 */
-                function ParallelSystemArray() {
-                    _super.call(this);
-                    this.history_sequence = 0;
-                }
-                /* ---------------------------------------------------------
-                    MESSAGE CHAIN
-                --------------------------------------------------------- */
-                ParallelSystemArray.prototype.sendSegmentData = function (invoke, size) {
-                    this.sendPieceData(invoke, 0, size);
-                };
-                ParallelSystemArray.prototype.sendPieceData = function (invoke, index, size) {
-                    invoke.push_back(new protocol.InvokeParameter("invoke_history_uid", ++this.history_sequence));
-                    for (var i = 0; i < this.size(); i++) {
-                        var system = this.at(i);
-                        var piece_size = (i == this.size() - 1)
-                            ? size - index
-                            : Math.floor(size / this.size() * system.getPerformance());
-                        if (piece_size == 0)
-                            continue;
-                        system["send_piece_data"](invoke, index, piece_size);
-                        index += piece_size;
-                    }
-                };
-                ParallelSystemArray.prototype.notify_end = function (history) {
-                    var uid = history.getUID();
-                    // ALL THE SUB-TASKS ARE DONE?
-                    for (var i = 0; i < this.size(); i++)
-                        if (this.at(i)["progress_list"].has(uid) == false)
-                            return false;
-                    ///////
-                    // RE-CALCULATE PERFORMANCE INDEX
-                    ///////
-                    // CONSTRUCT BASIC DATA
-                    var system_pairs = new std.Vector();
-                    var performance_index_avergae = 0.0;
-                    for (var i = 0; i < this.size(); i++) {
-                        var system = this.at(i);
-                        if (system["history_list"].has(uid) == false)
-                            continue;
-                        var my_history = system["history_list"].get(uid);
-                        var performance_index = my_history.getSize() / my_history.getElapsedTime();
-                        system_pairs.push_back(std.make_pair(system, performance_index));
-                        performance_index_avergae += performance_index;
-                    }
-                    performance_index_avergae /= system_pairs.size();
-                    // RE-CALCULATE PERFORMANCE INDEX
-                    for (var i = 0; i < system_pairs.size(); i++) {
-                        var system = system_pairs.at(i).first;
-                        var new_performance = system_pairs.at(i).second / performance_index_avergae;
-                        var ordinary_ratio = Math.max(0.3, 1.0 / (system["history_list"].size() - 1.0));
-                        system["performance"] = (system["performance"] * ordinary_ratio) + (new_performance * (1 - ordinary_ratio));
-                    }
-                    this.normalize_performance();
-                    return true;
-                };
-                ParallelSystemArray.prototype.normalize_performance = function () {
-                    // CALC AVERAGE
-                    var average = 0.0;
-                    for (var i = 0; i < this.size(); i++)
-                        average += this.at(i)["performance"];
-                    average /= this.size();
-                    // DIVIDE FROM THE AVERAGE
-                    for (var i = 0; i < this.size(); i++)
-                        this.at(i)["performance"] /= average;
-                };
-                return ParallelSystemArray;
-            }(protocol.external.ExternalSystemArray));
-            master.ParallelSystemArray = ParallelSystemArray;
-        })(master = protocol.master || (protocol.master = {}));
+            parallel.PRInvokeHistory = PRInvokeHistory;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7070,8 +7426,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelClientArray = (function (_super) {
                 __extends(ParallelClientArray, _super);
                 /* =========================================================
@@ -7094,10 +7450,8 @@ var samchon;
                     var system = this.createExternalClient(driver);
                     if (system == null)
                         return;
-                    if (system["communicator"] == null) {
+                    if (system["communicator"] == null)
                         system["communicator"] = driver;
-                        driver.listen(system);
-                    }
                     this.push_back(system);
                 };
                 ParallelClientArray.prototype.createChild = function (xml) { return null; };
@@ -7121,9 +7475,9 @@ var samchon;
                         this.server_base.close();
                 };
                 return ParallelClientArray;
-            }(master.ParallelSystemArray));
-            master.ParallelClientArray = ParallelClientArray;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystemArray));
+            parallel.ParallelClientArray = ParallelClientArray;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7132,8 +7486,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelSystemArrayMediator = (function (_super) {
                 __extends(ParallelSystemArrayMediator, _super);
                 /* ---------------------------------------------------------
@@ -7157,24 +7511,25 @@ var samchon;
                 --------------------------------------------------------- */
                 ParallelSystemArrayMediator.prototype.sendData = function (invoke) {
                     if (invoke.has("invoke_history_uid") == true) {
-                        var piece_index = invoke.get("piece_index").getValue();
-                        var piece_size = invoke.get("piece_size").getValue();
+                        var first = invoke.get("piece_first").getValue();
+                        var last = invoke.get("piece_last").getValue();
                         invoke.erase(invoke.end().advance(-2), invoke.end());
-                        this.sendPieceData(invoke, piece_index, piece_size);
+                        this.sendPieceData(invoke, first, last);
                     }
                     else
                         _super.prototype.sendData.call(this, invoke);
                 };
-                ParallelSystemArrayMediator.prototype.sendPieceData = function (invoke, index, size) {
+                ParallelSystemArrayMediator.prototype.sendPieceData = function (invoke, first, last) {
+                    var size = last - first;
                     for (var i = 0; i < this.size(); i++) {
                         var system = this.at(i);
                         var piece_size = (i == this.size() - 1)
-                            ? size - index
+                            ? size - first
                             : Math.floor(size / this.size() * system.getPerformance());
                         if (piece_size == 0)
                             continue;
-                        system["send_piece_data"](invoke, index, piece_size);
-                        index += piece_size;
+                        system["send_piece_data"](invoke, first, first + piece_size);
+                        first += piece_size;
                     }
                 };
                 ParallelSystemArrayMediator.prototype.notify_end = function (history) {
@@ -7184,9 +7539,9 @@ var samchon;
                     return ret;
                 };
                 return ParallelSystemArrayMediator;
-            }(master.ParallelSystemArray));
-            master.ParallelSystemArrayMediator = ParallelSystemArrayMediator;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystemArray));
+            parallel.ParallelSystemArrayMediator = ParallelSystemArrayMediator;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7195,8 +7550,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelClientArrayMediator = (function (_super) {
                 __extends(ParallelClientArrayMediator, _super);
                 /* =========================================================
@@ -7247,90 +7602,9 @@ var samchon;
                         this.server_base.close();
                 };
                 return ParallelClientArrayMediator;
-            }(master.ParallelSystemArrayMediator));
-            master.ParallelClientArrayMediator = ParallelClientArrayMediator;
-        })(master = protocol.master || (protocol.master = {}));
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../../API.ts" />
-/// <reference path="../external/ExternalSystem.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        var master;
-        (function (master) {
-            var ParallelSystem = (function (_super) {
-                __extends(ParallelSystem, _super);
-                /* ---------------------------------------------------------
-                    CONSTRUCTORS
-                --------------------------------------------------------- */
-                /**
-                 * Construct from a {@link ParallelSystemArray}
-                 *
-                 * @param systemArray
-                 */
-                function ParallelSystem(systemArray) {
-                    _super.call(this);
-                    this.systemArray = systemArray;
-                    this.performance = 1.0;
-                    this.progress_list = new std.HashMap();
-                    this.history_list = new std.HashMap();
-                }
-                /* ---------------------------------------------------------
-                    ACCESSORS
-                --------------------------------------------------------- */
-                /**
-                 * Get parent {@link systemArray}.
-                 */
-                ParallelSystem.prototype.getSystemArray = function () {
-                    return this.systemArray;
-                };
-                /**
-                 * Get {@link performant performance index}.
-                 */
-                ParallelSystem.prototype.getPerformance = function () {
-                    return this.performance;
-                };
-                /* ---------------------------------------------------------
-                    MESSAGE CHAIN
-                --------------------------------------------------------- */
-                ParallelSystem.prototype.send_piece_data = function (invoke, index, size) {
-                    // DUPLICATE INVOKE AND ATTACH PIECE INFO
-                    var my_invoke = new protocol.Invoke(invoke.getListener());
-                    {
-                        my_invoke.assign(invoke.begin(), invoke.end());
-                        my_invoke.push_back(new protocol.InvokeParameter("piece_index", index));
-                        my_invoke.push_back(new protocol.InvokeParameter("piece_size", size));
-                    }
-                    // REGISTER THE UID AS PROGRESS
-                    var history = new master.PRInvokeHistory(my_invoke);
-                    this.progress_list.insert([history.getUID(), history]);
-                    // SEND DATA
-                    this.sendData(my_invoke);
-                };
-                ParallelSystem.prototype.replyData = function (invoke) {
-                    _super.prototype.replyData.call(this, invoke);
-                };
-                ParallelSystem.prototype.report_invoke_history = function (xml) {
-                    ///////
-                    // CONSTRUCT HISTORY
-                    ///////
-                    var history = new master.PRInvokeHistory();
-                    history.construct(xml);
-                    var progress_it = this.progress_list.find(history.getUID());
-                    history["piece_index"] = progress_it.second.getIndex();
-                    history["piece_size"] = progress_it.second.getSize();
-                    // ERASE FROM ORDINARY PROGRESS AND MIGRATE TO THE HISTORY
-                    this.progress_list.erase(progress_it);
-                    this.history_list.insert([history.getUID(), history]);
-                    // NOTIFY TO THE MANAGER, SYSTEM_ARRAY
-                    this.systemArray["notify_end"](history);
-                };
-                return ParallelSystem;
-            }(protocol.external.ExternalSystem));
-            master.ParallelSystem = ParallelSystem;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystemArrayMediator));
+            parallel.ParallelClientArrayMediator = ParallelClientArrayMediator;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7339,8 +7613,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelServer = (function (_super) {
                 __extends(ParallelServer, _super);
                 function ParallelServer(systemArray) {
@@ -7361,9 +7635,9 @@ var samchon;
                     return this.port;
                 };
                 return ParallelServer;
-            }(master.ParallelSystem));
-            master.ParallelServer = ParallelServer;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystem));
+            parallel.ParallelServer = ParallelServer;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7372,8 +7646,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelServerArray = (function (_super) {
                 __extends(ParallelServerArray, _super);
                 /* ---------------------------------------------------------
@@ -7391,9 +7665,9 @@ var samchon;
                             this.at(i).connect();
                 };
                 return ParallelServerArray;
-            }(master.ParallelSystemArray));
-            master.ParallelServerArray = ParallelServerArray;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystemArray));
+            parallel.ParallelServerArray = ParallelServerArray;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7402,8 +7676,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelServerArrayMediator = (function (_super) {
                 __extends(ParallelServerArrayMediator, _super);
                 /* ---------------------------------------------------------
@@ -7422,9 +7696,9 @@ var samchon;
                     this.start_mediator();
                 };
                 return ParallelServerArrayMediator;
-            }(master.ParallelSystemArrayMediator));
-            master.ParallelServerArrayMediator = ParallelServerArrayMediator;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelSystemArrayMediator));
+            parallel.ParallelServerArrayMediator = ParallelServerArrayMediator;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7433,8 +7707,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelServerClientArray = (function (_super) {
                 __extends(ParallelServerClientArray, _super);
                 /* ---------------------------------------------------------
@@ -7458,9 +7732,9 @@ var samchon;
                             this.at(i).connect();
                 };
                 return ParallelServerClientArray;
-            }(master.ParallelClientArray));
-            master.ParallelServerClientArray = ParallelServerClientArray;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelClientArray));
+            parallel.ParallelServerClientArray = ParallelServerClientArray;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
@@ -7469,8 +7743,8 @@ var samchon;
 (function (samchon) {
     var protocol;
     (function (protocol) {
-        var master;
-        (function (master) {
+        var parallel;
+        (function (parallel) {
             var ParallelServerClientArrayMediator = (function (_super) {
                 __extends(ParallelServerClientArrayMediator, _super);
                 /* ---------------------------------------------------------
@@ -7497,9 +7771,9 @@ var samchon;
                             this.at(i).connect();
                 };
                 return ParallelServerClientArrayMediator;
-            }(master.ParallelClientArrayMediator));
-            master.ParallelServerClientArrayMediator = ParallelServerClientArrayMediator;
-        })(master = protocol.master || (protocol.master = {}));
+            }(parallel.ParallelClientArrayMediator));
+            parallel.ParallelServerClientArrayMediator = ParallelServerClientArrayMediator;
+        })(parallel = protocol.parallel || (protocol.parallel = {}));
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../APi.ts" />
@@ -7514,7 +7788,7 @@ var samchon;
                     CONSTRUCTORS
                 ------------------------------------------------------------------ */
                 /**
-                 * Default Constructor.
+                 * Construct from an User and WebClientDriver.
                  */
                 function Client(user, driver) {
                     this.user = user;
@@ -7562,6 +7836,7 @@ var samchon;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
+/// <reference path="../Server.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
@@ -7578,6 +7853,7 @@ var samchon;
                  */
                 function Server() {
                     _super.call(this);
+                    // INITIALIZE USER MAPS
                     this.session_map = new std.HashMap();
                     this.account_map = new std.HashMap();
                 }
@@ -7638,8 +7914,7 @@ var samchon;
                     ///////
                     // START COMMUNICATION
                     ///////
-                    if (driver["listening_"] == false)
-                        driver.listen(client);
+                    // CLOSE HANDLER
                     driver.onClose = function () {
                         // WHEN DISCONNECTED, THEN ERASE THE CLIENT.
                         // OF COURSE, IT CAN CAUSE DELETION OF THE RELATED USER.
@@ -7648,6 +7923,10 @@ var samchon;
                         if (client["service"] != null)
                             client["service"].destructor();
                     };
+                    // PRECAUTION FOR IDIOTS
+                    client["driver"] = driver;
+                    if (client["listening_"] == false)
+                        driver.listen(client);
                 };
                 Server.prototype.erase_user = function (user) {
                     // USER DOESN'T BE ERASED AT THAT TIME
@@ -7730,7 +8009,7 @@ var samchon;
                     CONSTRUCTORS
                 --------------------------------------------------------- */
                 /**
-                 * Default Constructor.
+                 * Construct from a Server.
                  */
                 function User(server) {
                     _super.call(this);

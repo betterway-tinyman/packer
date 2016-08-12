@@ -107,7 +107,7 @@ namespace boxologic
 		 * @see Scrapped
 		 * @see scrap_min_z
 		 */
-		private scrap_list: std.List<Scrap>;
+		private scrap_list: std.base.ILinearContainer<Scrap>;
 
 		/**
 		 * The topology {@link Scrapped}, the edge of the current layer under construction.
@@ -115,7 +115,7 @@ namespace boxologic
 		 * @see Scrapped
 		 * @see scrap_list
 		 */
-		private scrap_min_z: std.ListIterator<Scrap>;
+		private scrap_min_z: std.Iterator<Scrap>;
 
 		/* -----------------------------------------------------------
 			VARIABLES FOR ITERATIONS
@@ -299,7 +299,7 @@ namespace boxologic
 			this.total_box_volume = 0.0;
 
 			this.layer_map = new std.HashMap<number, number>();
-			this.scrap_list = new std.List<Scrap>();
+			this.scrap_list = new std.Vector<Scrap>();
 
 			// CHILDREN ELEMENTS - BOX
 			this.box_array.assign(this.instanceArray.size(), null);
@@ -859,6 +859,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 				}
@@ -927,6 +928,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 					else
@@ -1020,6 +1022,7 @@ namespace boxologic
 								this.scrap_min_z.value.cumz + this.cbox_layout_length
 							);
 							this.scrap_list.insert(this.scrap_min_z, scrap);
+							this.scrap_min_z = this.scrap_min_z.next(); // IF NOT LIST
 						}
 					}
 				}
