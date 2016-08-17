@@ -9217,7 +9217,7 @@ declare namespace std {
          */
         erase(first: VectorReverseIterator<T>, last: VectorReverseIterator<T>): VectorReverseIterator<T>;
         /**
-         * @hiddde
+         * @hidden
          */
         protected erase_by_range(first: VectorIterator<T>, last: VectorIterator<T>): VectorIterator<T>;
         /**

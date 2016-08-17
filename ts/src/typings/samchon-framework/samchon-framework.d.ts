@@ -3578,7 +3578,6 @@ declare namespace samchon.protocol {
          *
          * @return A new child Entity belongs to EntityArray.
          */
-        createChild(xml: library.XML): T;
         /**
          * <p> Get iterator to element. </p>
          *
@@ -3660,9 +3659,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -3706,9 +3711,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -3752,9 +3763,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -3805,9 +3822,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -3851,9 +3874,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -3897,9 +3926,15 @@ declare namespace samchon.protocol {
          */
         construct(xml: library.XML): void;
         /**
-         * @inheritdoc
+         * <p> Factory method of a child Entity. </p>
+         *
+         * <p> EntityArray::createChild() is a factory method creating a new child Entity which is belonged
+         * to the EntityArray. This method is called by EntityArray::construct(). The children construction
+         * methods Entity::construct() will be called by abstract method of the EntityArray::construct(). </p>
+         *
+         * @return A new child Entity belongs to EntityArray.
          */
-        abstract createChild(xml: library.XML): T;
+        protected abstract createChild(xml: library.XML): T;
         /**
          * @inheritdoc
          */
@@ -4235,7 +4270,7 @@ declare namespace samchon.protocol {
         /**
          * @inheritdoc
          */
-        createChild(xml: library.XML): InvokeParameter;
+        protected createChild(xml: library.XML): InvokeParameter;
         /**
          * Get listener.
          */
@@ -5463,7 +5498,7 @@ declare namespace samchon.protocol.external {
          *
          * @return null.
          */
-        createChild(xml: library.XML): ExternalSystem;
+        protected createChild(xml: library.XML): ExternalSystem;
         /**
          * Factory method creating {@link ExternalSystem} object.
          *
@@ -5760,7 +5795,7 @@ declare namespace samchon.protocol.external {
          *
          * @return A new child Entity via {@link createExternalServer createExternalServer()}.
          */
-        createChild(xml: library.XML): ExternalSystem;
+        protected createChild(xml: library.XML): ExternalSystem;
         /**
          * Factory method creating an {@link IExternalServer} object.
          *
@@ -5793,7 +5828,7 @@ declare namespace samchon.protocol.external {
         /**
          * @hidden
          */
-        createChild(xml: library.XML): ExternalSystemRole;
+        protected createChild(xml: library.XML): ExternalSystemRole;
         private notify_end(uid);
         replyData(invoke: protocol.Invoke): void;
     }
@@ -5896,7 +5931,7 @@ declare namespace samchon.protocol.parallel {
          */
         protected abstract createServerBase(): IServerBase;
         addClient(driver: IClientDriver): void;
-        createChild(xml: library.XML): ParallelSystem;
+        protected createChild(xml: library.XML): ParallelSystem;
         protected abstract createExternalClient(driver: IClientDriver): ParallelSystem;
         /**
          * @inheritdoc
@@ -5950,7 +5985,7 @@ declare namespace samchon.protocol.parallel {
          */
         protected abstract createServerBase(): IServerBase;
         addClient(driver: IClientDriver): void;
-        createChild(xml: library.XML): ParallelSystem;
+        protected createChild(xml: library.XML): ParallelSystem;
         protected abstract createExternalClient(driver: IClientDriver): ParallelSystem;
         /**
          * @inheritdoc
@@ -5993,7 +6028,7 @@ declare namespace samchon.protocol.parallel {
          * Default Constructor.
          */
         constructor();
-        createChild(xml: library.XML): ParallelSystem;
+        protected createChild(xml: library.XML): ParallelSystem;
         protected abstract createExternalServer(xml: library.XML): IParallelServer;
         connect(): void;
     }
@@ -6004,7 +6039,7 @@ declare namespace samchon.protocol.parallel {
          * Default Constructor.
          */
         constructor();
-        createChild(xml: library.XML): ParallelSystem;
+        protected createChild(xml: library.XML): ParallelSystem;
         protected abstract createExternalServer(xml: library.XML): IParallelServer;
         /**
          * @inheritdoc

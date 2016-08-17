@@ -4749,7 +4749,7 @@ var samchon;
                 var children = new std.Vector();
                 var xml_list = xml.get(entity.CHILD_TAG());
                 for (var i = 0; i < xml_list.size(); i++) {
-                    var child = entity.createChild(xml_list.at(i));
+                    var child = entity["createChild"](xml_list.at(i));
                     if (child == null)
                         continue;
                     child.construct(xml_list.at(i));
@@ -4771,7 +4771,7 @@ var samchon;
                     prohibited_names = ["size_"];
                 else if (entity instanceof std.Deque)
                     prohibited_names = ["size_", "capacity_"];
-                for (var key in this)
+                for (var key in entity)
                     if (typeof key == "string"
                         && (typeof entity[key] == "string" || typeof entity[key] == "number" || typeof entity[key] == "boolean")
                         && entity.hasOwnProperty(key)) {
@@ -5313,6 +5313,10 @@ var samchon;
                     args[_i - 0] = arguments[_i];
                 }
                 _super.call(this);
+                /**
+                 * <p> Listener, represent function's name. </p>
+                 */
+                this.listener = "";
                 if (args.length == 0) {
                     this.listener = "";
                 }

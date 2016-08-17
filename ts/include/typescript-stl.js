@@ -9192,7 +9192,7 @@ var std;
                 return ret;
         };
         /**
-         * @hiddde
+         * @hidden
          */
         Vector.prototype.erase_by_range = function (first, last) {
             if (first.index == -1)
