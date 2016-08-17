@@ -17,7 +17,7 @@ http://redprinting.co.kr/
 
 ## References
 ##### Demo
-![Packer Demo GIF](http://betterwaysystems.github.io/packer/demo/video_small.gif "Packer Demo GIF")
+![Packer Demo GIF](http://betterwaysystems.github.io/packer/demo/packer.gif "Demo GIF")
 
   - Web: http://betterwaysystems.github.io/packer/demo
   - Video: http://betterwaysystems.github.io/packer/demo/packer.mp4
