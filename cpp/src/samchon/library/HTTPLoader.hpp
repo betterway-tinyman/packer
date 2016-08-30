@@ -60,7 +60,7 @@ namespace library
 		 * @param method Get or Post
 		 */
 		HTTPLoader(const std::string &, int method = POST);
-		virtual ~HTTPLoader() = default;
+		virtual ~HTTPLoader();
 
 		/* ------------------------------------------------------------
 			SETTERS & GETTERS

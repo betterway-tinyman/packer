@@ -22,5 +22,5 @@ using namespace bws::packer;
 void main()
 {
 	unique_ptr<Server> server(new Server());
-	server->open();
+	server->open(37896);
 }

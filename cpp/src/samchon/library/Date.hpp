@@ -599,13 +599,13 @@ namespace library
 				return StringUtil::substitute
 				(
 					"{1}-{2}-{3}",
-					tm.tm_year, tm.tm_mon + 1, tm.tm_mday
+					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday
 				);
 			else
 				return StringUtil::substitute
 				(
 					"{1}-{2}-{3} {4}:{5}:{6}",
-					tm.tm_year, tm.tm_mon + 1, tm.tm_mday,
+					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 					tm.tm_hour, tm.tm_min, tm.tm_sec
 				);
 		};

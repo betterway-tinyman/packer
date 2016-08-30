@@ -10,7 +10,7 @@ namespace samchon
 namespace library
 {
 	/**
-	 * @brief A population of a generation in G.A.
+	 * @brief A population in a generation in G.A.
 	 *
 	 * @tparam GeneArray
 	 * <p> An array(std::vector) containing genes as elments; sequnce listing </p>
@@ -22,11 +22,11 @@ namespace library
 	 *	Default template parameter of Compare is <i>std::less<GeneArray></i>. It means to compare
 	 *	two std::vector (GeneArray must be a std::vector). Thus, you've to keep follwing rules.\n\n
 	 *
-	 *	If you don't want to follow the rules or want a custom comparison class, you have to
-	 *	realize a comparison class. The following code is an example realizing the comparison class.
-	 *
 	 *		- GeneArray is inherited from <i>std::vector</i>
 	 *		- GeneArray has custom <i>auto operator<(const GeneArray &) const -> bool</i>
+	 *
+	 *	If you don't want to follow the rules or want a custom comparison class, you have to
+	 *	realize a comparison class. The following code is an example realizing the comparison class.
 	 *
 	 * @code
 	 * template <typename _Ty>
@@ -41,7 +41,7 @@ namespace library
 	 * having an array of GeneArray as a member. GAPopulation also manages initial set of genes and
 	 * handles fitting test direclty by the method <i>fitTest</i>. </p>
 	 *
-	 * <p> The success of evolution of genetic alogirhtm is depend on the GAPopulation's initial set
+	 * <p> The success of evolution of genetic algorithm is depend on the GAPopulation's initial set
 	 * and fitting test. (GeneArray and Compare.) </p>
 	 *
 	 * <p> @image html cpp/subset/library_genetic_algorithm.png
@@ -52,7 +52,7 @@ namespace library
 	 *
 	 * @warning
 	 * <p> Be careful for the mistakes of direction or position of Compare. </p>
-	 * <p> Most of logical errors failed to access optimal solution are occured by those mistakens. </p>
+	 * <p> Most of logical errors failed to access optimal solution are occured from those mistakes. </p>
 	 *
 	 * @see library::GeneticAlgorithm
 	 * @see samchon::library

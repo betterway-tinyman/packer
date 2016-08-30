@@ -8,7 +8,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class Wrapper
-		extends samchon.protocol.EntityDeque<Wrap>
+		extends protocol.EntityDeque<Wrap>
 		implements Instance
 	{
 		/**
@@ -103,17 +103,10 @@ namespace bws.packer
 			}
 		}
 
-		public construct(xml: samchon.library.XML): void
-		{
-			super.construct(xml);
-			
-			console.log(xml.getProperty("length"), this.length);
-		}
-
 		/**
 		 * @inheritdoc
 		 */
-		public createChild(xml: samchon.library.XML): Wrap
+		public createChild(xml: library.XML): Wrap
 		{
 			return new Wrap(this);
 		}
@@ -404,9 +397,9 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
-			let xml: samchon.library.XML = super.toXML();
+			let xml: library.XML = super.toXML();
 			xml.setProperty("type", this.TYPE());
 
 			return xml;

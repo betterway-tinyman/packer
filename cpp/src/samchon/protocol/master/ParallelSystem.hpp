@@ -1,8 +1,8 @@
 #pragma once
+#pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/protocol/ExternalSystem.hpp>
-#include <mutex>
+#include <samchon/protocol/external/ExternalSystem.hpp>
 
 namespace samchon
 {
@@ -11,109 +11,62 @@ namespace protocol
 namespace master
 {
 	class ParallelSystemArray;
+	class ParallelSystemArrayMediator;
+	class PRInvokeHistory;
 
-	class PRInvokeHistoryArray;
-	class PRMasterHistory;
-
-	/**
-	 * @brief A network driver for a parallel system.
-	 *
-	 * @details
-	 * <p> ParallelSystem class is an ExternalSystem having performance index and history logs
-	 * of handled Invoke messages with those elapsed times. Those performance index and history
-	 * logs are used to determine how much segmentation to be allocated. </p>
-	 * 
-	 * <p> Each segmentation in requested process (Invoke message) is equivalent. Thus, role of
-	 * ParallelSystem objects in a ParallelSystemArray are almost same and does not need to specify
-	 * ExternalSystemRole on ParallelSystem. </p>
-	 *
-	 *	\li Not a matter to specifying ExternalSystemRole objects to each ParallelSystem. In that
-	 *		case, Invoke messages having segmentation size will be processed by ParallelSystem's own
-	 *		logic and Invoke messages without segmentation size will be handled by ordinary logic of
-	 *		ExternalSystem's own.
-	 *
-	 * <p> @image html  cpp/protocol_master_parallel_system.png
-	 *	   @image latex cpp/protocol_master_parallel_system.png </p>
-	 *
-	 * \par [Inherited]
-	 *		@copydetails master::ExternalSystem
-	 */
-	class SAMCHON_FRAMEWORK_API ParallelSystem
-		: public virtual ExternalSystem
+	class SAMCHON_FRAMEWORK_API ParallelSystem 
+		: public virtual external::ExternalSystem
 	{
 		friend class ParallelSystemArray;
-		friend class PRMasterHistory;
+		friend class ParallelSystemArrayMediator;
 
-	protected:
-		typedef ExternalSystem super;
+	private:
+		typedef external::ExternalSystem super;
 
-		/**
-		 * @brief A master that the system is belonged to.
-		 */
-		ParallelSystemArray *systemArray;
+		ParallelSystemArray* systemArray;
 
-		/**
-		 * @brief A list of history log for reported Invoke messages.
-		 */
-		PRInvokeHistoryArray *historyArray;
+		HashMap<size_t, std::shared_ptr<PRInvokeHistory>> progress_list;
+		HashMap<size_t, std::shared_ptr<PRInvokeHistory>> history_list;
 
-		/**
-		 * @brief A list of invoke messages on progress.
-		 */
-		PRInvokeHistoryArray *progressArray;
-
-		/**
-		 * @brief A performance index.
-		 *
-		 * <p> A performance index z is calculated by normalization calculating reverse number of
-		 * @details
-		 * whole parallel system's average elapsed times and its z value between the normal
-		 * distribution. </p>
-		 *
-		 *	\li X = (¥ì + z¥ò)
-		 *
-		 * <p> If a parallel system has no history of handling Invoke message, then set the
-		 * performance index to 0 as default. The performance index will be re-calcuated whenever
-		 * segmented process has sent (ParallelSystemArray::sendData(Invoke, size_t)). </p>
-		 */
 		double performance;
 
 	public:
-		/* ------------------------------------------------------------------
+		/* ---------------------------------------------------------
 			CONSTRUCTORS
-		------------------------------------------------------------------ */
-		/**
-		 * @brief Default Constructor.
-		 */
-		ParallelSystem();
+		--------------------------------------------------------- */
+		ParallelSystem(ParallelSystemArray *systemArray);
 		virtual ~ParallelSystem();
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override;
 
+		/* ---------------------------------------------------------
+			GETTERS
+		--------------------------------------------------------- */
+		auto getSystemArray() const -> ParallelSystemArray*
+		{
+			return systemArray;
+		};
 
-	protected:
-		virtual auto createChild(std::shared_ptr<library::XML>)->ExternalSystemRole* override;
+		auto getPerformance() const -> double
+		{
+			return performance;
+		};
 
-		/* ------------------------------------------------------------------
-			CHAIN OF INVOKE MESSAGE
-		------------------------------------------------------------------ */
-		virtual void _replyData(std::shared_ptr<Invoke>) override;
+		/* ---------------------------------------------------------
+			MESSAGE CHAIN
+		--------------------------------------------------------- */
+		virtual void replyData(std::shared_ptr<Invoke>) override final;
 
 	private:
-		/**
-		 * @brief Send a message with segmentation index.
-		 *
-		 * @param invoke An invoke message requesting a process.
-		 * @param startIndex Starting index number of segmentation.
-		 * @param size Size of segmentation.
-		 */
-		void sendPieceData(PRMasterHistory*, std::shared_ptr<Invoke>, size_t, size_t);
+		void send_piece_data(std::shared_ptr<Invoke>, size_t, size_t);
 
-		/* ------------------------------------------------------------------
-			EXPORTERS
-		------------------------------------------------------------------ */
+		void report_invoke_history(std::shared_ptr<library::XML>);
+
 	public:
-		virtual auto toXML() const->std::shared_ptr<library::XML> override;
+		/* ---------------------------------------------------------
+			EXPORTERS
+		--------------------------------------------------------- */
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override;
 	};
 };
 };

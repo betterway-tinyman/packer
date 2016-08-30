@@ -33,7 +33,8 @@ namespace library
 		 * @param byte_array binary data you want to encode
 		 * @return A base64-string encoded from binary data
 		 */
-		static auto encode(const ByteArray &byte_array) -> std::string
+		template <typename Container>
+		static auto encode(const Container &byte_array) -> std::string
 		{
 			static const std::array<char, 64> BASE64_CHAR_ARRAY =
 			{

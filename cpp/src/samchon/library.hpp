@@ -20,7 +20,6 @@
 ------------------------------------------------------------- */
 #include <samchon/library/XML.hpp>
 #include <samchon/library/Date.hpp>
-#include <samchon/library/Date.hpp>
 
 // HTTP
 #include <samchon/library/HTTPLoader.hpp>
@@ -29,8 +28,6 @@
 // SQL
 #include <samchon/library/SQLi.hpp>
 #include <samchon/library/TSQLi.hpp>
-#include <samchon/library/MySQLi.hpp>
-#include <samchon/library/SQLLiteConnector.hpp>
 
 // SQL STATEMENT
 #include <samchon/library/SQLStatement.hpp>
@@ -55,14 +52,3 @@
 #include <samchon/library/CombinedPermutationGenerator.hpp>
 #include <samchon/library/PermutationGenerator.hpp>
 #include <samchon/library/FactorialGenerator.hpp>
-
-/* -------------------------------------------------------------
-	FILE-TREE
-------------------------------------------------------------- */
-#include <samchon/library/FTFactory.hpp>
-#include <samchon/library/FTFolder.hpp>
-
-#include <samchon/library/FTFile.hpp>
-#include <samchon/library/FTTextFile.hpp>
-#include <samchon/library/FTByteFile.hpp>
-

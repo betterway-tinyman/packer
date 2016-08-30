@@ -24,20 +24,20 @@ namespace bws.packer
 		private open(event: React.MouseEvent): void
 		{
 			let this_ = this;
-			let handle_select = function (event: samchon.library.BasicEvent): void
+			let handle_select = function (event: library.BasicEvent): void
 			{
 				file_ref.load();
 			}
-			let handle_complete = function (event: samchon.library.BasicEvent): void
+			let handle_complete = function (event: library.BasicEvent): void
 			{
 				let packer_form = new PackerForm();
-				packer_form.construct(new samchon.library.XML(file_ref.data));
+				packer_form.construct(new library.XML(file_ref.data));
 
 				this_.props.instances.assign(packer_form.getInstanceFormArray().begin(), packer_form.getInstanceFormArray().end());
 				this_.props.wrappers.assign(packer_form.getWrapperArray().begin(), packer_form.getWrapperArray().end());
 			}
 
-			let file_ref = new samchon.library.FileReference();
+			let file_ref = new library.FileReference();
 			file_ref.addEventListener("select", handle_select);
 			file_ref.addEventListener("complete", handle_complete);
 
@@ -47,7 +47,7 @@ namespace bws.packer
 		{
 			let packer_form = new PackerForm(this.props.instances, this.props.wrappers);
 
-			let file_ref = new samchon.library.FileReference();
+			let file_ref = new library.FileReference();
 			file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
 		}
 

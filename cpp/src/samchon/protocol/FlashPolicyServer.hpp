@@ -20,11 +20,11 @@ namespace protocol
 	 */
 	class SAMCHON_FRAMEWORK_API FlashPolicyServer
 	{
-	protected:
+	private:
 		/**
 		 * @brief cross-domain-policy_
 		 */
-		std::shared_ptr<library::XML> policy_;
+		std::shared_ptr<library::XML> policy;
 
 	public:
 		/**
@@ -44,14 +44,19 @@ namespace protocol
 		/**
 		 * @brief Open server
 		 */
-		void open();
+		void open(int port = 843);
 
 		/**
 		 * @brief Get policy.
 		 */
-		auto get_policy() const -> std::shared_ptr<library::XML>
+		auto getPolicy() const -> std::shared_ptr<library::XML>
 		{
-			return policy_;
+			return policy;
+		};
+
+		void setPolicy(std::shared_ptr<library::XML> xml)
+		{
+			this->policy = xml;
 		};
 
 	private:

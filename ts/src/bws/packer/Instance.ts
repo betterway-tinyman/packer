@@ -6,7 +6,7 @@
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export interface Instance
-		extends samchon.protocol.IEntity
+		extends protocol.IEntity
 	{
 		/* -----------------------------------------------------------
 			GETTERS

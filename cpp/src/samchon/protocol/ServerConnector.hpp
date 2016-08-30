@@ -1,7 +1,7 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/protocol/IClient.hpp>
+#include <samchon/protocol/Communicator.hpp>
 
 #include <string>
 
@@ -18,7 +18,7 @@ namespace protocol
 	 * getIP(), getPort() and replyData(). That's all. </p>
 	 *
 	 * <p> In Samchon Framework, package protocol, There are basic 3 + 1 components that can make any 
-	 * type of network system in Samchon Framework. The basic 3 components are IProtocol, IServer and
+	 * type of network system in Samchon Framework. The basic 3 components are IProtocol, Server and
 	 * IClient. The last, surplus one is the ServerConnector. Looking around classes in 
 	 * Samchon Framework, especially module master and slave which are designed for realizing 
 	 * distributed processing systems and parallel processing systems, physical client classes are all 
@@ -30,57 +30,25 @@ namespace protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SAMCHON_FRAMEWORK_API ServerConnector
-		: public virtual IClient
+		: public virtual Communicator
 	{
 	protected:
-		typedef IClient super;
-
 		/**
 		 * @brief An io_service of Boost.Asio's own.
 		 */
-		boost::asio::io_service *ioService;
+		std::unique_ptr<boost::asio::io_service> io_service;
 
 		/**
 		 * @brief An endpoint directing a server.
 		 */
-		EndPoint *endPoint;
-
-		/**
-		 * @brief (Optional) An local endpoint of the client (my system)
-		 *
-		 * @details
-		 * <p> An local endpoint fof my system. It binds my ip to custom. It acts when my_ip is
-		 * configured. If the my_ip is not configured, does not act. </p>
-		 */
-		EndPoint *localEndPoint;
+		std::unique_ptr<EndPoint> endpoint;
 
 	public:
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
 		----------------------------------------------------------- */
-		/**
-		 * @brief Default Constructor
-		 */
-		ServerConnector();
+		ServerConnector(IProtocol *listener);
 		virtual ~ServerConnector();
-
-		/* -----------------------------------------------------------
-			GETTERS
-		----------------------------------------------------------- */
-		/**
-		 * @brief Destinatio IP
-		 */
-		virtual auto getIP() const->std::string = 0;
-
-		/**
-		 * @brief Destination port
-		 */
-		virtual auto getPort() const -> int = 0;
-
-		/**
-		 * @brief (optional) My IP, if you want to bind
-		 */
-		virtual auto getMyIP() const->std::string;
 
 		/* -----------------------------------------------------------
 			CONNECTOR
@@ -94,7 +62,7 @@ namespace protocol
 		 *
 		 * @note It monopolies a thread
 		 */
-		virtual void connect();
+		virtual void connect(const std::string &ip, int port);
 	};
 };
 };

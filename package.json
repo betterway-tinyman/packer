@@ -7,7 +7,7 @@
 		"email": "samchon@samchon.org",
 		"url": "http://samchon.org"
 	},
-	"version": "1.0.0-RC.2",
+	"version": "1.0.0-RC.3",
 	
 	"main": "./release/node/packer.js",
 	"homepage": "http://betterwaysystems.github.io/packer",

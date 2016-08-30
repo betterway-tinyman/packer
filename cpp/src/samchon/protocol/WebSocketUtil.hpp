@@ -7,17 +7,9 @@ namespace samchon
 {
 namespace protocol
 {
-	class IWebServer;
-	class IWebClient;
-	class WebServerConnector;
-
-	class WebSocketUtil
+	class SAMCHON_FRAMEWORK_API WebSocketUtil
 	{
-		friend class IWebServer;
-		friend class IWebClient;
-		friend class WebServerConnector;
-
-	private:
+	public:
 		enum OpCode : unsigned char
 		{
 			TEXT = 129,

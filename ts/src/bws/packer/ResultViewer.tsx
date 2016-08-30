@@ -24,13 +24,13 @@ namespace bws.packer
 		private open(event: React.MouseEvent): void
 		{
 			let this_ = this;
-			let handle_select = function (event: samchon.library.BasicEvent): void
+			let handle_select = function (event: library.BasicEvent): void
 			{
 				file_ref.load();
 			}
-			let handle_complete = function (event: samchon.library.BasicEvent): void
+			let handle_complete = function (event: library.BasicEvent): void
 			{
-				this_.props.wrappers.construct(new samchon.library.XML(file_ref.data));
+				this_.props.wrappers.construct(new library.XML(file_ref.data));
 				
 				if (this_.props.wrappers.empty() == true)
 					this_.drawWrapper(new Wrapper());
@@ -40,7 +40,7 @@ namespace bws.packer
 				this_.refresh();
 			}
 
-			let file_ref = new samchon.library.FileReference();
+			let file_ref = new library.FileReference();
 			file_ref.addEventListener("select", handle_select);
 			file_ref.addEventListener("complete", handle_complete);
 
@@ -48,7 +48,7 @@ namespace bws.packer
 		}
 		private save(event: React.MouseEvent): void
 		{
-			let file_ref = new samchon.library.FileReference();
+			let file_ref = new library.FileReference();
 			file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
 		}
 

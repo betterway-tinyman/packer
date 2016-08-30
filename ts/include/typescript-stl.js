@@ -1247,14 +1247,14 @@ var std;
      * @hidden
      */
     function qsort_partition(container, first, last, compare) {
-        var val = container.at(first);
+        var standard = container.at(first);
         var i = first;
         var j = last + 1;
         while (true) {
-            while (compare(container.at(++i), val))
+            while (compare(container.at(++i), standard))
                 if (i == last)
                     break;
-            while (compare(val, container.at(--j)))
+            while (compare(standard, container.at(--j)))
                 if (j == first)
                     break;
             if (i >= j)
@@ -6722,27 +6722,34 @@ var std;
         };
         List.prototype.sort = function (compare) {
             if (compare === void 0) { compare = std.less; }
-            var vector = new std.Vector(this.begin(), this.end());
-            std.sort(vector.begin(), vector.end());
-            // IT CALLS HANDLE_INSERT
-            // this.assign(vector.begin(), vector.end());
-            ///////
-            // INSTEAD OF ASSIGN
-            ///////
-            var prev = this.end_;
-            var first = null;
-            for (var i = 0; i < vector.length; i++) {
-                // CONSTRUCT ITEM, THE NEW ELEMENT
-                var item = new std.ListIterator(this, prev, null, vector[i]);
-                if (i == 0)
-                    first = item;
-                prev.set_next(item);
-                prev = item;
+            this.qsort(this.begin(), this.end().prev(), compare);
+        };
+        /**
+         * @hidden
+         */
+        List.prototype.qsort = function (first, last, compare) {
+            if (first != last && last != this.end_ && first != last.next()) {
+                var temp = this.partition(first, last, compare);
+                this.qsort(first, temp.prev(), compare);
+                this.qsort(temp.next(), last, compare);
             }
-            this.begin_ = first;
-            // CONNECT BETWEEN LAST INSERTED ITEM AND POSITION
-            prev.set_next(this.end_);
-            this.end_.set_prev(prev);
+        };
+        /**
+         * @hidden
+         */
+        List.prototype.partition = function (first, last, compare) {
+            var standard = last.value; // TO BE COMPARED
+            var prev = first.prev(); // TO BE SMALLEST
+            var it = first;
+            for (; it != last; it = it.next())
+                if (compare(it.value, standard)) {
+                    prev = (prev == this.end_) ? first : prev.next();
+                    _a = [it.value, prev.value], prev.value = _a[0], it.value = _a[1];
+                }
+            prev = (prev == this.end_) ? first : prev.next();
+            _b = [it.value, prev.value], prev.value = _b[0], it.value = _b[1];
+            return prev;
+            var _a, _b;
         };
         /* ---------------------------------------------------------
             SWAP

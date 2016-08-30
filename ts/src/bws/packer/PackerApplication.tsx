@@ -6,13 +6,20 @@
 
 namespace bws.packer
 {
-	export class PackerApplication extends React.Component<{}, {}>
+	export class PackerApplication
+		extends React.Component<{}, {}>
+		implements protocol.IProtocol
 	{
+		private connector: protocol.WebServerConnector;
+
 		private instances: InstanceFormArray;
 		private wrappers: WrapperArray;
 
 		private result: WrapperArray;
-		
+
+		/* -----------------------------------------------------------
+			CONSTRUCTORS
+		----------------------------------------------------------- */
 		/**
 		 * Default Constructor.
 		 */
@@ -40,36 +47,53 @@ namespace bws.packer
 				new InstanceForm(new Product("Notebook-Box", 30, 40, 4), 15),
 				new InstanceForm(new Product("Tablet-Box", 20, 28, 2), 15)
 			);
+
+			this.connector = new protocol.WebServerConnector(this);
+			this.connector.connect(SERVER_IP, SERVER_PORT);
 		}
 
+		/* -----------------------------------------------------------
+			PROCEDURES
+		----------------------------------------------------------- */
 		public pack(): void
 		{
-			/////
-			// FIND THE OPTIMIZED SOLUTION
-			/////
-			let packer = new PackerForm(this.instances, this.wrappers).toPacker();
-			let result: WrapperArray;
+			let packer_form: PackerForm = new PackerForm(this.instances, this.wrappers);
 
-			try
+			if (this.connector.isConnected() == true)
 			{
-				result = packer.optimize();
+				let invoke: protocol.Invoke = new protocol.Invoke("pack", packer_form.toXML());
+
+				this.sendData(invoke);
 			}
-			catch (exception)
+			else
 			{
-				alert(exception.what());
-				return;
+				/////
+				// FIND THE OPTIMIZED SOLUTION
+				/////
+				let packer: Packer = packer_form.toPacker();
+				let result: WrapperArray;
+
+				try
+				{
+					result = packer.optimize();
+				}
+				catch (exception)
+				{
+					alert(exception.what());
+					return;
+				}
+
+				this.result.assign(result.begin(), result.end());
+
+				/////
+				// DRAW THE 1ST WRAPPER
+				/////
+				if (this.result.empty() == true)
+					return;
+
+				this.drawWrapper(this.result.front());
+				(this.refs["tabNavigator"] as flex.TabNavigator).setState({ selectedIndex: 1 });
 			}
-
-			this.result.assign(result.begin(), result.end());
-
-			/////
-			// DRAW THE 1ST WRAPPER
-			/////
-			if (this.result.empty() == true)
-				return;
-
-			this.drawWrapper(this.result.front());
-			(this.refs["tabNavigator"] as flex.TabNavigator).setState({ selectedIndex: 1 });
 		}
 
 		public drawWrapper(wrapper: Wrapper, index: number = wrapper.size()): void
@@ -84,6 +108,33 @@ namespace bws.packer
 			div.appendChild(canvas);
 		}
 
+		/* -----------------------------------------------------------
+			INVOKE MESSAGE CHAIN
+		----------------------------------------------------------- */
+		public sendData(invoke: protocol.Invoke): void
+		{
+			this.connector.sendData(invoke);
+		}
+
+		public replyData(invoke: protocol.Invoke): void
+		{
+			console.log(invoke.getListener());
+			invoke.apply(this);
+		}
+
+		private setWrapperArray(xml: library.XML): void
+		{
+			this.result.construct(xml);
+			if (this.result.empty() == true)
+				return;
+
+			this.drawWrapper(this.result.front());
+			(this.refs["tabNavigator"] as flex.TabNavigator).setState({ selectedIndex: 1 });
+		}
+
+		/* -----------------------------------------------------------
+			RENDERERS
+		----------------------------------------------------------- */
 		public render(): JSX.Element
 		{
 			let ret: JSX.Element =

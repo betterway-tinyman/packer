@@ -8,7 +8,7 @@ namespace samchon
 {
 namespace library
 {
-	class SAMCHON_FRAMEWORK_API XML;
+	class /*SAMCHON_FRAMEWORK_API*/ XML;
 
 	/**
 	 * @brief A list of XML, tags are same.
@@ -18,6 +18,6 @@ namespace library
 	 */
 	typedef std::vector<std::shared_ptr<XML>> XMLList;
 
-	SAMCHON_FRAMEWORK_EXTERN template class SAMCHON_FRAMEWORK_API std::vector<std::shared_ptr<XML>>;
+	//SAMCHON_FRAMEWORK_EXTERN template class SAMCHON_FRAMEWORK_API std::vector<std::shared_ptr<XML>>;
 };
 };

@@ -90,7 +90,7 @@ namespace library
 		 *
 		 * @details
 		 *  \li \<parameter name='age' type='int'\><b>26</b>\</parameter\>: value => 26
-		 *	\li \<price high='1500' low='1300' open='1450' close='1320' /\>: tag => null
+		 *	\li \<price high='1500' low='1300' open='1450' close='1320' /\>: value => null
 		 */
 		std::string value;
 
@@ -666,6 +666,17 @@ namespace library
 		};
 
 		/**
+		 * @brief Try to get property.
+		 */
+		template<class T = std::string> auto fetchProperty(const std::string &key) const -> T
+		{
+			if (hasProperty(key))
+				return getProperty<T>(key);
+			else
+				return T();
+		};
+
+		/**
 		 * @brief Test wheter a property exists or not
 		 */
 		auto hasProperty(const std::string &key) const -> bool
@@ -676,7 +687,7 @@ namespace library
 		/**
 		 * @brief Get properties
 		 */
-		auto getProperties() const -> const HashMap<std::string, std::string>&
+		auto getPropertyMap() const -> const HashMap<std::string, std::string>&
 		{
 			return properties;
 		};

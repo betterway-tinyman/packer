@@ -8,7 +8,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class InstanceArray
-		extends samchon.protocol.EntityArray<Instance>
+		extends protocol.EntityArray<Instance>
 	{
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
@@ -24,7 +24,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public createChild(xml: samchon.library.XML): Instance
+		public createChild(xml: library.XML): Instance
 		{
 			let type = xml.getProperty("type");
 			

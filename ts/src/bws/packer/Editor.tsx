@@ -6,8 +6,8 @@
 
 namespace bws.packer
 {
-	export abstract class Editor<T extends samchon.protocol.IEntity>
-		extends React.Component<{ dataProvider: samchon.protocol.EntityArrayCollection<T> }, {}>
+	export abstract class Editor<T extends protocol.IEntity>
+		extends React.Component<{ dataProvider: protocol.EntityArrayCollection<T> }, {}>
 	{
 		private columns: AdazzleReactDataGrid.Column[];
 

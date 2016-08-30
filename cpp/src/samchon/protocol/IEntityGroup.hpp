@@ -15,7 +15,7 @@ namespace protocol
 	 * entity. </p>
 	 *
 	 * <ul>
-	 *	<li> Group of entity is divided into EntityArray and EntityGroup. </li>
+	 *	<li> Group of entity is divided into StaticEntityArray and EntityGroup. </li>
 	 *	<ul>
 	 *		<li> Even they are template classes so that cannot be discriminated globally. </li>
 	 *	</ul>

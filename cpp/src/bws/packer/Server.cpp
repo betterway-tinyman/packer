@@ -1,39 +1,23 @@
 #pragma once
 #include <bws/packer/Server.hpp>
-
-#include <bws/packer/Client.hpp>
-#include <samchon/protocol/FlashPolicyServer.hpp>
+#	include <bws/packer/Client.hpp>
 
 #include <iostream>
-#include <thread>
 
 using namespace std;
 using namespace bws::packer;
-using namespace samchon::protocol;
-
-auto Server::PORT() const -> int
-{
-	return 37896;
-}
 
 Server::Server()
 	: super()
 {
-	flashPolicyServer.reset(new FlashPolicyServer());
 }
-void Server::open()
+Server::~Server()
 {
-	thread(&FlashPolicyServer::open, flashPolicyServer.get()).detach();
-	super::open();
 }
 
-void Server::addClient(Socket *socket)
+void Server::addClient(shared_ptr<protocol::ClientDriver> driver)
 {
-	cout << "addClient" << endl;
+	cout << "A client has connected." << endl;
 
-	thread([this, socket]()
-	{
-		unique_ptr<Client> client(new Client(socket));
-		client->listen();
-	}).detach();
+	unique_ptr<Client> client(new Client(driver));
 }

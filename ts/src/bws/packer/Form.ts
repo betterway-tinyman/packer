@@ -8,7 +8,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class PackerForm
-		extends samchon.protocol.Entity
+		extends protocol.Entity
 	{
 		/**
 		 * Form of Instances to pack.
@@ -48,7 +48,7 @@ namespace bws.packer
 			this.wrapperArray = wrapperArray;
 		}
 
-		public construct(xml: samchon.library.XML): void
+		public construct(xml: library.XML): void
 		{
 			this.instanceFormArray.construct(xml.get(this.instanceFormArray.TAG()).at(0));
 			this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
@@ -80,9 +80,9 @@ namespace bws.packer
 		{
 			return "packerForm";
 		}
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
-			let xml: samchon.library.XML = super.toXML();
+			let xml: library.XML = super.toXML();
 			xml.push(this.instanceFormArray.toXML());
 			xml.push(this.wrapperArray.toXML());
 
@@ -102,7 +102,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class InstanceFormArray
-		extends samchon.protocol.EntityArrayCollection<InstanceForm>
+		extends protocol.EntityArrayCollection<InstanceForm>
 	{
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
@@ -114,7 +114,7 @@ namespace bws.packer
 		{
 			super();
 		}
-		public createChild(xml: samchon.library.XML): InstanceForm
+		public createChild(xml: library.XML): InstanceForm
 		{
 			return new InstanceForm();
 		}
@@ -160,7 +160,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class InstanceForm
-		extends samchon.protocol.Entity
+		extends protocol.Entity
 	{
 		/**
 		 * A duplicated Instance.
@@ -189,7 +189,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public construct(xml: samchon.library.XML): void
+		public construct(xml: library.XML): void
 		{
 			super.construct(xml);
 
@@ -200,14 +200,14 @@ namespace bws.packer
 			}
 			else if (xml.has("instance"))
 			{
-				let instanceXML: samchon.library.XML = xml.get("instance").at(0);
+				let instanceXML: library.XML = xml.get("instance").at(0);
 
 				this.instance = this.createInstance(instanceXML);
 				this.instance.construct(instanceXML);
 			}
 		}
 
-		private createInstance(xml: samchon.library.XML): Instance
+		private createInstance(xml: library.XML): Instance
 		{
 			if (xml.getProperty("type") == "product")
 				return new Product();
@@ -264,7 +264,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
 			let xml = super.toXML();
 

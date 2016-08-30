@@ -44,7 +44,7 @@ namespace protocol
 	 * @warning
 	 * <p> EntityGroup contains children entity elements as type of pointer. Because children entity
 	 * objects are not serialized and referenced by pointer, its iteration and accessment is not fast.
-	 * If it needs higher performance, then use EntityArray (static array for children entity) instead. </p> 
+	 * If it needs higher performance, then use StaticEntityArray (static array for children entity) instead. </p> 
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
@@ -142,6 +142,64 @@ namespace protocol
 		/* ------------------------------------------------------------------------------------
 			GETTERS
 		------------------------------------------------------------------------------------ */
+		/**
+		 * @brief Get iterator to element.
+		 * 
+		 * @details
+		 * <p> Searches the container for an element with a identifier equivalent to <i>key</i> and returns an 
+		 * iterator to it if found, otherwise it returns an iterator to {@link end end()}. </p>
+		 *
+		 * <p> Two keys are considered equivalent if the container's comparison object returns false reflexively 
+		 * (i.e., no matter the order in which the elements are passed as arguments). </p>
+		 *
+		 * <p> Another member functions, {@link has has()} and {@link count count()}, can be used to just check 
+		 * whether a particular <i>key</i> exists. </p>
+		 *
+		 * @param key Key to be searched for
+		 * @return An iterator to the element, if an element with specified <i>key</i> is found, or 
+		 *		   {@link end end()} otherwise.
+		 */
+		auto find(const std::string &key) -> typename container_type::iterator
+		{
+			return std::find_if
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity->key() == key;
+				}
+			);
+		};
+
+		/**
+		 * @brief Get const iterator to element.
+		 * 
+		 * @details
+		 * <p> Searches the container for an element with a identifier equivalent to <i>key</i> and returns an 
+		 * iterator to it if found, otherwise it returns an iterator to {@link end end()}. </p>
+		 *
+		 * <p> Two keys are considered equivalent if the container's comparison object returns false reflexively 
+		 * (i.e., no matter the order in which the elements are passed as arguments). </p>
+		 *
+		 * <p> Another member functions, {@link has has()} and {@link count count()}, can be used to just check 
+		 * whether a particular <i>key</i> exists. </p>
+		 *
+		 * @param key Key to be searched for
+		 * @return An iterator to the element, if an element with specified <i>key</i> is found, or 
+		 *		   {@link end end()} otherwise.
+		 */
+		auto find(const std::string &key) const -> typename container_type::const_iterator
+		{
+			return std::find_if
+			(
+				begin(), end(),
+				[key](const container_type::value_type &entity) -> bool
+				{
+					return entity->key() == key;
+				}
+			);
+		};
+
 		/**
 		 * @brief Indicates whether a container has an object having the specified identifier. </p>
 		 *

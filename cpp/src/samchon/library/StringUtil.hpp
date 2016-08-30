@@ -240,42 +240,54 @@ namespace library
 		 */
 		static auto numberFormat(double val, int precision = 2) -> std::string
 		{
-			//IF VALUE IS ZERO OR NULL
-			if (val == 0.0)
-				return "0";
-			else if (val == INT_MIN)
-				return "";
+			std::string str;
 
-			std::string str = "";
+			// FIRST, DO ROUND-OFF
+			val = round(val * pow(10, precision));
+			val = val / pow(10, precision);
 
-			//SETTING
-			bool isNegative = (val < 0);
-			val = abs(val);
+			// SEPERATE NUMBERS
+			bool is_negative = (val < 0);
+			unsigned long long natural = abs(val);
+			double fraction = abs(val) - (unsigned long long)abs(val);
 
-			int cipher = (int)log10(val) + 1;
-
-			//PRECISION
-			if (val != (unsigned long long)val)
+			// NATURAL NUMBER
+			if (natural == 0)
+				str = "0";
+			else
 			{
-				int pointValue = (int)round((val - (unsigned long long)val) * pow(10.0, (double)precision));
-				str = "." + std::to_string(pointValue);
+				// NOT ZERO
+				size_t cipher_count = (size_t)log10(natural) + 1;
+
+				for (size_t i = 0; i <= cipher_count; i++)
+				{
+					size_t cipher = natural % (size_t)pow(10, i + 1);
+					cipher = cipher / pow(10, i);
+
+					if (i == cipher_count && cipher == 0)
+						continue;
+
+					// IS MULTIPLIER OF 3
+					if (i > 0 && i % 3 == 0)
+						str = "," + str;
+
+					// PUSH FRONT TO THE STRING
+					str = std::to_string(cipher) + str;
+				}
 			}
 
-			//NATURAL NUMBER
-			for (int i = 0; i < cipher; i++)
-			{
-				int num = (int)((unsigned long long)val % (unsigned long long)pow(10.0, i + 1.0)); //TRUNCATE UPPER DIGIT VALUE
-				num = (int)(num / pow(10.0, (double)i));
-
-				str = (char)(num + '0') + str;
-				if ((i + 1) % 3 == 0 && i < cipher - 1)
-					str = "," + str;
-			}
-
-			//NEGATIVE NUMBER
-			if (isNegative == true)
+			// NEGATIVE SIGN
+			if (is_negative == true)
 				str = "-" + str;
 
+			// ADD FRACTION
+			if (precision > 0 && fraction != 0)
+			{
+				fraction = (unsigned long long)round(fraction * pow(10, precision));
+				size_t zeros = precision - (size_t)log10(fraction) - 1;
+
+				str += "." + std::string(zeros, '0') + std::to_string((unsigned long long)fraction);
+			}
 			return str;
 		};
 

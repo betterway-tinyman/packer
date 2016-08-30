@@ -3,7 +3,7 @@
 namespace bws.packer
 {
 	export class WrapperArray
-		extends samchon.protocol.EntityArrayCollection<Wrapper>
+		extends protocol.EntityArrayCollection<Wrapper>
 	{
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
@@ -19,7 +19,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public createChild(xml: samchon.library.XML): Wrapper
+		public createChild(xml: library.XML): Wrapper
 		{
 			return new Wrapper();
 		}

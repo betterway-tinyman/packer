@@ -110,7 +110,7 @@ namespace library
 
 		/**
 		 * @brief Evolve a GeneArray 
-		 * @details Convinient method accessing to evolvePopulation().
+		 * @details Convenient method accessing to evolvePopulation().
 		 *
 		 * @param individual An initial set of genes; sequence listing
 		 * @param population Size of population in a generation
@@ -133,7 +133,6 @@ namespace library
 		 *
 		 * @param population An initial population
 		 */
-
 		auto evolvePopulation(std::shared_ptr<Population> population) const -> std::shared_ptr<Population>
 		{
 			size_t size = population->children.size();
@@ -240,12 +239,16 @@ namespace library
 				std::set<GeneArray::value_type> ptrSet;
 				std::set<size_t> indexSet;
 
+				// RANGES
 				size_t start = (size_t)(Math::random() * size);
 				size_t end = (size_t)(Math::random() * size);
 
+				if (start > end)
+					std::swap(start, end);
+
 				//INDEXING
 				for (size_t i = 0; i < size; i++)
-					if (start < i && i < end)
+					if (start <= i && i < end)
 						ptrSet.insert(parent1->at(i));
 					else
 						indexSet.insert(i);

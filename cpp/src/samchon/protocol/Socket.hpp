@@ -1,5 +1,7 @@
 #pragma once
 
+#include <samchon/ByteArray.hpp>
+
 namespace boost
 {
 namespace asio

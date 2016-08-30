@@ -1,4 +1,4 @@
-﻿﻿Packer
+Packer
 =========
 3D Bin Packing with multiple wrappers (boxes).
 
@@ -17,7 +17,7 @@ http://redprinting.co.kr/
 
 ## References
 ##### Demo
-![Packer Demo GIF](http://betterwaysystems.github.io/packer/demo/packer.gif "Packer Demo GIF")
+![Packer Demo GIF](http://betterwaysystems.github.io/packer/demo/packer_small.gif)
 
   - Web: http://betterwaysystems.github.io/packer/demo
   - Video: http://betterwaysystems.github.io/packer/demo/packer.mp4
@@ -35,6 +35,7 @@ http://redprinting.co.kr/
 ##### Node.JS
 ``` bash
 npm install -g 3d-bin-packing
+tsd install 3d-bin-packing
 ```
 
 ##### TypeScript (JavaScript) only
@@ -223,3 +224,4 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

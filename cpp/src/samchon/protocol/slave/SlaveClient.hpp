@@ -2,7 +2,9 @@
 #include <samchon/API.hpp>
 
 #include <samchon/protocol/slave/SlaveSystem.hpp>
-#include <samchon/protocol/ExternalServer.hpp>
+#include <samchon/protocol/external/ExternalServer.hpp>
+
+#include <samchon/protocol/ClientDriver.hpp>
 
 namespace samchon
 {
@@ -10,28 +12,17 @@ namespace protocol
 {
 namespace slave
 {
-	/**
-	 * @brief A slave client.
-	 *
-	 * @details 
-	 * <p> SlaveClient is a SlaveSystem specialized in client driver. </p>
-	 *
-	 * \par [Inherited]
-	 *		@copydetails slave::SlaveSystem
-	 */
-	class SAMCHON_FRAMEWORK_API SlaveClient
+	class SlaveClient
 		: public virtual SlaveSystem,
-		public virtual ExternalServer
-	{
-	protected:
-		typedef SlaveSystem super;
-		typedef ExternalServer network_super;
+		public virtual external::ExternalServer
 
+	{
 	public:
-		/**
-		 * @brief Default Constructor.
-		 */
-		SlaveClient();
+		SlaveClient() : 
+			SlaveSystem(), 
+			external::ExternalServer()
+		{
+		};
 		virtual ~SlaveClient() = default;
 	};
 };

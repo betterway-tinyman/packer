@@ -15,7 +15,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class Wrap
-		extends samchon.protocol.Entity
+		extends protocol.Entity
 	{
 		/**
 		 * A wrapper wrapping the {@link instance}.
@@ -115,7 +115,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public construct(xml: samchon.library.XML): void
+		public construct(xml: library.XML): void
 		{
 			super.construct(xml);
 
@@ -405,9 +405,9 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
-			let xml: samchon.library.XML = super.toXML();
+			let xml: library.XML = super.toXML();
 			xml.push(this.instance.toXML());
 			
 			xml.eraseProperty("color");

@@ -1,15 +1,8 @@
 #pragma once
 #include <bws/packer/API.hpp>
 
-#include <samchon/protocol/IClient.hpp>
-
-namespace samchon
-{
-	namespace library
-	{
-		class XML;
-	};
-};
+#include <samchon/protocol/IProtocol.hpp>
+#include <samchon/protocol/ClientDriver.hpp>
 
 namespace bws
 {
@@ -20,11 +13,10 @@ namespace packer
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class Client
-		: public protocol::IClient
+	class Client : public virtual protocol::IProtocol
 	{
 	private:
-		typedef protocol::IClient super;
+		std::shared_ptr<protocol::ClientDriver> driver;
 
 	public:
 		/**
@@ -32,14 +24,14 @@ namespace packer
 		 *
 		 * @param socket A socket connected with the client.
 		 */
-		Client(protocol::Socket*);
-		virtual ~Client() = default;
+		Client(std::shared_ptr<protocol::ClientDriver>);
+		virtual ~Client();
+
+		virtual void sendData(std::shared_ptr<protocol::Invoke>) override;
 
 		virtual void replyData(std::shared_ptr<protocol::Invoke>) override;
 
-	protected:
-		virtual void _replyData(std::shared_ptr<protocol::Invoke>) override;
-
+	private:
 		/**
 		 * @brief Pack instances to wrappers.
 		 *

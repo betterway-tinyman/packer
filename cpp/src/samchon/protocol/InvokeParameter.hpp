@@ -100,7 +100,7 @@ namespace protocol
 		/**
 		 * @brief Default Constructor
 		 */
-		InvokeParameter() : super()
+		InvokeParameter()
 		{
 		};
 
@@ -119,7 +119,6 @@ namespace protocol
 		 * @param value A value capsuled by a string
 		 */
 		InvokeParameter(const std::string &name, const std::string &type, const std::string &val)
-			: super()
 		{
 			this->name = name;
 			this->type = type;
@@ -161,7 +160,6 @@ namespace protocol
 		 */
 		template <typename T>
 		InvokeParameter(const std::string &name, const T &val)
-			: super()
 		{
 			this->name = name;
 

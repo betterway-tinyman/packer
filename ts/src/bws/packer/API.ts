@@ -9,3 +9,13 @@
 catch (exception) { }
 
 declare var ReactDataGrid: typeof AdazzleReactDataGrid.ReactDataGrid;
+
+namespace bws.packer
+{
+	export import library = samchon.library;
+	export import protocol = samchon.protocol;
+
+	export const SERVER_IP: string = "172.16.0.209";
+	//export const SERVER_IP: string = "127.0.0.1";
+	export const SERVER_PORT: number = 37896;
+}

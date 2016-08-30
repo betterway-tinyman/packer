@@ -15,7 +15,7 @@ namespace protocol
 	 * which are in a relationship of chain of responsibility with those network drivers. </p>
 	 *
 	 * <p> IProtocol is one of the basic 3 + 1 components that can make any type of network system in
-	 * Samchon Framework with IServer and IClient. Following the "chain of responsibility" pattern, 
+	 * Samchon Framework with Server and IClient. Following the "chain of responsibility" pattern, 
 	 * looking around classes in Samchon Framework, you can see all related classes with network I/O 
 	 * are implemented from the IProtocol. </p>
 	 *

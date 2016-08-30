@@ -93,26 +93,26 @@ auto Packer::optimize(const GAParameters &gaParams) const -> shared_ptr<WrapperA
 		////////////////////////////////////////
 		// CONSTRUCT INITIAL SET
 		shared_ptr<GAWrapperArray> geneArray = initGenes();
-		shared_ptr<GAPopulation<GAWrapperArray>> population(new GAPopulation<GAWrapperArray>(geneArray, gaParams.getPopulation()));
+		//shared_ptr<GAPopulation<GAWrapperArray>> population(new GAPopulation<GAWrapperArray>(geneArray, gaParams.getPopulation()));
 
-		// EVOLVE
-		PCKGeneticAlgorithm geneticAlgorithm
-		(
-			gaParams.getMutationRate(), 
-			gaParams.getTournament(),
-			wrapperArray // CANDIDATES
-		);
+		//// EVOLVE
+		//PCKGeneticAlgorithm geneticAlgorithm
+		//(
+		//	gaParams.getMutationRate(), 
+		//	gaParams.getTournament(),
+		//	wrapperArray // CANDIDATES
+		//);
 
-		size_t generation = gaParams.getGeneration();
-		for (size_t i = 0; i < generation; i++)
-		{
-			population = geneticAlgorithm.evolvePopulation(population);
+		//size_t generation = gaParams.getGeneration();
+		//for (size_t i = 0; i < generation; i++)
+		//{
+		//	population = geneticAlgorithm.evolvePopulation(population);
 
-			shared_ptr<Event> event(new ProgressEvent(nullptr, i + 1, generation));
-			((Packer*)this)->dispatch(event);
-		}
+		//	shared_ptr<Event> event(new ProgressEvent(nullptr, i + 1, generation));
+		//	((Packer*)this)->dispatch(event);
+		//}
 
-		geneArray = population->fitTest();
+		//geneArray = population->fitTest();
 
 		// FETCH RESULT AND
 		auto &result = geneArray->getResult();
@@ -135,6 +135,9 @@ auto Packer::optimize(const GAParameters &gaParams) const -> shared_ptr<WrapperA
 				else
 					return left->getX() < right->getX();
 			});
+
+	// RETURN WRAPPERS HAVE PACKED.
+	return wrappers;
 }
 
 auto Packer::initGenes() const -> shared_ptr<GAWrapperArray>

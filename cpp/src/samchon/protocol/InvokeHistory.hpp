@@ -4,173 +4,112 @@
 #include <samchon/protocol/Entity.hpp>
 
 #include <samchon/library/Date.hpp>
+#include <samchon/protocol/Invoke.hpp>
 
 namespace samchon
 {
 namespace protocol
 {
-	class Invoke;
-
-	/**
-	 * @brief A history of an Invoke message
-	 *
-	 * @details
-	 * <p> InvokeHistory is a class for reporting history log of an Invoke message with elapsed time 
-	 * from a slave to its master.</p>
-	 *
-	 * <p> With the elapsed time, consumed time for a process of handling the Invoke message, 
-	 * InvokeHistory is reported to the master. The master utilizies the elapsed time to estimating
-	 * performances of each slave system. With the estimated performan index, master retrives the
-	 * optimal solution of distributing processes. </p>
-	 *
-	 * @image html  cpp/protocol_invoke.png
-	 * @image latex cpp/protocol_invoke.png
-	 *
-	 * @see samchon::protocol
-	 * @see samchon::protocol::master
-	 * @see samchon::protocol::slave
-	 *
-	 * @author Jeongho Nam <http://samchon.org>
-	 */
-	class SAMCHON_FRAMEWORK_API InvokeHistory
-		: public virtual Entity
+	class InvokeHistory : public Entity
 	{
-	protected:
+	private:
 		typedef Entity super;
 
-		/**
-		 * @brief An identifier.
-		 */
+	protected:
 		size_t uid;
 
-		/**
-		 * @brief A listener of the Invoke message.
-		 *
-		 * @details
-		 * <p> InvokeHistory does not archive entire data of an Invoke message. InvokeHistory only
-		 * archives its listener. The first, formal reason is to save space, avoid wasting spaces. </p>
-		 *
-		 * <p> The second, complicate reason is on an aspect of which systems are using the
-		 * InvokeHistory class. InvokeHistory is designed to let slave reports to master elapsed time
-		 * of a process used to handling the Invoke message. If you want to archive entire history log
-		 * of Invoke messages, then the subject should be master, not the slave using InvokeHistory
-		 * classes. </p>
-		 */
 		std::string listener;
 
-		/**
-		 * @brief Start time of the history
-		 *
-		 * @details
-		 * <p> Means start time of a process handling the Invoke message. The start time not only
-		 * has ordinary arguments represented Date (year to seconds), but also has very precise
-		 * values under seconds, which is expressed as nano seconds (10^-9). </p>
-		 *
-		 * <p> The precise start time will be used to calculate elapsed time with end time. </p>
-		 */
 		library::Date startTime;
 
-		/**
-		 * @brief End time of the history
-		 *
-		 * @details
-		 * <p> Means end time of a process handling the Invoke message. The end time not only
-		 * has ordinary arguments represented Date (year to seconds), but also has very precise
-		 * values under seconds, which is expressed as nano seconds (10^-9). </p>
-		 *
-		 * <p> The precise end time will be used to calculate elapsed time with start time. </p>
-		 */
 		library::Date endTime;
 
 	public:
-		/* -----------------------------------------------------------------
+		/* ---------------------------------------------------------
 			CONSTRUCTORS
-		----------------------------------------------------------------- */
-		/**
-		 * @brief Default Constructor.
-		 */
-		InvokeHistory();
+		--------------------------------------------------------- */
+		InvokeHistory() : super()
+		{
+		};
 
-		/**
-		 * @brief Construct from an Invoke message.
-		 *
-		 * @details
-		 * <p> InvokeHistory does not archive entire Invoke message, only archives its listener. </p>
-		 *
-		 * @param invoke A message to archive its history log
-		 */
-		InvokeHistory(std::shared_ptr<Invoke>);
+		InvokeHistory(std::shared_ptr<Invoke> invoke) : super()
+		{
+			uid = invoke->get("invoke_history_uid")->getValue<size_t>();
+			listener = invoke->getListener();
+
+			startTime = std::chrono::system_clock::now();
+		};
+
 		virtual ~InvokeHistory() = default;
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			uid = xml->getProperty<size_t>("uid");
+			listener = xml->getProperty("listener");
 
-		/**
-		 * @brief Notify end of the process.
-		 *
-		 * @details
-		 * <p> Notifies end of a process handling the matched Invoke message to InvokeHistory. </p>
-		 * <p> InvokeHistory archives the end datetime and calculates elapsed time as nanoseconds. </p>
-		 */
-		virtual void notifyEnd();
+			startTime = std::chrono::system_clock::from_time_t(0);
+			endTime = std::chrono::system_clock::from_time_t(0);
 
-		/* -----------------------------------------------------------------
-			GETTERS
-		----------------------------------------------------------------- */
-	public:
-		virtual auto key() const->std::string override;
+			startTime += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("startTime"));
+			endTime += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("endTime"));
+		};
 
-		/**
-		 * @brief Get uid.
-		 */
-		auto getUID() const->size_t;
+		void notifyEnd()
+		{
+			endTime = std::chrono::system_clock::now();
+		};
 
-		/**
-		 * @brief Get listener.
-		 */
-		auto getListener() const->std::string;
+		/* ---------------------------------------------------------
+			ACCESSORS
+		--------------------------------------------------------- */
+		auto getUID() const -> size_t
+		{
+			return uid;
+		};
 
-		/**
-		 * @brief Get start time.
-		 */
-		auto getStartTime() const->library::Date;
+		auto getListener() const -> std::string
+		{
+			return listener;
+		};
 
-		/**
-		 * @brief Get end time.
-		 */
-		auto getEndTime() const->library::Date;
+		auto getStartTime() const -> library::Date
+		{
+			return startTime;
+		};
 
-		/**
-		 * @brief Get elapsed time.
-		 *
-		 * @details
-		 * <p> Calculates elapsed time frrom start, end time and Returns it. </p>
-		 *
-		 * <p> The elapsed time will be reported to a master and the master will utilize the elapsed
-		 * time to estimating performance of the slave system, the InvokeHistory is belonged to. </p>
-		 *
-		 * @return An elapsed time expressed as nano seconds.
-		 */
-		auto calcElapsedTime() const -> long long;
+		auto getEndTime() const -> library::Date
+		{
+			return endTime;
+		};
 
-		/* -----------------------------------------------------------------
+		auto getElapsedTime() const -> long long
+		{
+			return (endTime - startTime).count();
+		};
+
+		/* ---------------------------------------------------------
 			EXPORTERS
-		----------------------------------------------------------------- */
-	public:
-		virtual auto TAG() const->std::string override;
+		--------------------------------------------------------- */
+		virtual auto TAG() const -> std::string
+		{
+			return "invokeHistory";
+		};
 
-		virtual auto toXML() const->std::shared_ptr<library::XML> override;
+		virtual auto toXML() const -> std::shared_ptr<library::XML>
+		{
+			std::shared_ptr<library::XML> &xml = super::toXML();
+			xml->setProperty("uid", uid);
+			xml->setProperty("listener", listener);
+			xml->setProperty("startTime", startTime.time_since_epoch().count());
+			xml->setProperty("endTime", endTime.time_since_epoch().count());
 
-		/**
-		 * @brief Get an Invoke message
-		 *
-		 * @details
-		 * <p> Returns an Invoke message to report to a master that how much time was elapsed on a
-		 * process handling the Invoke message. In master, those reports are used to estimate
-		 * performance of each slave system. </p>
-		 *
-		 * @return An Invoke message to report master.
-		 */
-		auto toInvoke() const->std::shared_ptr<Invoke>;
+			return xml;
+		};
+
+		virtual auto toInvoke() const -> std::shared_ptr<Invoke>
+		{
+			return std::make_shared<Invoke>("report_invoke_history", this->toXML());
+		};
 	};
 };
 };

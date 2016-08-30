@@ -22,7 +22,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class Packer
-		extends samchon.protocol.Entity
+		extends protocol.Entity
 	{
 		/**
 		 * Candidate wrappers who can contain instances.
@@ -69,7 +69,7 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public construct(xml: samchon.library.XML): void
+		public construct(xml: library.XML): void
 		{
 			this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
 			this.instanceArray.construct(xml.get(this.instanceArray.TAG()).at(0));
@@ -349,9 +349,9 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
-			let xml: samchon.library.XML = super.toXML();
+			let xml: library.XML = super.toXML();
 			xml.push(this.wrapperArray.toXML());
 			xml.push(this.instanceArray.toXML());
 

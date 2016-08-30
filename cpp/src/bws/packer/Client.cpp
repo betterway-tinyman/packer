@@ -2,14 +2,13 @@
 #include <bws/packer/Client.hpp>
 
 #include <iostream>
-#include <samchon/library/XML.hpp>
-#include <samchon/protocol/Invoke.hpp>
 
 #include <bws/packer/PackerForm.hpp>
 #include <bws/packer/Packer.hpp>
 #include <bws/packer/WrapperArray.hpp>
 #include <samchon/library/GAParameters.hpp>
 
+#include <samchon/library/Date.hpp>
 #include <samchon/library/ProgressEvent.hpp>
 
 using namespace std;
@@ -19,32 +18,24 @@ using namespace samchon::protocol;
 
 void handleProgress(shared_ptr<Event> , void *);
 
-Client::Client(Socket *socket)
-	: super()
+Client::Client(shared_ptr<ClientDriver> driver)
 {
-	this->socket = socket;
+	this->driver = driver;
+	driver->listen(this);
+}
+Client::~Client()
+{
 }
 
-void Client::_replyData(shared_ptr<Invoke> invoke)
+void Client::sendData(shared_ptr<Invoke> invoke)
 {
-	replyData(invoke);
-
-	//try
-	//{
-	//	replyData(invoke);
-	//}
-	//catch (exception &e)
-	//{
-	//	cout << "exception: " << e.what() << endl;
-	//}
-	//catch (...)
-	//{
-	//	cout << "unknown error" << endl;
-	//}
+	driver->sendData(invoke);
 }
 void Client::replyData(shared_ptr<Invoke> invoke)
 {
-	cout << invoke->getListener() << endl;
+	library::Date date;
+
+	cout << invoke->getListener() << " - " << date.toString() << endl;
 
 	if (invoke->getListener() == "pack")
 		pack(invoke->at(0)->getValueAsXML());

@@ -23,7 +23,7 @@ namespace protocol
 	 * pattern. </p>
 	 *
 	 * <p> In Samchon Framework, you can make any type of network system with basic 3 + 1 componenets
-	 * (IProtocol, IServer and IClient + ServerConnector), by implemens or inherits them, like designing
+	 * (IProtocol, Server and IClient + ServerConnector), by implemens or inherits them, like designing
 	 * classes of S/W architecture. </p>
 	 *
 	 * <p> @image html  cpp/protocol_invoke.png

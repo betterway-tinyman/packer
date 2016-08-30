@@ -1,41 +1,24 @@
 #pragma once
 #include <bws/packer/API.hpp>
 
-#include <samchon/protocol/IServer.hpp>
-
-#include <memory>
-
-namespace samchon
-{
-	namespace protocol
-	{
-		class FlashPolicyServer;
-	};
-};
+#include <samchon/protocol/WebServer.hpp>
 
 namespace bws
 {
 namespace packer
 {
-	class Server
-		: public protocol::IServer
+	class Server 
+		: public protocol::WebServer
 	{
 	private:
-		typedef protocol::IServer super;
-
-	protected:
-		virtual auto PORT() const -> int override;
-
-		std::unique_ptr<protocol::FlashPolicyServer> flashPolicyServer;
+		typedef protocol::WebServer super;
 
 	public:
 		Server();
-		virtual ~Server() = default;
-
-		virtual void open() override;
+		virtual ~Server();
 
 	protected:
-		virtual void addClient(protocol::Socket*) override;
+		virtual void addClient(std::shared_ptr<protocol::ClientDriver>) override;
 	};
 };
 };

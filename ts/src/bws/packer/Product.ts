@@ -8,7 +8,7 @@ namespace bws.packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	export class Product 
-		extends samchon.protocol.Entity
+		extends protocol.Entity
 		implements Instance
 	{
 		/**
@@ -167,9 +167,9 @@ namespace bws.packer
 		/**
 		 * @inheritdoc
 		 */
-		public toXML(): samchon.library.XML
+		public toXML(): library.XML
 		{
-			let xml: samchon.library.XML = super.toXML();
+			let xml: library.XML = super.toXML();
 			xml.setProperty("type", this.TYPE());
 
 			return xml;
