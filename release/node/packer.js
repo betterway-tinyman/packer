@@ -11,6 +11,17 @@ try {
     eval("var THREE = require('three')");
 }
 catch (exception) { }
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        packer.library = samchon.library;
+        packer.protocol = samchon.protocol;
+        packer.SERVER_IP = "172.16.0.209";
+        //export const SERVER_IP: string = "127.0.0.1";
+        packer.SERVER_PORT = 37896;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
 /// <reference path="../bws/packer/API.ts" />
 var boxologic;
 (function (boxologic) {
@@ -310,7 +321,7 @@ var bws;
                 return xml;
             };
             return Packer;
-        }(samchon.protocol.Entity));
+        }(packer.protocol.Entity));
         packer.Packer = Packer;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -1508,7 +1519,7 @@ var bws;
                 return packer;
             };
             return PackerForm;
-        }(samchon.protocol.Entity));
+        }(packer_1.protocol.Entity));
         packer_1.PackerForm = PackerForm;
         /**
          * An array of {@link InstanceForm} objects.
@@ -1552,7 +1563,7 @@ var bws;
                 return instanceArray;
             };
             return InstanceFormArray;
-        }(samchon.protocol.EntityArrayCollection));
+        }(packer_1.protocol.EntityArrayCollection));
         packer_1.InstanceFormArray = InstanceFormArray;
         /**
          * <p> A repeated Instance. </p>
@@ -1677,7 +1688,7 @@ var bws;
                 return instanceArray;
             };
             return InstanceForm;
-        }(samchon.protocol.Entity));
+        }(packer_1.protocol.Entity));
         packer_1.InstanceForm = InstanceForm;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -1747,7 +1758,7 @@ var bws;
                 return "instance";
             };
             return WrapperArray;
-        }(samchon.protocol.EntityArrayCollection));
+        }(packer.protocol.EntityArrayCollection));
         packer.WrapperArray = WrapperArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -1875,7 +1886,7 @@ var bws;
                 return "instance";
             };
             return InstanceArray;
-        }(samchon.protocol.EntityArray));
+        }(packer.protocol.EntityArray));
         packer.InstanceArray = InstanceArray;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -2007,7 +2018,7 @@ var bws;
                 return xml;
             };
             return Product;
-        }(samchon.protocol.Entity));
+        }(packer.protocol.Entity));
         packer.Product = Product;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -2424,7 +2435,7 @@ var bws;
                 return objects;
             };
             return Wrap;
-        }(samchon.protocol.Entity));
+        }(packer.protocol.Entity));
         packer.Wrap = Wrap;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -2493,10 +2504,6 @@ var bws;
                     this.thickness = args[5];
                 }
             }
-            Wrapper.prototype.construct = function (xml) {
-                _super.prototype.construct.call(this, xml);
-                console.log(xml.getProperty("length"), this.length);
-            };
             /**
              * @inheritdoc
              */
@@ -2938,7 +2945,7 @@ var bws;
             Wrapper.trackball = null;
             Wrapper.mouse = null;
             return Wrapper;
-        }(samchon.protocol.EntityDeque));
+        }(packer.protocol.EntityDeque));
         packer.Wrapper = Wrapper;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -3183,18 +3190,18 @@ var bws;
                 };
                 var handle_complete = function (event) {
                     var packer_form = new packer.PackerForm();
-                    packer_form.construct(new samchon.library.XML(file_ref.data));
+                    packer_form.construct(new packer.library.XML(file_ref.data));
                     this_.props.instances.assign(packer_form.getInstanceFormArray().begin(), packer_form.getInstanceFormArray().end());
                     this_.props.wrappers.assign(packer_form.getWrapperArray().begin(), packer_form.getWrapperArray().end());
                 };
-                var file_ref = new samchon.library.FileReference();
+                var file_ref = new packer.library.FileReference();
                 file_ref.addEventListener("select", handle_select);
                 file_ref.addEventListener("complete", handle_complete);
                 file_ref.browse();
             };
             ItemEditor.prototype.save = function (event) {
                 var packer_form = new packer.PackerForm(this.props.instances, this.props.wrappers);
-                var file_ref = new samchon.library.FileReference();
+                var file_ref = new packer.library.FileReference();
                 file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
             };
             ItemEditor.prototype.pack = function (event) {
@@ -3214,7 +3221,7 @@ var bws;
             InstanceEditor.prototype.createColumns = function () {
                 var columns = [
                     { key: "$name", name: "Name", editable: true, width: 100 },
-                    { key: "$width", name: "Length", editable: true, width: 60 },
+                    { key: "$width", name: "Width", editable: true, width: 60 },
                     { key: "$height", name: "Height", editable: true, width: 60 },
                     { key: "$length", name: "Length", editable: true, width: 60 },
                     { key: "$count", name: "Count", editable: true, width: 60 }
@@ -3231,11 +3238,12 @@ var bws;
             }
             WrapperEditor.prototype.createColumns = function () {
                 var columns = [
-                    { key: "$name", name: "name", editable: true, width: 100 },
-                    { key: "$width", name: "length", editable: true, width: 60 },
-                    { key: "$height", name: "height", editable: true, width: 60 },
-                    { key: "$length", name: "length", editable: true, width: 60 },
-                    { key: "$thickness", name: "thickness", editable: true, width: 60 }
+                    { key: "$name", name: "Name", editable: true, width: 80 },
+                    { key: "$price", name: "Price", editable: true, width: 70 },
+                    { key: "$width", name: "Width", editable: true, width: 45 },
+                    { key: "$height", name: "Height", editable: true, width: 45 },
+                    { key: "$length", name: "Length", editable: true, width: 45 },
+                    { key: "$thickness", name: "Thickness", editable: true, width: 45 }
                 ];
                 return columns;
             };
@@ -3254,6 +3262,9 @@ var bws;
     (function (packer_2) {
         var PackerApplication = (function (_super) {
             __extends(PackerApplication, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
             /**
              * Default Constructor.
              */
@@ -3265,28 +3276,40 @@ var bws;
                 // INITIAL, EXMAPLE DATA
                 this.wrappers.push(new packer_2.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_2.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_2.Wrapper("Small", 500, 15, 15, 8, 0));
                 this.instances.push(new packer_2.InstanceForm(new packer_2.Product("Eraser", 1, 2, 5), 15), new packer_2.InstanceForm(new packer_2.Product("Book", 15, 30, 3), 15), new packer_2.InstanceForm(new packer_2.Product("Drink", 3, 3, 10), 15), new packer_2.InstanceForm(new packer_2.Product("Umbrella", 5, 5, 20), 15), new packer_2.InstanceForm(new packer_2.Product("Notebook-Box", 30, 40, 4), 15), new packer_2.InstanceForm(new packer_2.Product("Tablet-Box", 20, 28, 2), 15));
+                this.connector = new packer_2.protocol.WebServerConnector(this);
+                this.connector.connect(packer_2.SERVER_IP, packer_2.SERVER_PORT);
             }
+            /* -----------------------------------------------------------
+                PROCEDURES
+            ----------------------------------------------------------- */
             PackerApplication.prototype.pack = function () {
-                /////
-                // FIND THE OPTIMIZED SOLUTION
-                /////
-                var packer = new packer_2.PackerForm(this.instances, this.wrappers).toPacker();
-                var result;
-                try {
-                    result = packer.optimize();
+                var packer_form = new packer_2.PackerForm(this.instances, this.wrappers);
+                if (this.connector.isConnected() == true) {
+                    var invoke = new packer_2.protocol.Invoke("pack", packer_form.toXML());
+                    this.sendData(invoke);
                 }
-                catch (exception) {
-                    alert(exception.what());
-                    return;
+                else {
+                    /////
+                    // FIND THE OPTIMIZED SOLUTION
+                    /////
+                    var packer_3 = packer_form.toPacker();
+                    var result = void 0;
+                    try {
+                        result = packer_3.optimize();
+                    }
+                    catch (exception) {
+                        alert(exception.what());
+                        return;
+                    }
+                    this.result.assign(result.begin(), result.end());
+                    /////
+                    // DRAW THE 1ST WRAPPER
+                    /////
+                    if (this.result.empty() == true)
+                        return;
+                    this.drawWrapper(this.result.front());
+                    this.refs["tabNavigator"].setState({ selectedIndex: 1 });
                 }
-                this.result.assign(result.begin(), result.end());
-                /////
-                // DRAW THE 1ST WRAPPER
-                /////
-                if (this.result.empty() == true)
-                    return;
-                this.drawWrapper(this.result.front());
-                this.refs["tabNavigator"].setState({ selectedIndex: 1 });
             };
             PackerApplication.prototype.drawWrapper = function (wrapper, index) {
                 if (index === void 0) { index = wrapper.size(); }
@@ -3298,6 +3321,26 @@ var bws;
                     div.removeChild(div.childNodes[0]);
                 div.appendChild(canvas);
             };
+            /* -----------------------------------------------------------
+                INVOKE MESSAGE CHAIN
+            ----------------------------------------------------------- */
+            PackerApplication.prototype.sendData = function (invoke) {
+                this.connector.sendData(invoke);
+            };
+            PackerApplication.prototype.replyData = function (invoke) {
+                console.log(invoke.getListener());
+                invoke.apply(this);
+            };
+            PackerApplication.prototype.setWrapperArray = function (xml) {
+                this.result.construct(xml);
+                if (this.result.empty() == true)
+                    return;
+                this.drawWrapper(this.result.front());
+                this.refs["tabNavigator"].setState({ selectedIndex: 1 });
+            };
+            /* -----------------------------------------------------------
+                RENDERERS
+            ----------------------------------------------------------- */
             PackerApplication.prototype.render = function () {
                 var ret = React.createElement("div", null, React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, React.createElement("img", {src: "images/redprinting_logo.png", width: "250"}))));
                 return ret;
@@ -3338,20 +3381,20 @@ var bws;
                     file_ref.load();
                 };
                 var handle_complete = function (event) {
-                    this_.props.wrappers.construct(new samchon.library.XML(file_ref.data));
+                    this_.props.wrappers.construct(new packer.library.XML(file_ref.data));
                     if (this_.props.wrappers.empty() == true)
                         this_.drawWrapper(new packer.Wrapper());
                     else
                         this_.drawWrapper(this_.props.wrappers.front());
                     this_.refresh();
                 };
-                var file_ref = new samchon.library.FileReference();
+                var file_ref = new packer.library.FileReference();
                 file_ref.addEventListener("select", handle_select);
                 file_ref.addEventListener("complete", handle_complete);
                 file_ref.browse();
             };
             ResultViewer.prototype.save = function (event) {
-                var file_ref = new samchon.library.FileReference();
+                var file_ref = new packer.library.FileReference();
                 file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
             };
             ResultViewer.prototype.refresh = function () {

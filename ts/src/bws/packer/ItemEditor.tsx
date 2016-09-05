@@ -90,7 +90,7 @@ namespace bws.packer
 			let columns: AdazzleReactDataGrid.Column[] = 
 				[
 					{ key: "$name", name: "Name", editable: true, width: 100 },
-					{ key: "$width", name: "Length", editable: true, width: 60 },
+					{ key: "$width", name: "Width", editable: true, width: 60 },
 					{ key: "$height", name: "Height", editable: true, width: 60 },
 					{ key: "$length", name: "Length", editable: true, width: 60 },
 					{ key: "$count", name: "Count", editable: true, width: 60 }
@@ -105,11 +105,12 @@ namespace bws.packer
 		{
 			let columns: AdazzleReactDataGrid.Column[] =
 				[
-					{ key: "$name", name: "name", editable: true, width: 100 },
-					{ key: "$width", name: "length", editable: true, width: 60 },
-					{ key: "$height", name: "height", editable: true, width: 60 },
-					{ key: "$length", name: "length", editable: true, width: 60 },
-					{ key: "$thickness", name: "thickness", editable: true, width: 60 }
+					{ key: "$name", name: "Name", editable: true, width: 80 },
+					{ key: "$price", name: "Price", editable: true, width: 70 },
+					{ key: "$width", name: "Width", editable: true, width: 45 },
+					{ key: "$height", name: "Height", editable: true, width: 45 },
+					{ key: "$length", name: "Length", editable: true, width: 45 },
+					{ key: "$thickness", name: "Thickness", editable: true, width: 45 }
 				];
 			return columns;
 		}

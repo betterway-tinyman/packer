@@ -14,6 +14,12 @@ declare module "3d-bin-packing"
         export = bws.packer;
 }
 declare var ReactDataGrid: typeof AdazzleReactDataGrid.ReactDataGrid;
+declare namespace bws.packer {
+    export import library = samchon.library;
+    export import protocol = samchon.protocol;
+    const SERVER_IP: string;
+    const SERVER_PORT: number;
+}
 declare namespace boxologic {
     /**
      * <p> An abstract instance of boxologic. </p>
@@ -81,7 +87,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class Packer extends samchon.protocol.Entity {
+    class Packer extends protocol.Entity {
         /**
          * Candidate wrappers who can contain instances.
          */
@@ -104,7 +110,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        construct(xml: samchon.library.XML): void;
+        construct(xml: library.XML): void;
         /**
          * Get wrapperArray.
          */
@@ -158,7 +164,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
     }
 }
 declare namespace flex {
@@ -588,7 +594,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class PackerForm extends samchon.protocol.Entity {
+    class PackerForm extends protocol.Entity {
         /**
          * Form of Instances to pack.
          */
@@ -608,12 +614,12 @@ declare namespace bws.packer {
          * @param wrapperArray Type of Wrappers to be used.
          */
         constructor(instanceFormArray: InstanceFormArray, wrapperArray: WrapperArray);
-        construct(xml: samchon.library.XML): void;
+        construct(xml: library.XML): void;
         optimize(): WrapperArray;
         getInstanceFormArray(): InstanceFormArray;
         getWrapperArray(): WrapperArray;
         TAG(): string;
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
         toPacker(): Packer;
     }
     /**
@@ -621,12 +627,12 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class InstanceFormArray extends samchon.protocol.EntityArrayCollection<InstanceForm> {
+    class InstanceFormArray extends protocol.EntityArrayCollection<InstanceForm> {
         /**
          * Default Constructor.
          */
         constructor();
-        createChild(xml: samchon.library.XML): InstanceForm;
+        createChild(xml: library.XML): InstanceForm;
         TAG(): string;
         CHILD_TAG(): string;
         /**
@@ -644,7 +650,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class InstanceForm extends samchon.protocol.Entity {
+    class InstanceForm extends protocol.Entity {
         /**
          * A duplicated Instance.
          */
@@ -660,7 +666,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        construct(xml: samchon.library.XML): void;
+        construct(xml: library.XML): void;
         private createInstance(xml);
         key(): any;
         getInstance(): Instance;
@@ -678,7 +684,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
         /**
          * <p> Repeated {@link instance} to {@link InstanceArray}.
          *
@@ -693,7 +699,7 @@ declare namespace bws.packer {
     }
 }
 declare namespace bws.packer {
-    class WrapperArray extends samchon.protocol.EntityArrayCollection<Wrapper> {
+    class WrapperArray extends protocol.EntityArrayCollection<Wrapper> {
         /**
          * Default Constructor.
          */
@@ -701,7 +707,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        createChild(xml: samchon.library.XML): Wrapper;
+        createChild(xml: library.XML): Wrapper;
         /**
          * Get (calculate) price.
          */
@@ -755,7 +761,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    interface Instance extends samchon.protocol.IEntity {
+    interface Instance extends protocol.IEntity {
         /**
          * Get name.
          */
@@ -812,7 +818,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class InstanceArray extends samchon.protocol.EntityArray<Instance> {
+    class InstanceArray extends protocol.EntityArray<Instance> {
         /**
          * Default Constructor.
          */
@@ -820,7 +826,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        createChild(xml: samchon.library.XML): Instance;
+        createChild(xml: library.XML): Instance;
         /**
          * @inheritdoc
          */
@@ -837,7 +843,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class Product extends samchon.protocol.Entity implements Instance {
+    class Product extends protocol.Entity implements Instance {
         /**
          * <p> Name, key of the Product. </p>
          *
@@ -920,7 +926,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
     }
 }
 declare namespace bws.packer {
@@ -936,7 +942,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class Wrap extends samchon.protocol.Entity {
+    class Wrap extends protocol.Entity {
         /**
          * A wrapper wrapping the {@link instance}.
          */
@@ -995,7 +1001,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        construct(xml: samchon.library.XML): void;
+        construct(xml: library.XML): void;
         /**
          * Factory method of wrapped Instance.
          *
@@ -1080,7 +1086,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
         /**
          * Thickness of boundary lines of a shape represents the {@link instance}.
          */
@@ -1101,7 +1107,7 @@ declare namespace bws.packer {
      *
      * @author Jeongho Nam <http://samchon.org>
      */
-    class Wrapper extends samchon.protocol.EntityDeque<Wrap> implements Instance {
+    class Wrapper extends protocol.EntityDeque<Wrap> implements Instance {
         /**
          * <p> Name, key of the Wrapper. </p>
          *
@@ -1150,11 +1156,10 @@ declare namespace bws.packer {
          * @param thickness A thickness causes shrinkness on containable volume.
          */
         constructor(name: string, price: number, width: number, height: number, length: number, thickness: number);
-        construct(xml: samchon.library.XML): void;
         /**
          * @inheritdoc
          */
-        createChild(xml: samchon.library.XML): Wrap;
+        createChild(xml: library.XML): Wrap;
         /**
          * Key of a Wrapper is its name.
          */
@@ -1288,7 +1293,7 @@ declare namespace bws.packer {
         /**
          * @inheritdoc
          */
-        toXML(): samchon.library.XML;
+        toXML(): library.XML;
         private static scene;
         private static renderer;
         private static camera;
@@ -1430,8 +1435,8 @@ declare namespace bws.packer {
     }
 }
 declare namespace bws.packer {
-    abstract class Editor<T extends samchon.protocol.IEntity> extends React.Component<{
-        dataProvider: samchon.protocol.EntityArrayCollection<T>;
+    abstract class Editor<T extends protocol.IEntity> extends React.Component<{
+        dataProvider: protocol.EntityArrayCollection<T>;
     }, {}> {
         private columns;
         private selected_index;
@@ -1470,7 +1475,8 @@ declare namespace bws.packer {
     }
 }
 declare namespace bws.packer {
-    class PackerApplication extends React.Component<{}, {}> {
+    class PackerApplication extends React.Component<{}, {}> implements protocol.IProtocol {
+        private connector;
         private instances;
         private wrappers;
         private result;
@@ -1480,6 +1486,9 @@ declare namespace bws.packer {
         constructor();
         pack(): void;
         drawWrapper(wrapper: Wrapper, index?: number): void;
+        sendData(invoke: protocol.Invoke): void;
+        replyData(invoke: protocol.Invoke): void;
+        private setWrapperArray(xml);
         render(): JSX.Element;
         static main(): void;
     }
