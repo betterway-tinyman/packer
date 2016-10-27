@@ -18,7 +18,7 @@ namespace library
 	 * \par [Inherited]
 	 * @copydetails library::SQLStatement
 	 */
-	class SAMCHON_FRAMEWORK_API TSQLStatement
+	class TSQLStatement
 		: public SQLStatement
 	{
 		friend class TSQLi;
@@ -27,7 +27,10 @@ namespace library
 		typedef SQLStatement super;
 
 	protected:
-		TSQLStatement(SQLi *sqli);
+		TSQLStatement(SQLi *sqli)
+			: super(sqli)
+		{
+		};
 
 	public:
 		virtual ~TSQLStatement();
@@ -40,7 +43,14 @@ namespace library
 		 *
 		 * @return XML represents records
 		 */
-		virtual auto toXML() const -> std::shared_ptr<XML> override;
+		virtual auto toXML() const -> std::shared_ptr<XML> override
+		{
+			fetch();
+			std::string &str = super::at<std::string>(0);
+
+			std::shared_ptr<XML> xml(new XML(str));
+			return xml;
+		};
 	};
 };
 };

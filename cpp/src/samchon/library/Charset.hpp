@@ -27,7 +27,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API Charset
+	class Charset
 	{
 	public:
 		enum : int
@@ -48,7 +48,13 @@ namespace library
 		 * @param str A utf-8 string would be converted to multibyte
 		 * @return A multibyte string
 		 */
-		static auto toMultibyte(const std::string &)->std::string;
+		static auto toMultibyte(const std::string &source) -> std::string
+		{
+			std::wstring &wstr = toUnicode(source, UTF8);
+			std::string &dest = toMultibyte(wstr);
+
+			return dest;
+		};
 
 		/**
 		 * @brief Convert unicode to multibyte
@@ -62,7 +68,32 @@ namespace library
 		 * @param str A unicode string to be converted
 		 * @return A multibyte string
 		 */
-		static auto toMultibyte(const std::wstring &)->std::string;
+		static auto toMultibyte(const std::wstring &source) -> std::string
+		{
+			using namespace std;
+			typedef codecvt<wchar_t, char, mbstate_t> codecvt_t;
+
+			locale &loc = locale("");
+
+			codecvt_t const& codecvt = use_facet<codecvt_t>(loc);
+			mbstate_t state = mbstate_t();
+			vector<char> buf(source.size() * codecvt.max_length());
+			wchar_t const* in_next = source.c_str();
+			char* out_next = &buf[0];
+
+			codecvt_base::result r =
+				codecvt.out
+				(
+					state,
+					source.c_str(), source.c_str() + source.size(), in_next,
+					&buf[0], &buf[0] + buf.size(), out_next
+				);
+
+			if (r == codecvt_base::error)
+				throw runtime_error("can't convert wstring to string");
+
+			return string(buf.begin(), buf.end());
+		};
 
 		/**
 		 * @brief Convert multibyte to utf-8
@@ -75,7 +106,16 @@ namespace library
 		 * @param str A multibyte string would be converted
 		 * @return A utf-8 string
 		 */
-		static auto toUTF8(const std::string &)->std::string;
+		static auto toUTF8(const std::string &source) -> std::string
+		{
+			std::wstring &wstr = toUnicode(source, MULTIBYTE);
+			std::string &dest = toUTF8(wstr);
+
+			if (dest.back() == NULL)
+				dest.pop_back();
+
+			return dest;
+		};
 
 		/**
 		 * @brief Convert unicode to utf-8
@@ -89,19 +129,58 @@ namespace library
 		 * @param str A unicode string would be converted
 		 * @return A utf-8 string
 		 */
-		static auto toUTF8(const std::wstring &)->std::string;
+		static auto toUTF8(const std::wstring &source) -> std::string
+		{
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> utf8Converter;
+
+			return utf8Converter.to_bytes(source);
+		};
 
 		/**
 		 * @brief Convert multibyte or utf-8 to unicode
-		 *
-		 * @details
-		 *
 		 *
 		 * @param str A multibyte or utf-8 string would be converted
 		 * @param Designate str is multibyte or utf-8 string
 		 * @return A unicode string
 		 */
-		static auto toUnicode(const std::string &, int)->std::wstring;
+		static auto toUnicode(const std::string &source, int charset) -> std::wstring
+		{
+			using namespace std;
+
+			if (charset == MULTIBYTE)
+			{
+				locale &loc = locale("");
+
+				typedef codecvt<wchar_t, char, mbstate_t> codecvt_t;
+				codecvt_t const& codecvt = use_facet<codecvt_t>(loc);
+				mbstate_t state = mbstate_t();
+				vector<wchar_t> buf(source.size());
+				char const* in_next = source.c_str();
+				wchar_t* out_next = &buf[0];
+
+				codecvt_base::result r =
+					codecvt.in
+					(
+						state,
+						source.c_str(), source.c_str() + source.size(), in_next,
+						&buf[0], &buf[0] + buf.size(), out_next
+					);
+
+				if (r == codecvt_base::error)
+					throw runtime_error("can't convert string to wstring");
+
+				return wstring(buf.begin(), buf.end());
+			}
+			else if (charset == UTF8)
+			{
+				wstring_convert<codecvt_utf8_utf16<wchar_t>> utf8Converter;
+				wstring &wstr = move(utf8Converter.from_bytes(source));
+
+				return wstr;
+			}
+			else
+				return L"";
+		};
 	};
 };
 };

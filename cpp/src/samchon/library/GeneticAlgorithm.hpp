@@ -24,11 +24,7 @@ namespace library
 	 *
 	 *	\li Referenced Wikipedia: https://en.wikipedia.org/wiki/Genetic_algorithm
 	 *
-	 * <p> @image html cpp/subset/library_genetic_algorithm.png
-	 * @image latex cpp/subset/library_genetic_algorithm.png </p>
-	 *
-	 * \par Example Sources
-	 * 	\li example::tsp
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_math.png)
 	 *
 	 * @warning
 	 * <p> Be careful for the mistakes of direction or position of Compare. </p>
@@ -56,11 +52,8 @@ namespace library
 	 auto operator()(const _Ty &newObj, const _Ty &prevObj) const -> bool;
 	 };
 	 * @endcode
-	 *
-	 * @see library::GAPopulation
-	 * @see samchon::library
-	 * @see example::tsp
 	 * 
+	 * @handbook [Library - Genetic Algorithm](https://github.com/samchon/framework/wiki/CPP-Library-Genetic_Algorithm)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <typename GeneArray, typename Compare = std::less<GeneArray>>

@@ -14,8 +14,7 @@ namespace protocol
 	 * pattern. It's suitable for a supplementary processes are required on an entity like calculation
 	 * or historical regression about an entity. </p>
 	 *
-	 * @image html  cpp/protocol_entity.png
-	 * @image latex cpp/protocol_entity.png
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_entity.png)
 	 *
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>

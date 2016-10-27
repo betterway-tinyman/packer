@@ -44,20 +44,13 @@ namespace library
 	 * <p> The success of evolution of genetic algorithm is depend on the GAPopulation's initial set
 	 * and fitting test. (GeneArray and Compare.) </p>
 	 *
-	 * <p> @image html cpp/subset/library_genetic_algorithm.png
-	 * @image latex cpp/subset/library_genetic_algorithm.png </p>
-	 *
-	 * \par Example Sources
-	 *	\li example::tsp
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_math.png)
 	 *
 	 * @warning
 	 * <p> Be careful for the mistakes of direction or position of Compare. </p>
 	 * <p> Most of logical errors failed to access optimal solution are occured from those mistakes. </p>
 	 *
-	 * @see library::GeneticAlgorithm
-	 * @see samchon::library
-	 * @see example::tsp
-	 *
+	 * @handbook [Library - Genetic Algorithm](https://github.com/samchon/framework/wiki/CPP-Library-Genetic_Algorithm)
 	 * @author Jeonghoh Nam
 	 */
 	template <typename GeneArray, typename Compare = std::less<GeneArray>>

@@ -13,10 +13,10 @@ namespace packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Instance
-		: public virtual protocol::Entity
+		: public virtual protocol::Entity<std::string>
 	{
 	private:
-		typedef protocol::Entity super;
+		typedef protocol::Entity<std::string> super;
 
 	protected:
 		/**

@@ -2,6 +2,7 @@
 #include <samchon/API.hpp>
 
 #include <samchon/library/SQLi.hpp>
+#include <samchon/library/TSQLStatement.hpp>
 
 namespace samchon
 {
@@ -16,7 +17,7 @@ namespace library
 	 * \par [Inherited]
 	 * @copydetails library::SQLi
 	 */
-	class SAMCHON_FRAMEWORK_API TSQLi
+	class TSQLi
 		: public SQLi
 	{
 	private:
@@ -28,8 +29,11 @@ namespace library
 		 *
 		 * @param port Port number of T-SQL. default is 1433.
 		 */
-		TSQLi(int port = 1433);
-		virtual ~TSQLi();
+		TSQLi(int port = 1433)
+			: super("{SQL Server}", port)
+		{
+		};
+		virtual ~TSQLi() = default;
 
 		/**
 		 * @brief Factory method for creating T-SQL statement
@@ -42,7 +46,10 @@ namespace library
 		 * 
 		 * @return A T-SQL statement
 		 */
-		virtual auto createStatement() -> std::shared_ptr<SQLStatement>;
+		/*virtual auto createStatement() -> std::shared_ptr<SQLStatement>
+		{
+			return std::make_shared<TSQLStatement>(this);
+		};*/
 	};
 };
 };

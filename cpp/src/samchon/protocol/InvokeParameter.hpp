@@ -27,12 +27,7 @@ namespace protocol
 	 * values of the custom type must be enable to expressed by one of those types; number, string, XML
 	 * and ByteArray. </p>
 	 *
-	 * <p> @image html  cpp/protocol_invoke.png
-	 *	   @image latex cpp/protocol_invoke.png </p>
-	 *
-	 * \par Example Sources
-	 *	\li example::invoke
-	 *	\li example::interaction
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_invoke.png)
 	 *
 	 * @note
 	 * <p> A member variable void* representing any type of value is deprecated. </p>
@@ -45,21 +40,17 @@ namespace protocol
 	 * replaced to <i>boost::any</i>. And the <i>void* value</i> is really deprecated since
 	 * version v1.0. </p>
 	 *
-	 * \par [Inherited]
-	 *		@copydetails protocol::Entity
-	 *
-	 * @see protocol::Invoke
-	 * @see samchon::protocol
-	 *
+	 * @see {@link IProtocol}
+	 * @handbook  [Protocol - Standard Message](https://github.com/samchon/framework/wiki/CPP-Protocol-Standard_Message)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class InvokeParameter
-		: public virtual Entity
+		: public virtual Entity<>
 	{
 		friend class Invoke;
 
 	protected:
-		typedef Entity super;
+		typedef Entity<std::string> super;
 
 		/**
 		 * @brief A name can represent the parameter
@@ -275,7 +266,7 @@ namespace protocol
 		/**
 		 * @brief Get name
 		 */
-		auto get_name() const->std::string
+		auto getName() const->std::string
 		{
 			return name;
 		};

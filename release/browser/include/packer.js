@@ -1,8 +1,9 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+/// <reference types="react" />
+/// <reference types="react-dom" />
+/// <reference types="react-data-grid" />
+/// <reference types="three" />
+/// <reference types="typescript-stl" />
+/// <reference types="samchon-framework" />
 try {
     eval("var std = require('typescript-stl')");
     eval("var samchon = require('samchon-framework')");
@@ -17,8 +18,8 @@ var bws;
     (function (packer) {
         packer.library = samchon.library;
         packer.protocol = samchon.protocol;
-        packer.SERVER_IP = "172.16.0.209";
-        //export const SERVER_IP: string = "127.0.0.1";
+        //export const SERVER_IP: string = "172.16.0.209";
+        packer.SERVER_IP = "127.0.0.1";
         packer.SERVER_PORT = 37896;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -59,327 +60,12 @@ var boxologic;
     }());
     boxologic.Instance = Instance;
 })(boxologic || (boxologic = {}));
-/// <reference path="API.ts" />
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        /**
-         * @brief Packer, a solver of 3d bin packing with multiple wrappers.
-         *
-         * @details
-         * <p> Packer is a facade class supporting packing operations in user side. You can solve a packing problem
-         * by constructing Packer class with {@link WrapperArray wrappers} and {@link InstanceArray instances} to
-         * pack and executing {@link optimize Packer.optimize()} method. </p>
-         *
-         * <p> In background side, deducting packing solution, those algorithms are used. </p>
-         * <ul>
-         *	<li> <a href="http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf" target="_blank">
-         *		Airforce Bin Packing; 3D pallet packing problem: A human intelligence-based heuristic approach </a>
-         *	</li>
-         *	<li> Genetic Algorithm </li>
-         *	<li> Greedy and Back-tracking algorithm </li>
-         * </ul>
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var Packer = (function (_super) {
-            __extends(Packer, _super);
-            function Packer(wrapperArray, instanceArray) {
-                if (wrapperArray === void 0) { wrapperArray = null; }
-                if (instanceArray === void 0) { instanceArray = null; }
-                _super.call(this);
-                if (wrapperArray == null && instanceArray == null) {
-                    this.wrapperArray = new packer.WrapperArray();
-                    this.instanceArray = new packer.InstanceArray();
-                }
-                else {
-                    this.wrapperArray = wrapperArray;
-                    this.instanceArray = instanceArray;
-                }
-            }
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.construct = function (xml) {
-                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
-                this.instanceArray.construct(xml.get(this.instanceArray.TAG()).at(0));
-            };
-            /* -----------------------------------------------------------
-                GETTERS
-            ----------------------------------------------------------- */
-            /**
-             * Get wrapperArray.
-             */
-            Packer.prototype.getWrapperArray = function () {
-                return this.wrapperArray;
-            };
-            /**
-             * Get instanceArray.
-             */
-            Packer.prototype.getInstanceArray = function () {
-                return this.instanceArray;
-            };
-            /* -----------------------------------------------------------
-                OPTIMIZERS
-            ----------------------------------------------------------- */
-            /**
-             * <p> Deduct
-             *
-             */
-            Packer.prototype.optimize = function () {
-                if (this.instanceArray.empty() || this.wrapperArray.empty())
-                    throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
-                var wrappers = new packer.WrapperArray(); // TO BE RETURNED
-                if (this.wrapperArray.size() == 1) {
-                    // ONLY A TYPE OF WRAPPER EXISTS,
-                    // OPTMIZE IN LEVEL OF WRAPPER_GROUP AND TERMINATE THE OPTIMIZATION
-                    var wrapperGroup = new packer.WrapperGroup(this.wrapperArray.front());
-                    for (var i = 0; i < this.instanceArray.size(); i++)
-                        if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
-                            throw new std.LogicError("All instances are greater than the wrapper.");
-                    // OPTIMIZE
-                    wrapperGroup.optimize();
-                    // ASSIGN WRAPPERS
-                    wrappers.assign(wrapperGroup.begin(), wrapperGroup.end());
-                }
-                else {
-                    ////////////////////////////////////////
-                    // WITH GENETIC_ALGORITHM
-                    ////////////////////////////////////////
-                    // CONSTRUCT INITIAL SET
-                    var geneArray = this.initGenes();
-                    // EVOLVE
-                    // IN JAVA_SCRIPT VERSION, GENETIC_ALGORITHM IS NOT IMPLEMENTED YET.
-                    // HOWEVER, IN C++ VERSION, IT IS FULLY SUPPORTED
-                    //	http://samchon.github.io/framework/api/cpp/d5/d28/classsamchon_1_1library_1_1GeneticAlgorithm.html
-                    // IT WILL BE SUPPORTED SOON
-                    // FETCH RESULT
-                    var result = geneArray.getResult();
-                    for (var it = result.begin(); !it.equal_to(result.end()); it = it.next())
-                        wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
-                    // TRY TO REPACK
-                    wrappers = this.repack(wrappers);
-                }
-                // SORT THE WRAPPERS BY ITEMS' POSITION
-                for (var i = 0; i < wrappers.size(); i++) {
-                    var wrapper = wrappers[i];
-                    var begin = wrapper.begin();
-                    var end = wrapper.end();
-                    std.sort(wrapper.begin(), wrapper.end(), function (left, right) {
-                        if (left.getZ() != right.getZ())
-                            return left.getZ() < right.getZ();
-                        else if (left.getY() != right.getY())
-                            return left.getY() < right.getY();
-                        else
-                            return left.getX() < right.getX();
-                    });
-                }
-                if (wrappers.empty() == true)
-                    throw new std.LogicError("All instances are greater than the wrapper.");
-                return wrappers;
-            };
-            /**
-             * @brief Initialize sequence list (gene_array).
-             *
-             * @details
-             * <p> Deducts initial sequence list by such assumption: </p>
-             *
-             * <ul>
-             *	<li> Cost of larger wrapper is less than smaller one, within framework of price per volume unit. </li>
-             *	<ul>
-             *		<li> Wrapper Larger: (price: $1,000, volume: 100cm^3 -> price per volume unit: $10 / cm^3) </li>
-             *		<li> Wrapper Smaller: (price: $700, volume: 50cm^3 -> price per volume unit: $14 / cm^3) </li>
-             *		<li> Larger's <u>cost</u> is less than Smaller, within framework of price per volume unit </li>
-             *	</ul>
-             * </ul>
-             *
-             * <p> Method {@link initGenes initGenes()} constructs {@link WrapperGroup WrapperGroups} corresponding
-             * with the {@link wrapperArray} and allocates {@link instanceArray instances} to a {@link WrapperGroup},
-             * has the smallest <u>cost</u> between containbles. </p>
-             *
-             * <p> After executing packing solution by {@link WrapperGroup.optimize WrapperGroup.optimize()}, trying to
-             * {@link repack re-pack} each {@link WrapperGroup} to another type of {@link Wrapper}, deducts the best
-             * solution between them. It's the initial sequence list of genetic algorithm. </p>
-             *
-             * @return Initial sequence list.
-             */
-            Packer.prototype.initGenes = function () {
-                ////////////////////////////////////////////////////
-                // LINEAR OPTIMIZATION
-                ////////////////////////////////////////////////////
-                // CONSTRUCT WRAPPER_GROUPS
-                var wrapperGroups = new std.Vector();
-                for (var i = 0; i < this.wrapperArray.size(); i++) {
-                    var wrapper = this.wrapperArray.at(i);
-                    wrapperGroups.push_back(new packer.WrapperGroup(wrapper));
-                }
-                // ALLOCATE INSTNACES BY AUTHORITY
-                for (var i = 0; i < this.instanceArray.size(); i++) {
-                    var instance = this.instanceArray.at(i);
-                    var minCost = Number.MAX_VALUE;
-                    var minIndex = 0;
-                    for (var j = 0; j < this.wrapperArray.size(); j++) {
-                        var wrapper = this.wrapperArray.at(j);
-                        if (wrapper.containable(instance) == false)
-                            continue; // CANNOT CONTAIN BY ITS GREATER SIZE
-                        var cost = wrapper.getPrice() / wrapper.getContainableVolume();
-                        if (cost < minCost) {
-                            // CURRENT WRAPPER'S PRICE PER UNIT VOLUME IS CHEAPER
-                            minCost = cost;
-                            minIndex = j;
-                        }
-                    }
-                    // ALLOCATE TO A GROUP WHICH HAS THE MOST CHEAPER PRICE PER UNIT VOLUME
-                    var wrapperGroup = wrapperGroups.at(minIndex);
-                    wrapperGroup.allocate(instance);
-                }
-                ////////////////////////////////////////////////////
-                // ADDICTIONAL OPTIMIZATION BY POST-PROCESS
-                ////////////////////////////////////////////////////0
-                // OPTIMIZE WRAPPER_GROUP
-                var wrappers = new packer.WrapperArray();
-                for (var i = 0; i < wrapperGroups.size(); i++) {
-                    var wrapperGroup = wrapperGroups.at(i);
-                    wrapperGroup.optimize();
-                    wrappers.insert(wrappers.end(), wrapperGroup.begin(), wrapperGroup.end());
-                }
-                // DO EARLY POST-PROCESS
-                wrappers = this.repack(wrappers);
-                ////////////////////////////////////////////////////
-                // CONSTRUCT GENE_ARRAY
-                ////////////////////////////////////////////////////
-                // INSTANCES AND GENES
-                var ga_instances = new packer.InstanceArray();
-                var genes = new packer.WrapperArray();
-                for (var i = 0; i < wrappers.size(); i++) {
-                    var wrapper = wrappers.at(i);
-                    for (var j = 0; j < wrapper.size(); j++) {
-                        ga_instances.push_back(wrapper.at(j).getInstance());
-                        genes.push_back(wrapper);
-                    }
-                }
-                // GENE_ARRAY
-                var geneArray = new packer.GAWrapperArray(ga_instances);
-                geneArray.assign(genes.begin(), genes.end());
-                return geneArray;
-            };
-            /**
-             * Try to repack each wrappers to another type.
-             *
-             * @param $wrappers Wrappers to repack.
-             * @return Re-packed wrappers.
-             */
-            Packer.prototype.repack = function ($wrappers) {
-                var result = new packer.WrapperArray();
-                for (var i = 0; i < $wrappers.size(); i++) {
-                    var wrapper = $wrappers.at(i);
-                    var minGroup = new packer.WrapperGroup(wrapper);
-                    minGroup.push_back(wrapper);
-                    for (var j = 0; j < this.wrapperArray.size(); j++) {
-                        var myWrapper = this.wrapperArray.at(j);
-                        if (wrapper.equal_to(myWrapper))
-                            continue;
-                        var valid = true;
-                        // CONSTRUCT GROUP OF TARGET
-                        var myGroup = new packer.WrapperGroup(myWrapper);
-                        for (var k = 0; k < wrapper.size(); k++)
-                            if (myGroup.allocate(wrapper.at(k).getInstance()) == false) {
-                                // IF THERE'S AN INSTANCE CANNOT CONTAIN BY ITS GREATER SIZE
-                                valid = false;
-                                break;
-                            }
-                        // SKIP
-                        if (valid == false)
-                            continue;
-                        // OPTIMIZATION IN LEVEL OF GROUP
-                        myGroup.optimize();
-                        // CURRENT GROUP IS CHEAPER, THEN REPLACE
-                        if (myGroup.getPrice() < minGroup.getPrice())
-                            minGroup = myGroup;
-                    }
-                    result.insert(result.end(), minGroup.begin(), minGroup.end());
-                }
-                return result;
-            };
-            /* -----------------------------------------------------------
-                EXPORTERS
-            ----------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.TAG = function () {
-                return "packer";
-            };
-            /**
-             * @inheritdoc
-             */
-            Packer.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                xml.push(this.wrapperArray.toXML());
-                xml.push(this.instanceArray.toXML());
-                return xml;
-            };
-            return Packer;
-        }(packer.protocol.Entity));
-        packer.Packer = Packer;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
 /// <reference path="../bws/packer/API.ts" />
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var flex;
-(function (flex) {
-    var TabNavigator = (function (_super) {
-        __extends(TabNavigator, _super);
-        function TabNavigator() {
-            _super.apply(this, arguments);
-        }
-        TabNavigator.prototype.render = function () {
-            if (this.state == null)
-                this.state = { selectedIndex: this.props.selectedIndex };
-            if (this.state.selectedIndex == undefined)
-                this.state = { selectedIndex: 0 };
-            var children = this.props.children;
-            var selected = children[this.state.selectedIndex];
-            var tabs = [];
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                var className = (i == this.state.selectedIndex) ? "active" : "";
-                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label));
-                tabs.push(label);
-            }
-            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, React.createElement("ul", {className: "tabNavigator_label"}, tabs), selected);
-            return ret;
-        };
-        TabNavigator.prototype.handle_change = function (index, event) {
-            this.setState({ selectedIndex: index });
-        };
-        return TabNavigator;
-    }(React.Component));
-    flex.TabNavigator = TabNavigator;
-    var NavigatorContent = (function (_super) {
-        __extends(NavigatorContent, _super);
-        function NavigatorContent() {
-            _super.apply(this, arguments);
-        }
-        NavigatorContent.prototype.render = function () {
-            return React.createElement("div", {className: "tabNavigator_content"}, this.props.children);
-        };
-        return NavigatorContent;
-    }(React.Component));
-    flex.NavigatorContent = NavigatorContent;
-})(flex || (flex = {}));
-/// <reference path="bws/packer/API.ts" />
-/// <reference path="boxologic/Instance.ts" />
-/// <reference path="bws/packer/Packer.ts" />
-/// <reference path="flex/TabNavigator.tsx" />
-try {
-    module.exports = bws.packer;
-}
-catch (exception) { }
-/// <reference path="../bws/packer/API.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /// <reference path="Instance.ts" />
 var boxologic;
 (function (boxologic) {
@@ -1467,6 +1153,75 @@ var boxologic;
     boxologic.Scrap = Scrap;
 })(boxologic || (boxologic = {}));
 /// <reference path="API.ts" />
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var Editor = (function (_super) {
+            __extends(Editor, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function Editor() {
+                _super.call(this);
+                this.columns = this.createColumns();
+                this.selected_index = 0;
+            }
+            /* ------------------------------------------------------------
+                ACCESSORSS
+            ------------------------------------------------------------ */
+            Editor.prototype.get_row = function (index) {
+                return this.props.dataProvider.at(index);
+            };
+            Editor.prototype.insert_instance = function (event) {
+                var child = this.props.dataProvider["createChild"](null);
+                this.props.dataProvider.push_back(child);
+            };
+            Editor.prototype.erase_instances = function (event) {
+                try {
+                    this.props.dataProvider.erase(this.props.dataProvider.begin().advance(this.selected_index));
+                }
+                catch (exception) {
+                }
+            };
+            /* ------------------------------------------------------------
+                EVENT HANDLERS
+            ------------------------------------------------------------ */
+            Editor.prototype.handle_data_change = function (event) {
+                setTimeout(this.setState.bind(this, {}), 0);
+            };
+            Editor.prototype.handle_row_change = function (event) {
+                Object.assign(this.props.dataProvider.at(event.rowIdx), event.updated);
+            };
+            Editor.prototype.handle_select = function (event) {
+                this.selected_index = event.rowIdx;
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            Editor.prototype.render = function () {
+                this.props.dataProvider.addEventListener("insert", this.handle_data_change, this);
+                this.props.dataProvider.addEventListener("erase", this.handle_data_change, this);
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " Type of wrappers to pack "), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.props.dataProvider.size(), columns: this.columns, onRowUpdated: this.handle_row_change.bind(this), onCellSelected: this.handle_select.bind(this), enableCellSelect: true, minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.props.dataProvider.size() * 35)}), 
+                    React.createElement("p", {style: { textAlign: "right" }}, 
+                        React.createElement("button", {onClick: this.insert_instance.bind(this)}, "Insert"), 
+                        React.createElement("button", {onClick: this.erase_instances.bind(this)}, "Erase")));
+                return ret;
+            };
+            return Editor;
+        }(React.Component));
+        packer.Editor = Editor;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -1891,6 +1646,508 @@ var bws;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 /// <reference path="API.ts" />
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var ItemEditor = (function (_super) {
+            __extends(ItemEditor, _super);
+            function ItemEditor() {
+                _super.apply(this, arguments);
+            }
+            ItemEditor.prototype.clear = function (event) {
+                this.props.instances.clear();
+                this.props.wrappers.clear();
+            };
+            ItemEditor.prototype.open = function (event) {
+                var this_ = this;
+                var handle_select = function (event) {
+                    file_ref.load();
+                };
+                var handle_complete = function (event) {
+                    var packer_form = new packer.PackerForm();
+                    packer_form.construct(new packer.library.XML(file_ref.data));
+                    this_.props.instances.assign(packer_form.getInstanceFormArray().begin(), packer_form.getInstanceFormArray().end());
+                    this_.props.wrappers.assign(packer_form.getWrapperArray().begin(), packer_form.getWrapperArray().end());
+                };
+                var file_ref = new packer.library.FileReference();
+                file_ref.addEventListener("select", handle_select);
+                file_ref.addEventListener("complete", handle_complete);
+                file_ref.browse();
+            };
+            ItemEditor.prototype.save = function (event) {
+                var packer_form = new packer.PackerForm(this.props.instances, this.props.wrappers);
+                var file_ref = new packer.library.FileReference();
+                file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
+            };
+            ItemEditor.prototype.pack = function (event) {
+                this.props.application.pack();
+            };
+            ItemEditor.prototype.render = function () {
+                return React.createElement("div", null, 
+                    React.createElement("table", {style: { textAlign: "center" }}, 
+                        React.createElement("tbody", null, 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/document.png", onClick: this.pack.bind(this)}), 
+                                    " ")), 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, " New File "), 
+                                React.createElement("td", null, " Open File "), 
+                                React.createElement("td", null, " Save File "), 
+                                React.createElement("td", null, " Pack ")))
+                    ), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(InstanceEditor, {dataProvider: this.props.instances}), 
+                        " "), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(WrapperEditor, {dataProvider: this.props.wrappers}), 
+                        " "));
+            };
+            return ItemEditor;
+        }(React.Component));
+        packer.ItemEditor = ItemEditor;
+        var InstanceEditor = (function (_super) {
+            __extends(InstanceEditor, _super);
+            function InstanceEditor() {
+                _super.apply(this, arguments);
+            }
+            InstanceEditor.prototype.createColumns = function () {
+                var columns = [
+                    { key: "$name", name: "Name", editable: true, width: 100 },
+                    { key: "$width", name: "Width", editable: true, width: 60 },
+                    { key: "$height", name: "Height", editable: true, width: 60 },
+                    { key: "$length", name: "Length", editable: true, width: 60 },
+                    { key: "$count", name: "Count", editable: true, width: 60 }
+                ];
+                return columns;
+            };
+            return InstanceEditor;
+        }(packer.Editor));
+        packer.InstanceEditor = InstanceEditor;
+        var WrapperEditor = (function (_super) {
+            __extends(WrapperEditor, _super);
+            function WrapperEditor() {
+                _super.apply(this, arguments);
+            }
+            WrapperEditor.prototype.createColumns = function () {
+                var columns = [
+                    { key: "$name", name: "Name", editable: true, width: 80 },
+                    { key: "$price", name: "Price", editable: true, width: 70 },
+                    { key: "$width", name: "Width", editable: true, width: 45 },
+                    { key: "$height", name: "Height", editable: true, width: 45 },
+                    { key: "$length", name: "Length", editable: true, width: 45 },
+                    { key: "$thickness", name: "Thickness", editable: true, width: 45 }
+                ];
+                return columns;
+            };
+            return WrapperEditor;
+        }(packer.Editor));
+        packer.WrapperEditor = WrapperEditor;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="API.ts" />
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        /**
+         * @brief Packer, a solver of 3d bin packing with multiple wrappers.
+         *
+         * @details
+         * <p> Packer is a facade class supporting packing operations in user side. You can solve a packing problem
+         * by constructing Packer class with {@link WrapperArray wrappers} and {@link InstanceArray instances} to
+         * pack and executing {@link optimize Packer.optimize()} method. </p>
+         *
+         * <p> In background side, deducting packing solution, those algorithms are used. </p>
+         * <ul>
+         *	<li> <a href="http://betterwaysystems.github.io/packer/reference/AirForceBinPacking.pdf" target="_blank">
+         *		Airforce Bin Packing; 3D pallet packing problem: A human intelligence-based heuristic approach </a>
+         *	</li>
+         *	<li> Genetic Algorithm </li>
+         *	<li> Greedy and Back-tracking algorithm </li>
+         * </ul>
+         *
+         * @author Jeongho Nam <http://samchon.org>
+         */
+        var Packer = (function (_super) {
+            __extends(Packer, _super);
+            function Packer(wrapperArray, instanceArray) {
+                if (wrapperArray === void 0) { wrapperArray = null; }
+                if (instanceArray === void 0) { instanceArray = null; }
+                _super.call(this);
+                if (wrapperArray == null && instanceArray == null) {
+                    this.wrapperArray = new packer.WrapperArray();
+                    this.instanceArray = new packer.InstanceArray();
+                }
+                else {
+                    this.wrapperArray = wrapperArray;
+                    this.instanceArray = instanceArray;
+                }
+            }
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.construct = function (xml) {
+                this.wrapperArray.construct(xml.get(this.wrapperArray.TAG()).at(0));
+                this.instanceArray.construct(xml.get(this.instanceArray.TAG()).at(0));
+            };
+            /* -----------------------------------------------------------
+                GETTERS
+            ----------------------------------------------------------- */
+            /**
+             * Get wrapperArray.
+             */
+            Packer.prototype.getWrapperArray = function () {
+                return this.wrapperArray;
+            };
+            /**
+             * Get instanceArray.
+             */
+            Packer.prototype.getInstanceArray = function () {
+                return this.instanceArray;
+            };
+            /* -----------------------------------------------------------
+                OPTIMIZERS
+            ----------------------------------------------------------- */
+            /**
+             * <p> Deduct
+             *
+             */
+            Packer.prototype.optimize = function () {
+                if (this.instanceArray.empty() || this.wrapperArray.empty())
+                    throw new std.InvalidArgument("Any instance or wrapper is not constructed.");
+                var wrappers = new packer.WrapperArray(); // TO BE RETURNED
+                if (this.wrapperArray.size() == 1) {
+                    // ONLY A TYPE OF WRAPPER EXISTS,
+                    // OPTMIZE IN LEVEL OF WRAPPER_GROUP AND TERMINATE THE OPTIMIZATION
+                    var wrapperGroup = new packer.WrapperGroup(this.wrapperArray.front());
+                    for (var i = 0; i < this.instanceArray.size(); i++)
+                        if (wrapperGroup.allocate(this.instanceArray.at(i)) == false)
+                            throw new std.LogicError("All instances are greater than the wrapper.");
+                    // OPTIMIZE
+                    wrapperGroup.optimize();
+                    // ASSIGN WRAPPERS
+                    wrappers.assign(wrapperGroup.begin(), wrapperGroup.end());
+                }
+                else {
+                    ////////////////////////////////////////
+                    // WITH GENETIC_ALGORITHM
+                    ////////////////////////////////////////
+                    // CONSTRUCT INITIAL SET
+                    var geneArray = this.initGenes();
+                    // EVOLVE
+                    // IN JAVA_SCRIPT VERSION, GENETIC_ALGORITHM IS NOT IMPLEMENTED YET.
+                    // HOWEVER, IN C++ VERSION, IT IS FULLY SUPPORTED
+                    //	http://samchon.github.io/framework/api/cpp/d5/d28/classsamchon_1_1library_1_1GeneticAlgorithm.html
+                    // IT WILL BE SUPPORTED SOON
+                    // FETCH RESULT
+                    var result = geneArray.getResult();
+                    for (var it = result.begin(); !it.equal_to(result.end()); it = it.next())
+                        wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
+                    // TRY TO REPACK
+                    wrappers = this.repack(wrappers);
+                }
+                // SORT THE WRAPPERS BY ITEMS' POSITION
+                for (var i = 0; i < wrappers.size(); i++) {
+                    var wrapper = wrappers[i];
+                    var begin = wrapper.begin();
+                    var end = wrapper.end();
+                    std.sort(wrapper.begin(), wrapper.end(), function (left, right) {
+                        if (left.getZ() != right.getZ())
+                            return left.getZ() < right.getZ();
+                        else if (left.getY() != right.getY())
+                            return left.getY() < right.getY();
+                        else
+                            return left.getX() < right.getX();
+                    });
+                }
+                if (wrappers.empty() == true)
+                    throw new std.LogicError("All instances are greater than the wrapper.");
+                return wrappers;
+            };
+            /**
+             * @brief Initialize sequence list (gene_array).
+             *
+             * @details
+             * <p> Deducts initial sequence list by such assumption: </p>
+             *
+             * <ul>
+             *	<li> Cost of larger wrapper is less than smaller one, within framework of price per volume unit. </li>
+             *	<ul>
+             *		<li> Wrapper Larger: (price: $1,000, volume: 100cm^3 -> price per volume unit: $10 / cm^3) </li>
+             *		<li> Wrapper Smaller: (price: $700, volume: 50cm^3 -> price per volume unit: $14 / cm^3) </li>
+             *		<li> Larger's <u>cost</u> is less than Smaller, within framework of price per volume unit </li>
+             *	</ul>
+             * </ul>
+             *
+             * <p> Method {@link initGenes initGenes()} constructs {@link WrapperGroup WrapperGroups} corresponding
+             * with the {@link wrapperArray} and allocates {@link instanceArray instances} to a {@link WrapperGroup},
+             * has the smallest <u>cost</u> between containbles. </p>
+             *
+             * <p> After executing packing solution by {@link WrapperGroup.optimize WrapperGroup.optimize()}, trying to
+             * {@link repack re-pack} each {@link WrapperGroup} to another type of {@link Wrapper}, deducts the best
+             * solution between them. It's the initial sequence list of genetic algorithm. </p>
+             *
+             * @return Initial sequence list.
+             */
+            Packer.prototype.initGenes = function () {
+                ////////////////////////////////////////////////////
+                // LINEAR OPTIMIZATION
+                ////////////////////////////////////////////////////
+                // CONSTRUCT WRAPPER_GROUPS
+                var wrapperGroups = new std.Vector();
+                for (var i = 0; i < this.wrapperArray.size(); i++) {
+                    var wrapper = this.wrapperArray.at(i);
+                    wrapperGroups.push_back(new packer.WrapperGroup(wrapper));
+                }
+                // ALLOCATE INSTNACES BY AUTHORITY
+                for (var i = 0; i < this.instanceArray.size(); i++) {
+                    var instance = this.instanceArray.at(i);
+                    var minCost = Number.MAX_VALUE;
+                    var minIndex = 0;
+                    for (var j = 0; j < this.wrapperArray.size(); j++) {
+                        var wrapper = this.wrapperArray.at(j);
+                        if (wrapper.containable(instance) == false)
+                            continue; // CANNOT CONTAIN BY ITS GREATER SIZE
+                        var cost = wrapper.getPrice() / wrapper.getContainableVolume();
+                        if (cost < minCost) {
+                            // CURRENT WRAPPER'S PRICE PER UNIT VOLUME IS CHEAPER
+                            minCost = cost;
+                            minIndex = j;
+                        }
+                    }
+                    // ALLOCATE TO A GROUP WHICH HAS THE MOST CHEAPER PRICE PER UNIT VOLUME
+                    var wrapperGroup = wrapperGroups.at(minIndex);
+                    wrapperGroup.allocate(instance);
+                }
+                ////////////////////////////////////////////////////
+                // ADDICTIONAL OPTIMIZATION BY POST-PROCESS
+                ////////////////////////////////////////////////////0
+                // OPTIMIZE WRAPPER_GROUP
+                var wrappers = new packer.WrapperArray();
+                for (var i = 0; i < wrapperGroups.size(); i++) {
+                    var wrapperGroup = wrapperGroups.at(i);
+                    wrapperGroup.optimize();
+                    wrappers.insert(wrappers.end(), wrapperGroup.begin(), wrapperGroup.end());
+                }
+                // DO EARLY POST-PROCESS
+                wrappers = this.repack(wrappers);
+                ////////////////////////////////////////////////////
+                // CONSTRUCT GENE_ARRAY
+                ////////////////////////////////////////////////////
+                // INSTANCES AND GENES
+                var ga_instances = new packer.InstanceArray();
+                var genes = new packer.WrapperArray();
+                for (var i = 0; i < wrappers.size(); i++) {
+                    var wrapper = wrappers.at(i);
+                    for (var j = 0; j < wrapper.size(); j++) {
+                        ga_instances.push_back(wrapper.at(j).getInstance());
+                        genes.push_back(wrapper);
+                    }
+                }
+                // GENE_ARRAY
+                var geneArray = new packer.GAWrapperArray(ga_instances);
+                geneArray.assign(genes.begin(), genes.end());
+                return geneArray;
+            };
+            /**
+             * Try to repack each wrappers to another type.
+             *
+             * @param $wrappers Wrappers to repack.
+             * @return Re-packed wrappers.
+             */
+            Packer.prototype.repack = function ($wrappers) {
+                var result = new packer.WrapperArray();
+                for (var i = 0; i < $wrappers.size(); i++) {
+                    var wrapper = $wrappers.at(i);
+                    var minGroup = new packer.WrapperGroup(wrapper);
+                    minGroup.push_back(wrapper);
+                    for (var j = 0; j < this.wrapperArray.size(); j++) {
+                        var myWrapper = this.wrapperArray.at(j);
+                        if (wrapper.equal_to(myWrapper))
+                            continue;
+                        var valid = true;
+                        // CONSTRUCT GROUP OF TARGET
+                        var myGroup = new packer.WrapperGroup(myWrapper);
+                        for (var k = 0; k < wrapper.size(); k++)
+                            if (myGroup.allocate(wrapper.at(k).getInstance()) == false) {
+                                // IF THERE'S AN INSTANCE CANNOT CONTAIN BY ITS GREATER SIZE
+                                valid = false;
+                                break;
+                            }
+                        // SKIP
+                        if (valid == false)
+                            continue;
+                        // OPTIMIZATION IN LEVEL OF GROUP
+                        myGroup.optimize();
+                        // CURRENT GROUP IS CHEAPER, THEN REPLACE
+                        if (myGroup.getPrice() < minGroup.getPrice())
+                            minGroup = myGroup;
+                    }
+                    result.insert(result.end(), minGroup.begin(), minGroup.end());
+                }
+                return result;
+            };
+            /* -----------------------------------------------------------
+                EXPORTERS
+            ----------------------------------------------------------- */
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.TAG = function () {
+                return "packer";
+            };
+            /**
+             * @inheritdoc
+             */
+            Packer.prototype.toXML = function () {
+                var xml = _super.prototype.toXML.call(this);
+                xml.push(this.wrapperArray.toXML());
+                xml.push(this.instanceArray.toXML());
+                return xml;
+            };
+            return Packer;
+        }(packer.protocol.Entity));
+        packer.Packer = Packer;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="API.ts" />
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer_2) {
+        var PackerApplication = (function (_super) {
+            __extends(PackerApplication, _super);
+            /* -----------------------------------------------------------
+                CONSTRUCTORS
+            ----------------------------------------------------------- */
+            /**
+             * Default Constructor.
+             */
+            function PackerApplication() {
+                _super.call(this);
+                this.instances = new packer_2.InstanceFormArray();
+                this.wrappers = new packer_2.WrapperArray();
+                this.result = new packer_2.WrapperArray();
+                // INITIAL, EXMAPLE DATA
+                this.wrappers.push(new packer_2.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_2.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_2.Wrapper("Small", 500, 15, 15, 8, 0));
+                this.instances.push(new packer_2.InstanceForm(new packer_2.Product("Eraser", 1, 2, 5), 15), new packer_2.InstanceForm(new packer_2.Product("Book", 15, 30, 3), 15), new packer_2.InstanceForm(new packer_2.Product("Drink", 3, 3, 10), 15), new packer_2.InstanceForm(new packer_2.Product("Umbrella", 5, 5, 20), 15), new packer_2.InstanceForm(new packer_2.Product("Notebook-Box", 30, 40, 4), 15), new packer_2.InstanceForm(new packer_2.Product("Tablet-Box", 20, 28, 2), 15));
+                this.connector = new packer_2.protocol.WebServerConnector(this);
+                this.connector.connect(packer_2.SERVER_IP, packer_2.SERVER_PORT);
+            }
+            /* -----------------------------------------------------------
+                PROCEDURES
+            ----------------------------------------------------------- */
+            PackerApplication.prototype.pack = function () {
+                var packer_form = new packer_2.PackerForm(this.instances, this.wrappers);
+                if (this.connector.isConnected() == true) {
+                    var invoke = new packer_2.protocol.Invoke("pack", packer_form.toXML());
+                    this.sendData(invoke);
+                }
+                else {
+                    /////
+                    // FIND THE OPTIMIZED SOLUTION
+                    /////
+                    var packer_3 = packer_form.toPacker();
+                    var result = void 0;
+                    try {
+                        result = packer_3.optimize();
+                    }
+                    catch (exception) {
+                        alert(exception.what());
+                        return;
+                    }
+                    this.result.assign(result.begin(), result.end());
+                    /////
+                    // DRAW THE 1ST WRAPPER
+                    /////
+                    if (this.result.empty() == true)
+                        return;
+                    this.drawWrapper(this.result.front());
+                    this.refs["tabNavigator"].setState({ selectedIndex: 1 });
+                }
+            };
+            PackerApplication.prototype.drawWrapper = function (wrapper, index) {
+                if (index === void 0) { index = wrapper.size(); }
+                // INITIALIZE
+                var div = document.getElementById("wrapper_viewer");
+                var canvas = wrapper.toCanvas(index); // DRAW
+                // PRINT
+                if (div.hasChildNodes() == true)
+                    div.removeChild(div.childNodes[0]);
+                div.appendChild(canvas);
+            };
+            /* -----------------------------------------------------------
+                INVOKE MESSAGE CHAIN
+            ----------------------------------------------------------- */
+            PackerApplication.prototype.sendData = function (invoke) {
+                this.connector.sendData(invoke);
+            };
+            PackerApplication.prototype.replyData = function (invoke) {
+                console.log(invoke.getListener());
+                invoke.apply(this);
+            };
+            PackerApplication.prototype.setWrapperArray = function (xml) {
+                this.result.construct(xml);
+                if (this.result.empty() == true)
+                    return;
+                this.drawWrapper(this.result.front());
+                this.refs["tabNavigator"].setState({ selectedIndex: 1 });
+            };
+            /* -----------------------------------------------------------
+                RENDERERS
+            ----------------------------------------------------------- */
+            PackerApplication.prototype.render = function () {
+                var ret = React.createElement("div", null, 
+                    React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, 
+                        React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, 
+                            React.createElement(flex.NavigatorContent, {label: "First Tab"}, 
+                                React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})
+                            ), 
+                            React.createElement(flex.NavigatorContent, {label: "Second Tab"}, 
+                                React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result})
+                            )), 
+                        React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), 
+                    React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, 
+                        React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, 
+                            React.createElement("img", {src: "images/redprinting_logo.png", width: "250"})
+                        )
+                    ));
+                return ret;
+            };
+            PackerApplication.main = function () {
+                ReactDOM.render(React.createElement(PackerApplication, null), document.body);
+            };
+            return PackerApplication;
+        }(React.Component));
+        packer_2.PackerApplication = PackerApplication;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="API.ts" />
 var bws;
 (function (bws) {
     var packer;
@@ -2020,6 +2277,211 @@ var bws;
             return Product;
         }(packer.protocol.Entity));
         packer.Product = Product;
+    })(packer = bws.packer || (bws.packer = {}));
+})(bws || (bws = {}));
+/// <reference path="API.ts" />
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+var bws;
+(function (bws) {
+    var packer;
+    (function (packer) {
+        var ResultViewer = (function (_super) {
+            __extends(ResultViewer, _super);
+            function ResultViewer() {
+                _super.apply(this, arguments);
+            }
+            ResultViewer.prototype.drawWrapper = function (wrapper, index) {
+                if (index === void 0) { index = wrapper.size(); }
+                this.props.application.drawWrapper(wrapper, index);
+            };
+            ResultViewer.prototype.clear = function (event) {
+                this.props.wrappers.clear();
+                this.drawWrapper(new packer.Wrapper());
+                this.refresh();
+            };
+            ResultViewer.prototype.open = function (event) {
+                var this_ = this;
+                var handle_select = function (event) {
+                    file_ref.load();
+                };
+                var handle_complete = function (event) {
+                    this_.props.wrappers.construct(new packer.library.XML(file_ref.data));
+                    if (this_.props.wrappers.empty() == true)
+                        this_.drawWrapper(new packer.Wrapper());
+                    else
+                        this_.drawWrapper(this_.props.wrappers.front());
+                    this_.refresh();
+                };
+                var file_ref = new packer.library.FileReference();
+                file_ref.addEventListener("select", handle_select);
+                file_ref.addEventListener("complete", handle_complete);
+                file_ref.browse();
+            };
+            ResultViewer.prototype.save = function (event) {
+                var file_ref = new packer.library.FileReference();
+                file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
+            };
+            ResultViewer.prototype.refresh = function () {
+                this.refs["wrapperGrid"].setState({});
+                this.refs["wrapGrid"].setState({});
+            };
+            ResultViewer.prototype.render = function () {
+                var wrapper = this.props.wrappers.empty()
+                    ? new packer.Wrapper()
+                    : this.props.wrappers.front();
+                var ret = React.createElement("div", null, 
+                    React.createElement("table", {style: { textAlign: "center" }}, 
+                        React.createElement("tbody", null, 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), 
+                                    " ")), 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, " New File "), 
+                                React.createElement("td", null, " Open File "), 
+                                React.createElement("td", null, " Save File ")))
+                    ), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, " Optimization Result "), 
+                    React.createElement("ul", null, 
+                        React.createElement("li", null, 
+                            " Cost: $ ", 
+                            this.props.wrappers.getPrice(), 
+                            " "), 
+                        React.createElement("li", null, 
+                            " Space Utilization: ", 
+                            Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, 
+                            " % ")), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), 
+                        " "), 
+                    React.createElement("hr", null), 
+                    React.createElement("div", {id: "wrap_grid_div"}, 
+                        React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})
+                    ));
+                return ret;
+            };
+            return ResultViewer;
+        }(React.Component));
+        packer.ResultViewer = ResultViewer;
+        var WrapperGrid = (function (_super) {
+            __extends(WrapperGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapperGrid() {
+                _super.call(this);
+                this.selectedIndex = 0;
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$name", name: "Name", width: 120 },
+                        { key: "$scale", name: "Length", width: 90 },
+                        { key: "$spaceUtilization", name: "Space Utilization", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapperGrid.prototype, "wrappers", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    return this.props.viewer.props.wrappers;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapperGrid.prototype.get_row = function (index) {
+                return this.wrappers.at(index);
+            };
+            WrapperGrid.prototype.handle_select = function (event) {
+                this.selectedIndex = event.rowIdx;
+                var wrapper = this.wrappers.at(this.selectedIndex);
+                this.props.viewer.drawWrapper(wrapper);
+                this.props.viewer.refs["wrapGrid"].setState({});
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapperGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " List of wrappers."), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
+                return ret;
+            };
+            return WrapperGrid;
+        }(React.Component));
+        var WrapGrid = (function (_super) {
+            __extends(WrapGrid, _super);
+            /* ------------------------------------------------------------
+                CONSTRUCTORS
+            ------------------------------------------------------------ */
+            /**
+             * Default Constructor.
+             */
+            function WrapGrid() {
+                _super.call(this);
+                // CONSTRUCT COLUMNS
+                this.columns =
+                    [
+                        { key: "$instanceName", name: "Name", width: 120 },
+                        { key: "$layoutScale", name: "layoutScale", width: 90 },
+                        { key: "$position", name: "Position", width: 90 }
+                    ];
+            }
+            Object.defineProperty(WrapGrid.prototype, "wrapper", {
+                /* ------------------------------------------------------------
+                    ACCESSORSS
+                ------------------------------------------------------------ */
+                get: function () {
+                    var wrappers = this.props.viewer.props.wrappers;
+                    try {
+                        var index = this.props.viewer.refs["wrapperGrid"].selectedIndex;
+                        var wrapper = this.props.viewer.props.wrappers.at(index);
+                        return wrapper;
+                    }
+                    catch (exception) {
+                        if (wrappers.empty() == true)
+                            return new packer.Wrapper();
+                        else
+                            return wrappers.front();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WrapGrid.prototype.get_row = function (index) {
+                return this.wrapper.at(index);
+            };
+            WrapGrid.prototype.handle_select = function (event) {
+                this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
+            };
+            /* ------------------------------------------------------------
+                EXPORTERS
+            ------------------------------------------------------------ */
+            WrapGrid.prototype.render = function () {
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " Instances packed in a Wrapper."), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
+                return ret;
+            };
+            return WrapGrid;
+        }(React.Component));
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
 /// <reference path="API.ts" />
@@ -3102,415 +3564,61 @@ var bws;
         packer.WrapperGroup = WrapperGroup;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
-/// <reference path="API.ts" />
+/// <reference path="../bws/packer/API.ts" />
 // A '.tsx' file enables JSX support in the TypeScript compiler, 
 // for more information see the following page on the TypeScript wiki:
 // https://github.com/Microsoft/TypeScript/wiki/JSX
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        var Editor = (function (_super) {
-            __extends(Editor, _super);
-            /* ------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------ */
-            /**
-             * Default Constructor.
-             */
-            function Editor() {
-                _super.call(this);
-                this.columns = this.createColumns();
-                this.selected_index = 0;
+var flex;
+(function (flex) {
+    var TabNavigator = (function (_super) {
+        __extends(TabNavigator, _super);
+        function TabNavigator() {
+            _super.apply(this, arguments);
+        }
+        TabNavigator.prototype.render = function () {
+            if (this.state == null)
+                this.state = { selectedIndex: this.props.selectedIndex };
+            if (this.state.selectedIndex == undefined)
+                this.state = { selectedIndex: 0 };
+            var children = this.props.children;
+            var selected = children[this.state.selectedIndex];
+            var tabs = [];
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var className = (i == this.state.selectedIndex) ? "active" : "";
+                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, 
+                    React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label)
+                );
+                tabs.push(label);
             }
-            /* ------------------------------------------------------------
-                ACCESSORSS
-            ------------------------------------------------------------ */
-            Editor.prototype.get_row = function (index) {
-                return this.props.dataProvider.at(index);
-            };
-            Editor.prototype.insert_instance = function (event) {
-                var child = this.props.dataProvider["createChild"](null);
-                this.props.dataProvider.push_back(child);
-            };
-            Editor.prototype.erase_instances = function (event) {
-                try {
-                    this.props.dataProvider.erase(this.props.dataProvider.begin().advance(this.selected_index));
-                }
-                catch (exception) {
-                }
-            };
-            /* ------------------------------------------------------------
-                EVENT HANDLERS
-            ------------------------------------------------------------ */
-            Editor.prototype.handle_data_change = function (event) {
-                setTimeout(this.setState.bind(this, {}), 0);
-            };
-            Editor.prototype.handle_row_change = function (event) {
-                Object.assign(this.props.dataProvider.at(event.rowIdx), event.updated);
-            };
-            Editor.prototype.handle_select = function (event) {
-                this.selected_index = event.rowIdx;
-            };
-            /* ------------------------------------------------------------
-                EXPORTERS
-            ------------------------------------------------------------ */
-            Editor.prototype.render = function () {
-                this.props.dataProvider.addEventListener("insert", this.handle_data_change, this);
-                this.props.dataProvider.addEventListener("erase", this.handle_data_change, this);
-                var ret = React.createElement("div", null, React.createElement("h3", null, " Type of wrappers to pack "), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.props.dataProvider.size(), columns: this.columns, onRowUpdated: this.handle_row_change.bind(this), onCellSelected: this.handle_select.bind(this), enableCellSelect: true, minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.props.dataProvider.size() * 35)}), React.createElement("p", {style: { textAlign: "right" }}, React.createElement("button", {onClick: this.insert_instance.bind(this)}, "Insert"), React.createElement("button", {onClick: this.erase_instances.bind(this)}, "Erase")));
-                return ret;
-            };
-            return Editor;
-        }(React.Component));
-        packer.Editor = Editor;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-/// <reference path="API.ts" />
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        var ItemEditor = (function (_super) {
-            __extends(ItemEditor, _super);
-            function ItemEditor() {
-                _super.apply(this, arguments);
-            }
-            ItemEditor.prototype.clear = function (event) {
-                this.props.instances.clear();
-                this.props.wrappers.clear();
-            };
-            ItemEditor.prototype.open = function (event) {
-                var this_ = this;
-                var handle_select = function (event) {
-                    file_ref.load();
-                };
-                var handle_complete = function (event) {
-                    var packer_form = new packer.PackerForm();
-                    packer_form.construct(new packer.library.XML(file_ref.data));
-                    this_.props.instances.assign(packer_form.getInstanceFormArray().begin(), packer_form.getInstanceFormArray().end());
-                    this_.props.wrappers.assign(packer_form.getWrapperArray().begin(), packer_form.getWrapperArray().end());
-                };
-                var file_ref = new packer.library.FileReference();
-                file_ref.addEventListener("select", handle_select);
-                file_ref.addEventListener("complete", handle_complete);
-                file_ref.browse();
-            };
-            ItemEditor.prototype.save = function (event) {
-                var packer_form = new packer.PackerForm(this.props.instances, this.props.wrappers);
-                var file_ref = new packer.library.FileReference();
-                file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
-            };
-            ItemEditor.prototype.pack = function (event) {
-                this.props.application.pack();
-            };
-            ItemEditor.prototype.render = function () {
-                return React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/document.png", onClick: this.pack.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File "), React.createElement("td", null, " Pack ")))), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(InstanceEditor, {dataProvider: this.props.instances}), " "), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperEditor, {dataProvider: this.props.wrappers}), " "));
-            };
-            return ItemEditor;
-        }(React.Component));
-        packer.ItemEditor = ItemEditor;
-        var InstanceEditor = (function (_super) {
-            __extends(InstanceEditor, _super);
-            function InstanceEditor() {
-                _super.apply(this, arguments);
-            }
-            InstanceEditor.prototype.createColumns = function () {
-                var columns = [
-                    { key: "$name", name: "Name", editable: true, width: 100 },
-                    { key: "$width", name: "Width", editable: true, width: 60 },
-                    { key: "$height", name: "Height", editable: true, width: 60 },
-                    { key: "$length", name: "Length", editable: true, width: 60 },
-                    { key: "$count", name: "Count", editable: true, width: 60 }
-                ];
-                return columns;
-            };
-            return InstanceEditor;
-        }(packer.Editor));
-        packer.InstanceEditor = InstanceEditor;
-        var WrapperEditor = (function (_super) {
-            __extends(WrapperEditor, _super);
-            function WrapperEditor() {
-                _super.apply(this, arguments);
-            }
-            WrapperEditor.prototype.createColumns = function () {
-                var columns = [
-                    { key: "$name", name: "Name", editable: true, width: 80 },
-                    { key: "$price", name: "Price", editable: true, width: 70 },
-                    { key: "$width", name: "Width", editable: true, width: 45 },
-                    { key: "$height", name: "Height", editable: true, width: 45 },
-                    { key: "$length", name: "Length", editable: true, width: 45 },
-                    { key: "$thickness", name: "Thickness", editable: true, width: 45 }
-                ];
-                return columns;
-            };
-            return WrapperEditor;
-        }(packer.Editor));
-        packer.WrapperEditor = WrapperEditor;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-/// <reference path="API.ts" />
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer_2) {
-        var PackerApplication = (function (_super) {
-            __extends(PackerApplication, _super);
-            /* -----------------------------------------------------------
-                CONSTRUCTORS
-            ----------------------------------------------------------- */
-            /**
-             * Default Constructor.
-             */
-            function PackerApplication() {
-                _super.call(this);
-                this.instances = new packer_2.InstanceFormArray();
-                this.wrappers = new packer_2.WrapperArray();
-                this.result = new packer_2.WrapperArray();
-                // INITIAL, EXMAPLE DATA
-                this.wrappers.push(new packer_2.Wrapper("Large", 1000, 40, 40, 15, 0), new packer_2.Wrapper("Medium", 700, 20, 20, 10, 0), new packer_2.Wrapper("Small", 500, 15, 15, 8, 0));
-                this.instances.push(new packer_2.InstanceForm(new packer_2.Product("Eraser", 1, 2, 5), 15), new packer_2.InstanceForm(new packer_2.Product("Book", 15, 30, 3), 15), new packer_2.InstanceForm(new packer_2.Product("Drink", 3, 3, 10), 15), new packer_2.InstanceForm(new packer_2.Product("Umbrella", 5, 5, 20), 15), new packer_2.InstanceForm(new packer_2.Product("Notebook-Box", 30, 40, 4), 15), new packer_2.InstanceForm(new packer_2.Product("Tablet-Box", 20, 28, 2), 15));
-                this.connector = new packer_2.protocol.WebServerConnector(this);
-                this.connector.connect(packer_2.SERVER_IP, packer_2.SERVER_PORT);
-            }
-            /* -----------------------------------------------------------
-                PROCEDURES
-            ----------------------------------------------------------- */
-            PackerApplication.prototype.pack = function () {
-                var packer_form = new packer_2.PackerForm(this.instances, this.wrappers);
-                if (this.connector.isConnected() == true) {
-                    var invoke = new packer_2.protocol.Invoke("pack", packer_form.toXML());
-                    this.sendData(invoke);
-                }
-                else {
-                    /////
-                    // FIND THE OPTIMIZED SOLUTION
-                    /////
-                    var packer_3 = packer_form.toPacker();
-                    var result = void 0;
-                    try {
-                        result = packer_3.optimize();
-                    }
-                    catch (exception) {
-                        alert(exception.what());
-                        return;
-                    }
-                    this.result.assign(result.begin(), result.end());
-                    /////
-                    // DRAW THE 1ST WRAPPER
-                    /////
-                    if (this.result.empty() == true)
-                        return;
-                    this.drawWrapper(this.result.front());
-                    this.refs["tabNavigator"].setState({ selectedIndex: 1 });
-                }
-            };
-            PackerApplication.prototype.drawWrapper = function (wrapper, index) {
-                if (index === void 0) { index = wrapper.size(); }
-                // INITIALIZE
-                var div = document.getElementById("wrapper_viewer");
-                var canvas = wrapper.toCanvas(index); // DRAW
-                // PRINT
-                if (div.hasChildNodes() == true)
-                    div.removeChild(div.childNodes[0]);
-                div.appendChild(canvas);
-            };
-            /* -----------------------------------------------------------
-                INVOKE MESSAGE CHAIN
-            ----------------------------------------------------------- */
-            PackerApplication.prototype.sendData = function (invoke) {
-                this.connector.sendData(invoke);
-            };
-            PackerApplication.prototype.replyData = function (invoke) {
-                console.log(invoke.getListener());
-                invoke.apply(this);
-            };
-            PackerApplication.prototype.setWrapperArray = function (xml) {
-                this.result.construct(xml);
-                if (this.result.empty() == true)
-                    return;
-                this.drawWrapper(this.result.front());
-                this.refs["tabNavigator"].setState({ selectedIndex: 1 });
-            };
-            /* -----------------------------------------------------------
-                RENDERERS
-            ----------------------------------------------------------- */
-            PackerApplication.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, React.createElement("img", {src: "images/redprinting_logo.png", width: "250"}))));
-                return ret;
-            };
-            PackerApplication.main = function () {
-                ReactDOM.render(React.createElement(PackerApplication, null), document.body);
-            };
-            return PackerApplication;
-        }(React.Component));
-        packer_2.PackerApplication = PackerApplication;
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
-/// <reference path="API.ts" />
-// A '.tsx' file enables JSX support in the TypeScript compiler, 
-// for more information see the following page on the TypeScript wiki:
-// https://github.com/Microsoft/TypeScript/wiki/JSX
-var bws;
-(function (bws) {
-    var packer;
-    (function (packer) {
-        var ResultViewer = (function (_super) {
-            __extends(ResultViewer, _super);
-            function ResultViewer() {
-                _super.apply(this, arguments);
-            }
-            ResultViewer.prototype.drawWrapper = function (wrapper, index) {
-                if (index === void 0) { index = wrapper.size(); }
-                this.props.application.drawWrapper(wrapper, index);
-            };
-            ResultViewer.prototype.clear = function (event) {
-                this.props.wrappers.clear();
-                this.drawWrapper(new packer.Wrapper());
-                this.refresh();
-            };
-            ResultViewer.prototype.open = function (event) {
-                var this_ = this;
-                var handle_select = function (event) {
-                    file_ref.load();
-                };
-                var handle_complete = function (event) {
-                    this_.props.wrappers.construct(new packer.library.XML(file_ref.data));
-                    if (this_.props.wrappers.empty() == true)
-                        this_.drawWrapper(new packer.Wrapper());
-                    else
-                        this_.drawWrapper(this_.props.wrappers.front());
-                    this_.refresh();
-                };
-                var file_ref = new packer.library.FileReference();
-                file_ref.addEventListener("select", handle_select);
-                file_ref.addEventListener("complete", handle_complete);
-                file_ref.browse();
-            };
-            ResultViewer.prototype.save = function (event) {
-                var file_ref = new packer.library.FileReference();
-                file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");
-            };
-            ResultViewer.prototype.refresh = function () {
-                this.refs["wrapperGrid"].setState({});
-                this.refs["wrapGrid"].setState({});
-            };
-            ResultViewer.prototype.render = function () {
-                var wrapper = this.props.wrappers.empty()
-                    ? new packer.Wrapper()
-                    : this.props.wrappers.front();
-                var ret = React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File ")))), React.createElement("hr", null), React.createElement("p", null, " Optimization Result "), React.createElement("ul", null, React.createElement("li", null, " Cost: $ ", this.props.wrappers.getPrice(), " "), React.createElement("li", null, " Space Utilization: ", Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, " % ")), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), " "), React.createElement("hr", null), React.createElement("div", {id: "wrap_grid_div"}, React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})));
-                return ret;
-            };
-            return ResultViewer;
-        }(React.Component));
-        packer.ResultViewer = ResultViewer;
-        var WrapperGrid = (function (_super) {
-            __extends(WrapperGrid, _super);
-            /* ------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------ */
-            /**
-             * Default Constructor.
-             */
-            function WrapperGrid() {
-                _super.call(this);
-                this.selectedIndex = 0;
-                // CONSTRUCT COLUMNS
-                this.columns =
-                    [
-                        { key: "$name", name: "Name", width: 120 },
-                        { key: "$scale", name: "Length", width: 90 },
-                        { key: "$spaceUtilization", name: "Space Utilization", width: 90 }
-                    ];
-            }
-            Object.defineProperty(WrapperGrid.prototype, "wrappers", {
-                /* ------------------------------------------------------------
-                    ACCESSORSS
-                ------------------------------------------------------------ */
-                get: function () {
-                    return this.props.viewer.props.wrappers;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            WrapperGrid.prototype.get_row = function (index) {
-                return this.wrappers.at(index);
-            };
-            WrapperGrid.prototype.handle_select = function (event) {
-                this.selectedIndex = event.rowIdx;
-                var wrapper = this.wrappers.at(this.selectedIndex);
-                this.props.viewer.drawWrapper(wrapper);
-                this.props.viewer.refs["wrapGrid"].setState({});
-            };
-            /* ------------------------------------------------------------
-                EXPORTERS
-            ------------------------------------------------------------ */
-            WrapperGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " List of wrappers."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
-                return ret;
-            };
-            return WrapperGrid;
-        }(React.Component));
-        var WrapGrid = (function (_super) {
-            __extends(WrapGrid, _super);
-            /* ------------------------------------------------------------
-                CONSTRUCTORS
-            ------------------------------------------------------------ */
-            /**
-             * Default Constructor.
-             */
-            function WrapGrid() {
-                _super.call(this);
-                // CONSTRUCT COLUMNS
-                this.columns =
-                    [
-                        { key: "$instanceName", name: "Name", width: 120 },
-                        { key: "$layoutScale", name: "layoutScale", width: 90 },
-                        { key: "$position", name: "Position", width: 90 }
-                    ];
-            }
-            Object.defineProperty(WrapGrid.prototype, "wrapper", {
-                /* ------------------------------------------------------------
-                    ACCESSORSS
-                ------------------------------------------------------------ */
-                get: function () {
-                    var wrappers = this.props.viewer.props.wrappers;
-                    try {
-                        var index = this.props.viewer.refs["wrapperGrid"].selectedIndex;
-                        var wrapper = this.props.viewer.props.wrappers.at(index);
-                        return wrapper;
-                    }
-                    catch (exception) {
-                        if (wrappers.empty() == true)
-                            return new packer.Wrapper();
-                        else
-                            return wrappers.front();
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            WrapGrid.prototype.get_row = function (index) {
-                return this.wrapper.at(index);
-            };
-            WrapGrid.prototype.handle_select = function (event) {
-                this.props.viewer.drawWrapper(this.wrapper, event.rowIdx + 1);
-            };
-            /* ------------------------------------------------------------
-                EXPORTERS
-            ------------------------------------------------------------ */
-            WrapGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " Instances packed in a Wrapper."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
-                return ret;
-            };
-            return WrapGrid;
-        }(React.Component));
-    })(packer = bws.packer || (bws.packer = {}));
-})(bws || (bws = {}));
+            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, 
+                React.createElement("ul", {className: "tabNavigator_label"}, tabs), 
+                selected);
+            return ret;
+        };
+        TabNavigator.prototype.handle_change = function (index, event) {
+            this.setState({ selectedIndex: index });
+        };
+        return TabNavigator;
+    }(React.Component));
+    flex.TabNavigator = TabNavigator;
+    var NavigatorContent = (function (_super) {
+        __extends(NavigatorContent, _super);
+        function NavigatorContent() {
+            _super.apply(this, arguments);
+        }
+        NavigatorContent.prototype.render = function () {
+            return React.createElement("div", {className: "tabNavigator_content"}, this.props.children);
+        };
+        return NavigatorContent;
+    }(React.Component));
+    flex.NavigatorContent = NavigatorContent;
+})(flex || (flex = {}));
+/// <reference path="bws/packer/API.ts" />
+/// <reference path="boxologic/Instance.ts" />
+/// <reference path="bws/packer/Packer.ts" />
+/// <reference path="flex/TabNavigator.tsx" />
+try {
+    module.exports = bws.packer;
+}
+catch (exception) { }

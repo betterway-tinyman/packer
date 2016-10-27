@@ -1,6 +1,6 @@
 #pragma once
 #include <samchon/protocol/Entity.hpp>
-#include <samchon/protocol/IEntityGroup.hpp>
+#include <samchon/protocol/EntityGroupBase.hpp>
 
 #include <algorithm>
 
@@ -12,7 +12,6 @@ namespace protocol
 	 * @brief An Entity and a container of children Entity objects.
 	 *
 	 * @tparam Container A type of container containing children entity objects.
-	 * @tparam T A type of children entity. It must be a class derived from an Entity class, or Entity class itself.
 	 *
 	 * @details
 	 * <p> EntityGroup is a template class for containinig children Entity objects, and also another type 
@@ -24,22 +23,11 @@ namespace protocol
 	 * those relationships are continued, continue to create classes dervied from EntityGroup. When those
 	 * relationshiop meets a terminal node, then make the terminal node to be an Entity. </p>
 	 *
-	 * <p> @image html  cpp/example_inspect.png
-	 *	   @image latex cpp/example_inspect.png </p>
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_entity.png)
 	 * 
 	 * <p> EntityGroup is an Entity, and a container of children Entity objects at the same time. If
 	 * children type, of a class derived from an EntityGroup, is itself, you can realize hierarchical
 	 * and recursive relationship. The relationship is called as "Composite pattern". </p>
-	 *
-	 *	\li FTFolder extends FTInstance and SharedEntityArray<FTInstance>
-	 *	\li NTCriteria extends SharedEntityArray<NTCriteria>
-	 *
-	 * @note
-	 * <p> As a freelancer developer and architect I am, I even design DB I/O to follow the format 
-	 * representing Entity and EntityGroup by XML. Below T-SQL script also follows the standard format 
-	 * of expressing Entity with XML by procedure and "FOR XML AUTO" statement. </p>
-	 * 
-	 * @includelineno example/entity/goCandidateInspectList.sql
 	 *
 	 * @warning
 	 * <p> EntityGroup contains children entity elements as type of pointer. Because children entity
@@ -48,15 +36,15 @@ namespace protocol
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename Container, typename T = Entity>
+	template <typename Container, typename T, typename Key = std::string>
 	class EntityGroup
-		: public Container,
-		public virtual Entity, //CLASS
-		public virtual IEntityGroup	//INTERFACE
+		: public Container, // CONTAINS CHILD ENTITY ELEMENTS
+		public virtual Entity<Key>, // I AM A TYPE OF ENTITY TOO
+		public EntityGroupBase	//INTERFACE
 	{
 	public:
 		typedef Container container_type;
-		typedef T entity_type;
+		typedef T child_type;
 
 	public:
 		/* ------------------------------------------------------------------------------------
@@ -86,23 +74,23 @@ namespace protocol
 			if (xml->has(CHILD_TAG()) == false)
 				return;
 
-			std::shared_ptr<library::XMLList> &xmlList = xml->get(CHILD_TAG());
+			std::shared_ptr<library::XMLList> &xml_list = xml->get(CHILD_TAG());
 
 			if (std::is_same<container_type, std::vector<container_type::value_type, container_type::allocator_type>>::value == true)
 			{
 				//FOR RESERVE
-				assign(xmlList->size(), nullptr);
+				assign(xml_list->size(), nullptr);
 				erase(begin(), end());
 			}
 
-			for (size_t i = 0; i < xmlList->size(); i++)
+			for (size_t i = 0; i < xml_list->size(); i++)
 			{
-				std::shared_ptr<library::XML> &xmlElement = xmlList->at(i);
+				std::shared_ptr<library::XML> &xmlElement = xml_list->at(i);
 
-				entity_type *entity = createChild(xmlElement);
+				child_type *entity = createChild(xmlElement);
 				if (entity != nullptr)
 				{
-					entity->construct(xmlList->at(i));
+					entity->construct(xml_list->at(i));
 					emplace_back(entity);
 				}
 			}
@@ -119,29 +107,23 @@ namespace protocol
 		 *
 		 * @return A new child Entity belongs to EntityGroup.
 		 */
-		virtual auto createChild(std::shared_ptr<library::XML>) -> entity_type* = 0;
+		virtual auto createChild(std::shared_ptr<library::XML>) -> child_type* = 0;
 
 	public:
 		/* ------------------------------------------------------------------------------------
-			MODIFIERS
+			ACCESSORS
 		------------------------------------------------------------------------------------ */
 		using container_type::erase;
 
-		void erase(const std::string &key)
+		void erase(const typename child_type::key_type &key)
 		{
-			std::remove_if
-			(
-				begin(), end(),
-				[key](const container_type::value_type &entity) -> bool
-				{
-					return entity->key() == key;
-				}
-			);
+			for (auto it = begin(); it != end(); )
+				if ((*it)->key() == key)
+					it = erase(it);
+				else
+					it++;
 		};
-
-		/* ------------------------------------------------------------------------------------
-			GETTERS
-		------------------------------------------------------------------------------------ */
+		
 		/**
 		 * @brief Get iterator to element.
 		 * 
@@ -159,7 +141,7 @@ namespace protocol
 		 * @return An iterator to the element, if an element with specified <i>key</i> is found, or 
 		 *		   {@link end end()} otherwise.
 		 */
-		auto find(const std::string &key) -> typename container_type::iterator
+		auto find(const typename child_type::key_type &key) -> typename container_type::iterator
 		{
 			return std::find_if
 			(
@@ -188,7 +170,7 @@ namespace protocol
 		 * @return An iterator to the element, if an element with specified <i>key</i> is found, or 
 		 *		   {@link end end()} otherwise.
 		 */
-		auto find(const std::string &key) const -> typename container_type::const_iterator
+		auto find(const typename child_type::key_type &key) const -> typename container_type::const_iterator
 		{
 			return std::find_if
 			(
@@ -206,7 +188,7 @@ namespace protocol
 		 * @param key An identifier of an Entity
 		 * @return If there's the object then true, otherwise false
 		 */
-		auto has(const std::string &key) const -> bool
+		auto has(const typename child_type::key_type &key) const -> bool
 		{
 			return std::any_of
 			(
@@ -224,7 +206,7 @@ namespace protocol
 		 *
 		 * @return The number of elements in the container with a <i>key</i>.
 		 */
-		auto count(const std::string &key) const -> size_t
+		auto count(const typename child_type::key_type &key) const -> size_t
 		{
 			return std::count_if
 			(
@@ -242,7 +224,7 @@ namespace protocol
 		 * @param key the identifier of the element wants to access
 		 * @return The element having the key, or throw exception if there is none.
 		 */
-		auto get(const std::string &key) -> typename container_type::value_type&
+		auto get(const typename child_type::key_type &key) -> typename container_type::value_type&
 		{
 			auto it = std::find_if
 				(
@@ -265,7 +247,7 @@ namespace protocol
 		 * @param key the identifier of the element wants to access
 		 * @return The const element having the key, or throw exception if there is none.
 		 */
-		auto get(const std::string &key) const -> const typename container_type::value_type&
+		auto get(const typename child_type::key_type &key) const -> const typename container_type::value_type&
 		{
 			auto it = std::find_if
 				(

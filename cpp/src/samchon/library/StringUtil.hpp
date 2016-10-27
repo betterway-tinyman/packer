@@ -248,7 +248,7 @@ namespace library
 
 			// SEPERATE NUMBERS
 			bool is_negative = (val < 0);
-			unsigned long long natural = abs(val);
+			unsigned long long natural = (unsigned long long)abs(val);
 			double fraction = abs(val) - (unsigned long long)abs(val);
 
 			// NATURAL NUMBER
@@ -262,7 +262,7 @@ namespace library
 				for (size_t i = 0; i <= cipher_count; i++)
 				{
 					size_t cipher = natural % (size_t)pow(10, i + 1);
-					cipher = cipher / pow(10, i);
+					cipher = (size_t)(cipher / pow(10, i));
 
 					if (i == cipher_count && cipher == 0)
 						continue;
@@ -283,7 +283,7 @@ namespace library
 			// ADD FRACTION
 			if (precision > 0 && fraction != 0)
 			{
-				fraction = (unsigned long long)round(fraction * pow(10, precision));
+				fraction = (double)(unsigned long long)round(fraction * pow(10, precision));
 				size_t zeros = precision - (size_t)log10(fraction) - 1;
 
 				str += "." + std::string(zeros, '0') + std::to_string((unsigned long long)fraction);

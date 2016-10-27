@@ -141,7 +141,7 @@ auto WrapperGroup::toXML() const -> shared_ptr<XML>
 
 	if (sample != nullptr)
 	{
-		xml->addAllProperties(sample->toXML());
+		xml->insertAllProperties(sample->toXML());
 
 		xml->eraseProperty("type");
 		xml->setProperty("price", getPrice());

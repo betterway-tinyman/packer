@@ -21,17 +21,17 @@
 #include <samchon/library/XML.hpp>
 #include <samchon/library/Date.hpp>
 
-// HTTP
-#include <samchon/library/HTTPLoader.hpp>
-#include <samchon/library/URLVariables.hpp>
-
-// SQL
-#include <samchon/library/SQLi.hpp>
-#include <samchon/library/TSQLi.hpp>
-
-// SQL STATEMENT
-#include <samchon/library/SQLStatement.hpp>
-#include <samchon/library/TSQLStatement.hpp>
+//// HTTP
+//#include <samchon/library/HTTPLoader.hpp>
+//#include <samchon/library/URLVariables.hpp>
+//
+//// SQL
+//#include <samchon/library/SQLi.hpp>
+//#include <samchon/library/TSQLi.hpp>
+//
+//// SQL STATEMENT
+//#include <samchon/library/SQLStatement.hpp>
+//#include <samchon/library/TSQLStatement.hpp>
 
 /* -------------------------------------------------------------
 	UTILITY

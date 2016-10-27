@@ -1,40 +1,47 @@
 {
-	"name": "3d-bin-packing",
-	"description": "Packer, 3D-Bin-Packing with multiple Boxes.",
-	"author": 
-	{
-		"name": "Jeongho Nam",
-		"email": "samchon@samchon.org",
-		"url": "http://samchon.org"
-	},
-	"version": "1.0.0-RC.3",
-	
-	"main": "./release/node/packer.js",
-	"homepage": "http://betterwaysystems.github.io/packer",
-	"repository": 
-	{
-		"type": "git",
-		"url": "https://github.com/betterwaysystems/packer.git"
-	},
-	"bug": { "url": "https://github.com/betterwaysystems/packer/issues" },
+  "name": "3d-bin-packing",
+  "description": "Packer, 3D-Bin-Packing with multiple Boxes.",
+  "author": {
+    "name": "Jeongho Nam",
+    "email": "samchon@samchon.org",
+    "url": "http://samchon.org"
+  },
+  
+  "main": "./release/node/packer.js",
+  "typings": "./release/node/packer.d.ts",
+  "version": "1.0.0",
 
-	"dependencies": {
-		"typescript-stl": "~1.0.0-b",
-		"samchon-framework": "~2.0.0-beta.2",
-		"react": "~15.2.1",
-		"react-data-grid": "~1.0.18",
-		"three": "~0.79.0"
-	},
-	"licenses": 
-	[{
-		"type": "BSD 3-Clause",
-		"url": "https://opensource.org/licenses/BSD-3-Clause"
-	}],
-	"keywords":
-	[
-		"packer",
-		"3d bin packing",
-		"3d bin packing with multiple boxes",
-		"boxing optimization"
-	]
+  "dependencies": {
+    "@types/react": "^0.14.43",
+    "@types/react-data-grid": "^1.0.4",
+    "@types/react-dom": "^0.14.18",
+    "@types/three": "0.0.24",
+    "react": "^15.3.2",
+    "react-data-grid": "~1.0.18",
+    "react-dom": "^15.3.2",
+    "samchon-framework": "^2.0.0-gamma.8",
+    "three": "~0.79.0",
+    "typescript-stl": "^1.2.0"
+  },
+
+  "homepage": "http://betterwaysystems.github.io/packer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betterwaysystems/packer.git"
+  },
+  "bug": {
+    "url": "https://github.com/betterwaysystems/packer/issues"
+  },
+  "licenses": [
+    {
+      "type": "BSD 3-Clause",
+      "url": "https://opensource.org/licenses/BSD-3-Clause"
+    }
+  ],
+  "keywords": [
+    "packer",
+    "3d bin packing",
+    "3d bin packing with multiple boxes",
+    "boxing optimization"
+  ]
 }

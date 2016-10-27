@@ -37,11 +37,11 @@ namespace packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Packer
-		: public protocol::Entity,
+		: public protocol::Entity<>,
 		public library::EventDispatcher
 	{
 	private:
-		typedef protocol::Entity super;
+		typedef protocol::Entity<> super;
 		typedef library::EventDispatcher event_super;
 
 	protected:
@@ -145,7 +145,7 @@ namespace packer
 		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
-		virtual auto TAG() const->std::string override;
+		virtual auto TAG() const-> std::string override;
 		
 		virtual auto toXML() const -> std::shared_ptr<library::XML> override;
 	};

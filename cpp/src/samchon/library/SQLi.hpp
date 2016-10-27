@@ -1,16 +1,31 @@
 #pragma once
 #include <samchon/API.hpp>
 
+#include <samchon/library/base/SQLiBase.hpp>
+
+#ifdef _WIN32
+#	ifndef WIN32_LEAN_AND_MEAN 
+#		define WIN32_LEAN_AND_MEAN 
+#	endif
+#	include <Windows.h>
+#endif
+
+#define _SQLNCLI_ODBC_
+#include <sqltypes.h>
+#include <sql.h>
+#include <sqlext.h>
+#include <odbcss.h>
+
 #include <memory>
 #include <mutex>
-#include <string>
+#include <samchon/library/StringUtil.hpp>
+
+#include <samchon/library/SQLStatement.hpp>
 
 namespace samchon
 {
 namespace library
 {
-	class SQLStatement;
-
 	/**
 	 * @brief A SQL interface; DBMS connector
 	 *
@@ -24,8 +39,7 @@ namespace library
 	 * the error, an execute of query from SQLStatement will lock a mutex of SQLi to ensure 
 	 * exclusiveness. </p>
 	 *
-	 * @image html cpp/subset/library_sql.png
-	 * @image latex cpp/subset/library_sql.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_data.png)
 	 *
 	 * @note
 	 * <p> To ensure the exclusiveness, you've to make SQLStatement from SQLi. Do not make SQLStatement 
@@ -36,10 +50,10 @@ namespace library
 	 * SQLStatement or call SQLStatement::free() method(). If you don't, the mutex will not be unlocked,
 	 * thus you can't do anything by the SQLi. </p>
 	 * 
-	 * @see samchon::library
+	 * @handbook [Library - SQL Driver](https://github.com/samchon/framework/wiki/CPP-Library-SQL_Driver)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API SQLi
+	class SQLi : public base::SQLiBase
 	{
 		friend class SQLStatement;
 
@@ -71,16 +85,6 @@ namespace library
 		void *hdbc;
 
 		/**
-		 * @brief SQLStatement's pointer linked with the SQLi
-		 */
-		SQLStatement *stmt;
-
-		/**
-		 * @brief Mutex ensuring concurrency with SQLStatement
-		 */
-		std::mutex stmtMutex;
-
-		/**
 		 * @brief Had connected to DBMS.
 		 *
 		 * @details 
@@ -96,9 +100,33 @@ namespace library
 		 * @param driver Driver name of DBMS
 		 * @param port Port number of DBMS
 		 */
-		SQLi(const std::string &driver, int port);
+		SQLi(const std::string &driver, int port)
+		{
+			stmt = nullptr;
+			connected = false;
 
-		virtual ~SQLi();
+			this->driver = driver;
+			this->port = port;
+		};
+
+		virtual ~SQLi()
+		{
+			disconnect();
+		};
+
+		/**
+		* @brief Factory method for creating SQLStatement
+		*
+		* @details
+		* Recommend to create SQLStatement by this method.
+		* Direct creation is not recommended as the reason of domain problem of each DBMS
+		*
+		* @return A SQLStatement matched for the domain SQLi
+		*/
+		virtual auto createStatement() -> std::shared_ptr<SQLStatement>
+		{
+			return std::shared_ptr<SQLStatement>(new SQLStatement(this));
+		};
 
 		/**
 		 * @brief Connect to the DBMS\n
@@ -114,25 +142,66 @@ namespace library
 			(
 				const std::string &ip, const std::string &db,
 				const std::string &id, const std::string &pwd
-				);
+			)
+		{
+			std::unique_lock<std::mutex> uk(stmtMutex);
+			SQLRETURN res;
+			SQLHANDLE environment;
+
+			if ((res = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &environment)) == SQL_SUCCESS)
+				if ((res = SQLSetEnvAttr(environment, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0)) == SQL_SUCCESS)
+					if ((res = SQLAllocHandle(SQL_HANDLE_DBC, environment, &hdbc)) == SQL_SUCCESS)
+					{
+						SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)3, NULL);
+
+						res = SQLDriverConnectA
+							(
+								hdbc, NULL,
+								(SQLCHAR*)&StringUtil::substitute
+								(
+									"DRIVER={0};SERVER={1}, {2};DATABASE={3};UID={4};PWD={5};",
+									driver, ip, port, db, id, pwd
+								)[0],
+								SQL_NTS, NULL, 1024, NULL, SQL_DRIVER_NOPROMPT
+							);
+					}
+
+			SQLFreeHandle(SQL_HANDLE_DBC, environment);
+
+			if (res != SQL_SUCCESS && res != SQL_SUCCESS_WITH_INFO)
+			{
+				disconnect();
+				throw std::exception(getErrorMessage(SQL_HANDLE_DBC).c_str());
+			}
+			else
+				connected = true;
+		};
 
 		/**
 		 * @brief Disconnect from DBMS
 		 */
-		virtual void disconnect();
+		virtual void disconnect()
+		{
+			//FOR STATIC DESTRUCTION
+			std::unique_lock<std::mutex> uk(stmtMutex);
+			
+			SQLDisconnect(hdbc);
+			SQLFreeHandle(SQL_HANDLE_DBC, hdbc);
+			connected = false;
 
-		auto isConnected() const -> bool;
+			stmtMutex.unlock();
+		};
 
-		/**
-		 * @brief Factory method for creating SQLStatement
-		 *
-		 * @details
-		 * Recommend to create SQLStatement by this method.
-		 * Direct creation is not recommended as the reason of domain problem of each DBMS
-		 *
-		 * @return A SQLStatement matched for the domain SQLi
-		 */
-		virtual auto createStatement() -> std::shared_ptr<SQLStatement>;
+		auto isConnected() const -> bool
+		{
+			if (connected == false)
+				return false;
+
+			unsigned int ret = SQL_CD_FALSE;
+			SQLGetConnectAttr(hdbc, SQL_COPT_SS_CONNECTION_DEAD, &ret, SQL_IS_UINTEGER, NULL);
+
+			return ret != SQL_CD_TRUE;
+		};
 
 	protected:
 		/**
@@ -140,7 +209,16 @@ namespace library
 		 * 
 		 * @details Gets error message for throwing exception.
 		 */
-		virtual auto getErrorMessage(short type) const -> std::string;
+		virtual auto getErrorMessage(short type) const -> std::string
+		{
+			char state[1024];
+			char message[1024];
+
+			if (SQLGetDiagRecA(type, hdbc, 1, (SQLCHAR *)state, NULL, (SQLCHAR *)message, 1024, NULL) == SQL_SUCCESS)
+				return message;
+			else
+				return "Unknown";
+		};
 	};
 };
 };

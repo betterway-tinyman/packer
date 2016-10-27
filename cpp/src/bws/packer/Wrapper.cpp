@@ -132,7 +132,7 @@ auto Wrapper::toXML() const -> shared_ptr<XML>
 {
 	auto &xml = array_super::toXML();
 
-	xml->addAllProperties(instance_super::toXML());
+	xml->insertAllProperties(instance_super::toXML());
 	xml->setProperty("price", price);
 	xml->setProperty("thickness", thickness);
 	xml->setProperty("utilization", getUtilization());

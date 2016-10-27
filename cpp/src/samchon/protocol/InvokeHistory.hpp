@@ -10,81 +10,137 @@ namespace samchon
 {
 namespace protocol
 {
-	class InvokeHistory : public Entity
+	/**
+	 * History of an {@link Invoke} message.
+	 * 
+	 * The {@link InvokeHistory} is a class archiving history log of an {@link Invoke} message with elapsed time. This 
+	 * {@link InvokeHistory} class is used to report elapsed time of handling a requested process from **slave** to 
+	 * **master** system. 
+	 * 
+	 * The **master** system utilizes derived {@link InvokeHistory} objects to compute performance indices.
+	 * - {@link ParallelSytem.getPerformance}
+	 * - {@link DistributedProcess.getResource}
+	 * 
+	 * @author Jeongho Nam <http://samchon.org>
+	 */
+	class InvokeHistory 
+		: public Entity<size_t>
 	{
 	private:
-		typedef Entity super;
+		typedef Entity<size_t> super;
 
-	protected:
-		size_t uid;
+	private:
+		size_t uid_;
 
-		std::string listener;
-
-		library::Date startTime;
-
-		library::Date endTime;
+		std::string listener_;
+		library::Date start_time_;
+		library::Date end_time_;
 
 	public:
 		/* ---------------------------------------------------------
 			CONSTRUCTORS
 		--------------------------------------------------------- */
+		/**
+		 * Default Constructor.
+		 */
 		InvokeHistory() : super()
 		{
 		};
 
-		InvokeHistory(std::shared_ptr<Invoke> invoke) : super()
+		/**
+		 * Construct from an {@link Invoke} message.
+		 * 
+		 * @param invoke An {@link Invoke} message requesting a *parallel or distributed process*.
+		 */
+		InvokeHistory(std::shared_ptr<Invoke> invoke)
+			: super()
 		{
-			uid = invoke->get("invoke_history_uid")->getValue<size_t>();
-			listener = invoke->getListener();
+			uid_ = invoke->get("_History_uid")->getValue<size_t>();
+			listener_ = invoke->getListener();
 
-			startTime = std::chrono::system_clock::now();
+			start_time_ = std::chrono::system_clock::now();
 		};
 
 		virtual ~InvokeHistory() = default;
 
 		virtual void construct(std::shared_ptr<library::XML> xml) override
 		{
-			uid = xml->getProperty<size_t>("uid");
-			listener = xml->getProperty("listener");
+			// UID AND LISTENER
+			uid_ = xml->getProperty<size_t>("uid");
+			listener_ = xml->getProperty("listener");
 
-			startTime = std::chrono::system_clock::from_time_t(0);
-			endTime = std::chrono::system_clock::from_time_t(0);
+			//--------
+			// START AND END TIME
+			//--------
+			// INIT TIMES TO DEFAULT (0; 1970-01-01 09:00:00
+			start_time_ = std::chrono::system_clock::from_time_t(0);
+			end_time_ = std::chrono::system_clock::from_time_t(0);
 
-			startTime += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("startTime"));
-			endTime += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("endTime"));
-		};
-
-		void notifyEnd()
-		{
-			endTime = std::chrono::system_clock::now();
+			// ADD NUMBERS WHO REPRESENT LINUX_TIME
+			start_time_ += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("startTime"));
+			end_time_ += std::chrono::duration<long long, std::ratio_multiply<std::ratio<100i64, 1i64>, std::nano>>(xml->getProperty<long long>("endTime"));
 		};
 
 		/* ---------------------------------------------------------
 			ACCESSORS
 		--------------------------------------------------------- */
-		auto getUID() const -> size_t
+		virtual auto key() const -> size_t override
 		{
-			return uid;
+			return uid_;
 		};
 
+		/**
+		 * Get end time.
+		 */
+		auto getUID() const -> size_t
+		{
+			return uid_;
+		};
+
+		/**
+		 * Get {@link Invoke.getListener listener} of the {@link Invoke} message.
+		 */
 		auto getListener() const -> std::string
 		{
-			return listener;
+			return listener_;
 		};
 
 		auto getStartTime() const -> library::Date
 		{
-			return startTime;
+			return start_time_;
 		};
-
 		auto getEndTime() const -> library::Date
 		{
-			return endTime;
+			return end_time_;
 		};
 
-		auto getElapsedTime() const -> long long
+		void setStartTime(const library::Date &val)
 		{
-			return (endTime - startTime).count();
+			start_time_ = val;
+		};
+		void setEndTime(const library::Date &val)
+		{
+			end_time_ = val;
+		};
+
+		/**
+		 * Compute elapsed time.
+		 * 
+		 * @return nanoseconds.
+		 */
+		auto computeElapsedTime() const -> long long
+		{
+			return (end_time_ - start_time_).count();
+		};
+
+		/**
+		 * Complete the history.
+		 * 
+		 * Completes the history and determines the {@link getEndTime end time}.
+		 */
+		void complete()
+		{
+			end_time_ = std::chrono::system_clock::now();
 		};
 
 		/* ---------------------------------------------------------
@@ -92,23 +148,24 @@ namespace protocol
 		--------------------------------------------------------- */
 		virtual auto TAG() const -> std::string
 		{
-			return "invokeHistory";
+			return "history";
 		};
 
-		virtual auto toXML() const -> std::shared_ptr<library::XML>
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override
 		{
 			std::shared_ptr<library::XML> &xml = super::toXML();
-			xml->setProperty("uid", uid);
-			xml->setProperty("listener", listener);
-			xml->setProperty("startTime", startTime.time_since_epoch().count());
-			xml->setProperty("endTime", endTime.time_since_epoch().count());
+			xml->setProperty("uid", uid_);
+			xml->setProperty("listener", listener_);
+
+			xml->setProperty("startTime", start_time_.time_since_epoch().count());
+			xml->setProperty("endTime", end_time_.time_since_epoch().count());
 
 			return xml;
 		};
 
-		virtual auto toInvoke() const -> std::shared_ptr<Invoke>
+		auto toInvoke() const -> std::shared_ptr<Invoke>
 		{
-			return std::make_shared<Invoke>("report_invoke_history", this->toXML());
+			return std::make_shared<Invoke>("_Report_history", toXML());
 		};
 	};
 };

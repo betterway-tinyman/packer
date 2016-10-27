@@ -30,16 +30,14 @@ namespace library
 	 * <p> Referenced comments of std::unique_lock </p>
 	 *	\li http://www.cplusplus.com/reference/mutex/unique_lock/
 	 *
-	 * @image html cpp/library_critical_section.png
-	 * @image latex cpp/library_critical_section.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_critical_section.png)
 	 *
 	 * @note
 	 * <p> Though, that the SharedReadLock object does not manage the lifetime of the RWMutex
 	 * object in any way: the duration of the RWMutex object shall extend at least until
 	 * the destruction of the SharedReadLock that manages it. </p>
 	 *
-	 * @see library::UniqueAcquire
-	 * @see samchon::library
+	 * @handbook [Library - Critical Section](https://github.com/samchon/framework/wiki/CPP-Library-Critical_Section)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class SharedReadLock

@@ -15,10 +15,8 @@ namespace library
 	 * @details
 	 * <p> Provides some static values and mathmatical methods. </p>
 	 *
-	 * @image html cpp/library_math.png
-	 * @image latex cpp/library_math.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_math.png)
 	 *
-	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Math

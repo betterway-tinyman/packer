@@ -14,7 +14,7 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename T = Entity>
-	using SharedEntityList = EntityGroup<std::list<std::shared_ptr<T>>, T>;
+	template <typename T, typename Key = std::string>
+	using SharedEntityList = EntityGroup<std::list<std::shared_ptr<T>>, T, Key>;
 };
 };

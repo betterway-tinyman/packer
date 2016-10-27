@@ -25,12 +25,12 @@ namespace packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Wrap
-		: public protocol::Entity
+		: public protocol::Entity<>
 	{
 		friend class WrapperGroup;
 
 	private:
-		typedef protocol::Entity super;
+		typedef protocol::Entity<> super;
 
 	protected:
 		/**

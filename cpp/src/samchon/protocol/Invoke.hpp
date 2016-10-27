@@ -26,20 +26,10 @@ namespace protocol
 	 * (IProtocol, Server and IClient + ServerConnector), by implemens or inherits them, like designing
 	 * classes of S/W architecture. </p>
 	 *
-	 * <p> @image html  cpp/protocol_invoke.png
-	 *	   @image latex cpp/protocol_invoke.png </p>
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_invoke.png)
 	 * 
-	 * \par Example Sources
-	 *	\li example::invoke
-	 *	\li example::interaction
-	 *
-	 * \par [Inherited]
-	 *		@copydetails protocol::EntityGroup
-	 * 
-	 * @see protocol::IProtocol
-	 * @see protocol::InvokeParameter
-	 * @see samchon::protocol
-	 * 		
+	 * @see {@link IProtocol}
+	 * @handbook  [Protocol - Standard Message](https://github.com/samchon/framework/wiki/CPP-Protocol-Standard_Message)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Invoke

@@ -1,7 +1,4 @@
-
 #pragma once
-#include <samchon/API.hpp>
-
 #include <samchon/protocol/EntityGroup.hpp>
 #include <vector>
 
@@ -25,8 +22,8 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename T = Entity>
-	using SharedEntityArray = EntityGroup<std::vector<std::shared_ptr<T>>, T>;
+	template <typename T, typename Key = std::string>
+	using SharedEntityArray = EntityGroup<std::vector<std::shared_ptr<T>>, T, Key>;
 };
 };
 
@@ -43,16 +40,16 @@ auto at(size_t x) const -> std::shared_ptr<CHILD_TYPE> \
 { \
 	return std::dynamic_pointer_cast<CHILD_TYPE>(container_type::at(x)); \
 }; \
-auto get(const std::string &key) const -> std::shared_ptr<CHILD_TYPE> \
+auto get(const typename child_type::key_type &key) const -> std::shared_ptr<CHILD_TYPE> \
 { \
-	return std::dynamic_pointer_cast<CHILD_TYPE>(samchon::protocol::EntityGroup<container_type, entity_type>::get(key)); \
+	return std::dynamic_pointer_cast<CHILD_TYPE>(samchon::protocol::EntityGroup<container_type, child_type, key_type>::get(key)); \
 };
 
 // HEADER
 #define SHARED_ENTITY_ARRAY_ELEMENT_ACCESSOR_HEADER(CHILD_TYPE) \
 auto operator[](size_t) const -> std::shared_ptr<CHILD_TYPE>; \
 auto at(size_t) const -> std::shared_ptr<CHILD_TYPE>; \
-auto get(const std::string&) const -> std::shared_ptr<CHILD_TYPE>;
+auto get(const typename child_type::key_type&) const -> std::shared_ptr<CHILD_TYPE>;
 
 // BODY
 #define SHARED_ENTITY_ARRAY_ELEMENT_ACCESSOR_BODY(THIS_TYPE, CHILD_TYPE) \
@@ -64,7 +61,7 @@ auto THIS_TYPE::at(size_t x) const -> std::shared_ptr<CHILD_TYPE> \
 { \
 	return std::dynamic_pointer_cast<CHILD_TYPE>(container_type::at(x)); \
 } \
-auto THIS_TYPE::get(const std::string &key) const -> std::shared_ptr<CHILD_TYPE> \
+auto THIS_TYPE::get(const typename child_type::key_type &key) const -> std::shared_ptr<CHILD_TYPE> \
 { \
-	return std::dynamic_pointer_cast<CHILD_TYPE>(samchon::protocol::EntityGroup<container_type, entity_type>::get(key)); \
+	return std::dynamic_pointer_cast<CHILD_TYPE>(samchon::protocol::EntityGroup<container_type, child_type, key_type>::get(key)); \
 }

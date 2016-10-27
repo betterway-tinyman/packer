@@ -7,21 +7,20 @@ namespace samchon
 namespace protocol
 {
 	/**
-	 * @brief An interface of Invoke message chain
+	 * An interface for {@link Invoke} message chain.
 	 *
-	 * @details 
-	 * <p> IProtocol is an interface for Invoke message, which is standard message of network I/O 
-	 * in Samchon Framework, chain. The IProtocol interface is used to network drivers and some classes
-	 * which are in a relationship of chain of responsibility with those network drivers. </p>
+	 * {@link IProtocol} is an interface for {@link Invoke} message, which is standard message of network I/O in
+	 * *Samchon Framework*, chain. The {@link IProtocol} interface is used to network drivers and some classes which are
+	 * in a relationship of *Chain of Responsibility Pattern* with those network drivers.
 	 *
-	 * <p> IProtocol is one of the basic 3 + 1 components that can make any type of network system in
-	 * Samchon Framework with Server and IClient. Following the "chain of responsibility" pattern, 
-	 * looking around classes in Samchon Framework, you can see all related classes with network I/O 
-	 * are implemented from the IProtocol. </p>
+	 * Implements {@link IProtocol} if the class sends and handles {@link Invoke} messages. Looking around source codes of
+	 * the *Samchon Framework*, especially *Templates*, you can find out that all the classes and modules handling
+	 * {@link Invoke} messages are always implementing this {@link IProtocol}.
 	 *
-	 * @image html cpp/protocol_interface.png
-	 * @image latex cpp/protocol_interface.png
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_basic_components.png)
 	 *
+	 * @see {@link Invoke}
+	 * @handbook https://github.com/samchon/framework/wiki/CPP-Protocol-Basic_Components#iprotocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class IProtocol
@@ -30,18 +29,20 @@ namespace protocol
 		virtual ~IProtocol() = default;
 
 		/**
-		 * @brief Reply a message
+		 * Handling replied message.
+		 * 
+		 * Handles a replied {@link Invoke} message or shifts the responsibility to chain.
 		 *
-		 * @details Handles a replied Invoke message or shifts the responsibility to related chain.
-		 * @param invoke An Invoke message gotten from a network system
+		 * @param invoke An {@link Invoke} message has received.
 		 */
 		virtual void replyData(std::shared_ptr<Invoke>) = 0;
 
 		/**
-		 * @brief Send a message
+		 * Send message.
+		 * 
+		 * Sends an {@link Invoke} message to related system or shifts the responsibility to chain.
 		 *
-		 * @details Sends Invoke message to a network system or shifts the responsibility to related chain.
-		 * @param invoke An Invoke message to send to a network system
+		 * @param invoke Invoke message to send
 		 */
 		virtual void sendData(std::shared_ptr<Invoke>) = 0;
 	};

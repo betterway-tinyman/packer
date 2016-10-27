@@ -18,56 +18,52 @@ namespace library
 	typedef std::vector<std::shared_ptr<XML>> XMLList;
 
 	/**
-	 * @brief XML is a class representing xml object
-	 *
-	 * @details 
-	 * <p> The XML class provides methods and properties for working with XML objects. </p>
+	 * A tree-structured XML object.
 	 * 
-	 * <p> The XML class (along with the XMLList and Namespace) implements 
-	 * the powerful XML-handling standard defined in ECMAScript for XML (E4X) specification. </p>
-	 *
-	 * <p> XML class has a recursive, hierarchical relationship. </p>
+	 * The {@link XML| class contains methods and properties for working with XML objects. The {@link XML} class (along 
+	 * with the {@link XMLList}) implements the powerful XML-handling standards defined in ECMAScript for XML (E4X) 
+	 * specification (ECMA-357 edition 2).
 	 * 
-	 * <p> All XML objects're managed by shared_ptr. </p>
-	 *	\li XML contains XMLList from dictionary of shared pointer<XMLList>
-	 *  \li XMLList contains XML from vector of shared pointer<XML>
-	 *  \li Even if user creates an XML object directly, it's the basic principle to use shared pointer
+	 * An XML object, it is composed with three members; {@link getTag tag}, {@link getProperty properties} and 
+	 * {@link getValue value}. As you know, XML is a tree structured data expression method. The tree-stucture; 
+	 * {@link XML} class realizes it by extending ```std.HashMap<string, XMLList>```. Child {@link XML} objects are 
+	 * contained in the matched {@link XMLList} object being grouped by their {@link getTag tag name}. The 
+	 * {@link XMLList} objects, they're stored in the {@link std.HashMap} ({@link XML} itself) with its **key**; common 
+	 * {@link getTag tag name} of children {@link XML} objects. 
 	 * 
-	 * @image html cpp/subset/library_xml.png
-	 * @image latex cpp/subset/library_xml.png
-	 *
-	 * @note 
-	 * <p> Parsing comment is not supported yet. </p>
-	 * <p> It's not recommeded to creating an XML object which is not being managed by shared pointer. </p>
+	 * ```typescript
+	 * class XML extends std.HashMap<string, XMLList>
+	 * {
+	 *	private tag_: string;
+	 *	private properties_: std.HashMap<string, string>;
+	 *	private value_: string;
+	 * }
+	 * ```
 	 * 
-	 * @warning 
-	 * <p> Do not abuse values for expressing member variables. </p>
-	 *
-	 * <table>
-	 *	<tr>
-	 *		<th>Standard Usage</th>
-	 *		<th>Non-standard usage abusing value</th>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>
-	 *			\<memberList\>\n
-	 *			&nbsp;&nbsp;&nbsp;&nbsp; \<member id='jhnam88' name='Jeongho+Nam' birthdate='1988-03-11' /\>\n
-	 *			&nbsp;&nbsp;&nbsp;&nbsp; \<member id='master' name='Administartor' birthdate='2011-07-28' /\>\n
-	 *			\</memberList\>
-	 *		</td>
-	 *		<td>
-	 *			\<member\>\n
-	 *			&nbsp;&nbsp;&nbsp;&nbsp; \<id\>jhnam88\</id\>\n
-	 *			&nbsp;&nbsp;&nbsp;&nbsp; \<name\>Jeongho+Nam\</name\>\n
-	 *			&nbsp;&nbsp;&nbsp;&nbsp; \<birthdate\>1988-03-11\</birthdate\>\n
-	 *			\</member\>
-	 *		</td>
-	 *	</tr>
-	 * </table>
+	 * ```xml
+	 * <?xml version="1.0" ?>
+	 * <TAG property_name={property_value}>
+	 *	<!-- 
+	 *		The cchild XML objects with "CHILD_TAG", They're contained in an XMLList object. 
+	 *		The XMLList object, it is stored in std.HashMap (XML class itself) with its key "CHILD_TAG" 
+	 *	--> 
+	 *	<CHILD_TAG property_name={property_value}>{value}</CHILD_TAG>
+	 *  <CHILD_TAG property_name={property_value}>{value}</CHILD_TAG>
+	 *	<CHILD_TAG property_name={property_value}>{value}</CHILD_TAG>
 	 * 
-	 * @includelineno example/xml/main.cpp
-	 *
-	 * @see samchon::library
+	 *	<!-- 
+	 *		The child XML object named "ANOTHER_TAG", it also belonged to an XMLList ojbect.
+	 *		And the XMLList is also being contained in the std.HashMap with its key "ANOTHER_TAG"
+	 *	-->
+	 *	<ANOTHER_TAG />
+	 * </TAG>
+	 * ```
+	 * 
+	 * Use the {@link toString toString()} method to return a string representation of the {@link XML} object regardless 
+	 * of whether the {@link XML} object has simple content or complex content.
+	 * 
+	 * @reference http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/XML.html
+	 * @handbook https://github.com/samchon/framework/wiki/CPP-Library-XML
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class XML
@@ -76,40 +72,19 @@ namespace library
 	private:
 		typedef HashMap<std::string, std::shared_ptr<XMLList>> super;
 
-		/**
-		 * @brief Tag name
-		 *
-		 * @details
-		 *	\li \<<b>tag</b> label='property' /\>: tag => \"tag\"
-		 *  \li \<<b>price</b> high='1500' low='1300' open='1450' close='1320' /\>: tag => \"price\"
-		 */
-		std::string tag;
+		std::string tag_;
+		std::string value_;
 
-		/**
-		 * @brief Value of the XML
-		 *
-		 * @details
-		 *  \li \<parameter name='age' type='int'\><b>26</b>\</parameter\>: value => 26
-		 *	\li \<price high='1500' low='1300' open='1450' close='1320' /\>: value => null
-		 */
-		std::string value;
-
-		/**
-		 * @brief Properties belongs to the XML
-		 *
-		 * @details
-		 * A Dictionary of properties accessing each property by its key.
-		 *	\li \<price <b>high='1500' low='1300' open='1450' close='1320'</b> /\>:
-		 *		properties => {{\"high\": 1500}, {\"low\": 1300}, {\"open\": 1450}, {\"close\", 1320}}
-		 *	\li \<member <b>id='jhnam88' name='Jeongho+Nam' comment='Hello.+My+name+is+Jeongho+Nam'</b> \>:
-		 *		properties => {{\"id\", \"jhnam88\"}, {\"name\", \"Jeongho Nam <http://samchon.org>\"}, {\"comment\", \"Hello. My name is Jeongho Nam <http://samchon.org>\"}}
-		 */
-		HashMap<std::string, std::string> properties;
+		HashMap<std::string, std::string> property_map_;
 
 	public:
-		/* -----------------------------------------------------------
+		/* =============================================================
 			CONSTRUCTORS
-		----------------------------------------------------------- */
+				- BASIC CONSTRUCTORS
+				- PARSERS
+		================================================================
+			BASIC CONSTRUCTORS
+		------------------------------------------------------------- */
 		/**
 		 * @brief Default Constructor
 		 *
@@ -128,9 +103,9 @@ namespace library
 		 */
 		XML(const XML &xml) : super()
 		{
-			tag = xml.tag;
-			value = xml.value;
-			properties = xml.properties;
+			tag_ = xml.tag_;
+			value_ = xml.value_;
+			property_map_ = xml.property_map_;
 
 			//COPYING CHILDREN OBJECTS
 			for (auto it = xml.begin(); it != xml.end(); it++)
@@ -144,7 +119,7 @@ namespace library
 				for (size_t i = 0; i < it->second->size(); it++)
 					xmlList->emplace_back(new XML(*it->second->at(i)));
 
-				this->set(xmlList->at(0)->tag, xmlList);
+				this->set(xmlList->at(0)->tag_, xmlList);
 			}
 		};
 
@@ -153,21 +128,19 @@ namespace library
 		 */
 		XML(XML &&xml) : super(move(xml))
 		{
-			tag = move(xml.tag);
-			value = move(xml.value);
+			tag_ = move(xml.tag_);
+			value_ = move(xml.value_);
 
-			properties = move(xml.properties);
+			property_map_ = move(xml.property_map_);
 		};
 
 		/**
-		 * @brief Constructor by string
-		 *
-		 * @details
-		 * Parses a string so that constructs an XML object
-		 *
-		 * @param str A string representing xml object
-		 * @warning Declare XML to managed by shared pointer
-		 */
+		* Construct from string.
+		*
+		* Creates {@link XML} object by parsing a string who represents xml structure.
+		*
+		* @param str A string represents XML structure.
+		*/
 		XML(WeakString wstr) : super()
 		{
 			if (wstr.find('<') == std::string::npos)
@@ -208,35 +181,28 @@ namespace library
 			if (wstr.find("<?xml") != std::string::npos)
 				wstr = wstr.between("?>");
 
-			construct(wstr);
+			parse(wstr);
 		};
 
 	private:
-		/**
-		 * @brief Protected Constructor by string for child
-		 *
-		 * @details
-		 * Parses a string so that creates an XML object
-		 * It is called for creating children XML objects from parent XML object.
-		 *
-		 * @param parent Parent object who will contains this XML object
-		 * @param str A string to be parsed
-		 */
 		XML(XML *parent, WeakString &wstr) : XML()
 		{
-			construct(wstr);
+			parse(wstr);
 		};
 
-		void construct(WeakString &wstr)
+		/* -------------------------------------------------------------
+			PARSERS
+		------------------------------------------------------------- */
+		void parse(WeakString &wstr)
 		{
-			construct_key(wstr);
-			construct_properties(wstr);
+			parse_key(wstr);
+			parse_properties(wstr);
 
-			if (construct_value(wstr) == true)
-				construct_children(wstr);
+			if (parse_value(wstr) == true)
+				parse_children(wstr);
 		};
 
-		void construct_key(WeakString &wstr)
+		void parse_key(WeakString &wstr)
 		{
 			size_t startX = wstr.find("<") + 1;
 			size_t endX =
@@ -253,10 +219,10 @@ namespace library
 				);
 
 			//Determinate the KEY
-			tag = move( wstr.substring(startX, endX).str() );
+			tag_ = move( wstr.substring(startX, endX).str() );
 		};
 		
-		void construct_properties(WeakString &wstr)
+		void parse_properties(WeakString &wstr)
 		{
 			// INLINE CLASS
 			class QuotePair
@@ -280,7 +246,7 @@ namespace library
 				};
 			};
 
-			size_t i_begin = wstr.find('<' + tag) + tag.size() + 1;
+			size_t i_begin = wstr.find('<' + tag_) + tag_.size() + 1;
 			size_t i_endSlash = wstr.rfind('/');
 			size_t i_endBlock = wstr.find('>', i_begin);
 
@@ -354,13 +320,13 @@ namespace library
 					);
 		
 				//INSERT INTO PROPERTY_MAP
-				properties.set(label, move(value));
+				property_map_.set(label, move(value));
 			}
 			for (i = 0; i < helpers.size(); i++)
 				delete helpers[i];
 		};
 		
-		auto construct_value(WeakString &wstr) -> bool
+		auto parse_value(WeakString &wstr) -> bool
 		{
 			size_t i_endSlash = wstr.rfind('/');
 			size_t i_endBlock = wstr.find('>');
@@ -369,7 +335,7 @@ namespace library
 			{
 				//STATEMENT1: <TAG />
 				//STATEMENT2: <TAG></TAG> -> SAME WITH STATEMENT1: <TAG />
-				value.clear();
+				value_.clear();
 				return false;
 			}
 
@@ -378,14 +344,14 @@ namespace library
 			wstr = wstr.substring(startX, endX); //REDEFINE WEAK_STRING -> IN TO THE TAG
 
 			if (wstr.find('<') == std::string::npos)
-				value = wstr.trim();
+				value_ = wstr.trim();
 			else
-				value.clear();
+				value_.clear();
 
 			return true;
 		};
 		
-		void construct_children(WeakString &wstr)
+		void parse_children(WeakString &wstr)
 		{
 			if (wstr.find('<') == std::string::npos)
 				return;
@@ -452,10 +418,291 @@ namespace library
 			}*/
 
 			if (size() > 0)
-				value.clear();
+				value_.clear();
 		};
 
 	public:
+		/* =============================================================
+			ACCESSORS
+				- GETTERS
+					- VALUE TEMPLATES
+					- PROPERTY TEMPLATES
+				- SETTERS
+					- VALUE TEMPLATES
+					- PROPERTY TEMPLATES
+				- ELEMENTS I/O
+		================================================================
+			GETTERS
+		------------------------------------------------------------- */
+		/**
+		 * @brief Get tag.
+		 * 
+		 * @details
+		 * ```xml
+		 * <TAG property_key={property_value}>{value}</TAG>
+		 * ```
+		 * 
+		 * @return tag.
+		 */
+		auto getTag() const -> std::string
+		{
+			return tag_;
+		};
+
+		/**
+		 * Test whether a property exists.
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY={property_value}>{value}</tag>
+		 * ```
+		 * 
+		 * @return Whether a property has the *key* exists or not.
+		 */
+		auto hasProperty(const std::string &key) const -> bool
+		{
+			return property_map_.has(key);
+		};
+
+		/**
+		 * Get property map.
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY1={PROPERTY_VALUE1}
+		 *		PROPERTY_KEY2={PROPERTY_VALUE2}
+		 *		PROPERTY_KEY3={PROPERTY_VALUE3}>{value}</tag>
+		 * ```
+		 * 
+		 * @return {@link HashMap} containing properties' keys and values.
+		 */
+		auto getPropertyMap() const -> const HashMap<std::string, std::string>&
+		{
+			return property_map_;
+		};
+
+		/* -------------------------------------------------------------
+			GETTERS - VALUE TEMPLATES
+		------------------------------------------------------------- */
+		/** 
+		 * @brief Get value.
+		 * 
+		 * @details
+		 * ```xml
+		 * <tag property_key={property_value}>{VALUE}</tag>
+		 * ```
+		 * 
+		 * @return value.
+		 */
+		template<class T = std::string> auto getValue() const -> T
+		{
+			double val = std::stod(value_);
+
+			return (T)val;
+		};
+
+		template<> auto getValue() const -> bool
+		{
+			return value_ == "true";
+		};
+
+		template<> auto getValue() const -> std::string
+		{
+			return value_;
+		};
+		template<> auto getValue() const -> WeakString
+		{
+			return value_;
+		};
+
+		/* -------------------------------------------------------------
+			GETTERS - PROPERTY TEMPLATES
+		------------------------------------------------------------- */
+		/**
+		 * @brief Get property.
+		 * 
+		 * @details
+		 * Get property by its *key*, property name. If the matched *key* does not exist, then exception
+		 * {@link std.OutOfRange} is thrown. Thus, it would better to test whether the *key* exits or not by calling the
+		 * {@link hasProperty hasProperty()} method before calling this {@link getProperty getProperty()}.
+		 * 
+		 * This method can be substituted by {@link getPropertyMap getPropertyMap()} such below:
+		 * - ```getPropertyMap().get(key, value);```
+		 * - ```getPropertyMap().find(key).second;```
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY={PROPERTY_VALUE}>{value}</tag>
+		 * ```
+		 * 
+		 * @return Value of the matched property.
+		 */
+		template<class T = std::string> auto getProperty(const std::string &key) const -> T
+		{
+			double val = std::stod(property_map_.get(key));
+
+			return (T)val;
+		};
+
+		template<> auto getProperty(const std::string &key) const -> bool
+		{
+			return property_map_.get(key) == "true";
+		};
+
+		template<> auto getProperty(const std::string &key) const -> std::string
+		{
+			return property_map_.get(key);
+		};
+		template<> auto getProperty(const std::string &key) const -> WeakString
+		{
+			return property_map_.get(key);
+		};
+
+		/**
+		 * Get iterator to property element.
+		 * 
+		 * Searches the {@link getPropertyMap properties} for an element with a identifier equivalent to <i>key</i> 
+		 * and returns an iterator to it if found, otherwise it returns an iterator to {@link HashMap.end end()}.
+		 *
+		 * <p> Two keys are considered equivalent if the properties' comparison object returns false reflexively
+		 * (i.e., no matter the order in which the elements are passed as arguments). </p>
+		 *
+		 * Another member function, {@link hasProperty hasProperty()} can be used to just check whether a particular 
+		 * <i>key</i> exists.
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY={property_value}>{value}</tag>
+		 * ```
+		 * 
+		 * @param key Key to be searched for
+		 * @return An iterator to the element, if an element with specified <i>key</i> is found, or
+		 *		   {@link end HashMap.end()} otherwise.
+		 */
+		auto findProperty(const std::string &key) ->HashMap<std::string, std::string>::iterator
+		{
+			return property_map_.find(key);
+		};
+
+		auto findProperty(const std::string &key) const -> HashMap<std::string, std::string>::const_iterator
+		{
+			return property_map_.find(key);
+		};
+
+		template <typename T = std::string>
+		auto fetchProperty(const std::string &key, const T &def = T()) const -> T
+		{
+			if (hasProperty(key))
+				return getProperty<T>(key);
+			else
+				return def;
+		};
+
+		/* -----------------------------------------------------------
+			SETTERS
+		----------------------------------------------------------- */
+		/**
+		 * Set tag.
+		 * 
+		 * Set tag name, identifier of this {@link XML} object.
+		 * 
+		 * If this {@link XML} object is belonged to, a child of, an {@link XMLList} and its related {@link XML} objects, 
+		 * then calling this {@link setTag setTag()} method direclty is not recommended. Erase this {@link XML} object
+		 * from parent objects and insert this object again.
+		 * 
+		 * ```xml
+		 * <TAG property_key={property_value}>{value}</TAG>
+		 * ```
+		 * 
+		 * @param val To be new {@link getTag tag}.
+		 */
+		void setTag(const std::string &val)
+		{
+			tag_ = val;
+		};
+
+		/* -------------------------------------------------------------
+			SETTERS - VALUE TEMPLATES
+		------------------------------------------------------------- */
+		/**
+		 * Set value.
+		 *
+		 * ```xml
+		 * <tag property_key={property_value}>{VALUE}</tag>
+		 * ```
+		 * 
+		 * @param val To be new {@link getValue value}.
+		 */
+		template <typename T>
+		void setValue(const T &val)
+		{
+			value_ = std::to_string(val);
+		};
+
+		template<> void setValue(const bool &flag)
+		{
+			this->value_ = flag ? "true" : "false";
+		};
+
+		template<> void setValue(const std::string &val)
+		{
+			this->value_ = val;
+		};
+		template<> void setValue(const WeakString &val)
+		{
+			this->value_ = val.str();
+		};
+		void setValue(const char *ptr)
+		{
+			this->value_ = ptr;
+		};
+
+		/* -------------------------------------------------------------
+			SETTERS - PROPERTY TEMPLATES
+		------------------------------------------------------------- */
+		/**
+		 * Set property.
+		 * 
+		 * Set a property *value* with its *key*. If the *key* already exists, then the *value* will be overwritten to 
+		 * the property. Otherwise the *key* is not exist yet, then insert the *key* and *value* {@link Pair pair} to 
+		 * {@link getPropertyMao property map}.
+		 * 
+		 * This method can be substituted by {@link getPropertyMap getPropertyMap()} such below:
+		 * - ```getPropertyMap().set(key, value);```
+		 * - ```getPropertyMap().emplace(key, value);```
+		 * - ```getPropertyMap().insert([key, value]);```
+		 * - ```getPropertyMap().insert(std.make_pair(key, value));```
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY={PROPERTY_VALUE}>{value}</tag>
+		 * ```
+		 * 
+		 * @param key Key, identifier of property to be newly inserted.
+		 * @param value Value of new property to be newly inserted.
+		 */
+		template<typename T>
+		void setProperty(const std::string &key, const T &val)
+		{
+			property_map_.set(key, std::to_string(val));
+		};
+
+		template<> void setProperty(const std::string &key, const bool &flag)
+		{
+			property_map_.set(key, flag ? "true" : "false");
+		};
+
+		template<> void setProperty(const std::string &key, const std::string &val)
+		{
+			property_map_.set(key, val);
+		};
+		template<> void setProperty(const std::string &key, const WeakString &val)
+		{
+			property_map_.set(key, val.str());
+		};
+		void setProperty(const std::string &key, const char *ptr)
+		{
+			property_map_.set(key, ptr);
+		};
+
+		/* -----------------------------------------------------------
+			ELEMENTS I/O
+		----------------------------------------------------------- */
 		/**
 		 * @brief Add children xml objects by string representing them
 		 *
@@ -467,13 +714,13 @@ namespace library
 				return;
 
 			std::shared_ptr<XML> xml(new XML(this, wstr));
-			auto it = find(xml->tag);
+			auto it = find(xml->tag_);
 
 			//if not exists
 			if (it == end())
 			{
-				set(xml->tag, std::make_shared<XMLList>());
-				it = find(xml->tag);
+				set(xml->tag_, std::make_shared<XMLList>());
+				it = find(xml->tag_);
 			}
 
 			//insert
@@ -487,83 +734,12 @@ namespace library
 		 */
 		void push_back(const std::shared_ptr<XML> xml)
 		{
-			std::string &tag = xml->tag;
+			std::string &tag = xml->tag_;
 			
 			if (this->has(tag) == false)
 				this->set(tag, std::make_shared<XMLList>());
 
 			this->get(tag)->push_back(xml);
-		};
-
-		/**
-		 * @brief Add all properties from another XML
-		 *
-		 * @details
-		 * \par Copies all properties from target to here.
-		 *
-		 * @warning Not a category of assign, but an insert.
-		 * @param xml Target xml object to deliver its properties
-		 */
-		void addAllProperties(const std::shared_ptr<XML> xml)
-		{
-			for (auto it = xml->properties.begin(); it != xml->properties.end(); it++)
-				properties[it->first] = it->second;
-		};
-
-		/* -----------------------------------------------------------
-			SETTERS
-		----------------------------------------------------------- */
-		/**
-		 * @brief Set tag (identifier) of the XML
-		 *
-		 * @see XML::tag
-		 */
-		void setTag(const std::string &val)
-		{
-			tag = val;
-		};
-
-		/**
-		 * @brief Set value of the XML
-		 *
-		 * @tparam _Ty Type of the value
-		 * @param val The value to set
-		 *
-		 * @warning Do not abuse values for expressing member variables
-		 * <table>
-		 *	<tr>
-		 *		<th>Standard Usage</th>
-		 *		<th>Non-standard usage abusing value</th>
-		 *	</tr>
-		 *	<tr>
-		 *		<td>
-		 *			\<memberList\>\n
-		 *			&nbsp;&nbsp;&nbsp;&nbsp;\<member id='jhnam88' name='Jeongho+Nam' birthdate='1988-03-11' /\>\n
-		 *			&nbsp;&nbsp;&nbsp;&nbsp;\<member id='master' name='Administartor' birthdate='2011-07-28' /\>\n
-		 *			\</memberList\>
-		 *		</td>
-		 *		<td>
-		 *			\<member\>\n
-		 *				\<id\>jhnam88\</id\>\n
-		 *				\<name\>Jeongho+Nam\</name\>\n
-		 *				\<birthdate\>1988-03-11\</birthdate\>\n
-		 *			\</member\>
-		 *		</td>
-		 *	</tr>
-		 * </table>
-		 */
-		template <typename T>
-		void setValue(const T &val)
-		{
-			value = std::to_string(val);
-		};
-		template<> void setValue(const std::string &val)
-		{
-			this->value = val;
-		};
-		template<> void setValue(const WeakString &val)
-		{
-			this->value = val.str();
 		};
 
 		template <typename T>
@@ -577,125 +753,76 @@ namespace library
 		};
 
 		/**
-		 * @brief Set a property with its key
+		 * Add all properties from other {@link XML} object.
+		 * 
+		 * All the properties in the *obj* are copied to this {@link XML} object. If this {@link XML} object has same
+		 * property key in the *obj*, then value of the property will be replaced to *obj*'s own. If you don't want to 
+		 * overwrite properties with same key, then use {@link getPropertyMap getPropertyMap()} method.
+		 * 
+		 * ```typescript
+		 * let x: library.XML;
+		 * let y: library.XML;
+		 * 
+		 * x.addAllProperties(y); // duplicated key exists, then overwrites
+		 * x.getPropertyMap().insert(y.getPropertyMap().begin(), y.getPropertyMap().end()); 
+		 *	// ducpliated key, then ignores. only non-duplicateds are copied.
+		 * ```
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY1={property_value1}
+		 *		PROPERTY_KEY2={property_value2}
+		 *		PROPERTY_KEY3={property_value3}>{value}</tag>
+		 * ```
+		 * 
+		 * @param obj Target {@link XML} object to copy properties.
 		 */
-		template<typename T>
-		void setProperty(const std::string &key, const T &val)
+		void insertAllProperties(const std::shared_ptr<XML> xml)
 		{
-			properties.set(key, std::to_string(val));
-		};
-		template<> void setProperty(const std::string &key, const std::string &val)
-		{
-			properties.set(key, val);
-		};
-		template<> void setProperty(const std::string &key, const WeakString &val)
-		{
-			properties.set(key, val.str());
+			for (auto it = xml->property_map_.begin(); it != xml->property_map_.end(); it++)
+				property_map_[it->first] = it->second;
 		};
 
 		/**
-		 * @brief Erase a property by its key
-		 *
-		 * @param key The key of the property to erase
-		 * @throw exception Unable to find the element
+		 * Erase property.
+		 * 
+		 * Erases a property by its *key*, property name. If the matched *key* does not exist, then exception 
+		 * {@link std.OutOfRange} is thrown. Thus, it would better to test whether the *key* exits or not by calling the
+		 * {@link hasProperty hasProperty()} method before calling this {@link eraseProperty eraseProperty()}.
+		 * 
+		 * This method can be substituted by ``getPropertyMap().erase(key)````.
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY={property_value}>{value}</tag>
+		 * ```
+		 * 
+		 * @param key Key of the property to erase
+		 * @throw {@link std.OutOfRange}
 		 */
 		void eraseProperty(const std::string &key)
 		{
-			properties.erase(key);
+			property_map_.erase(key);
 		};
 
 		/**
-		 * @brief Remove all properties in the XML
+		 * Clear properties.
+		 * 
+		 * Remove all properties. It's same with calling ```getPropertyMap().clear()```.
+		 * 
+		 * ```xml
+		 * <tag PROPERTY_KEY1={property_value1}
+		 *		PROPERTY_KEY2={property_value2}
+		 *		PROPERTY_KEY3={property_value3}>{value}</tag>
+		 * ```
 		 */
 		void clearProperties()
 		{
-			properties.clear();
+			property_map_.clear();
 		};
 
-		/* -----------------------------------------------------------
-			GETTERS
-		----------------------------------------------------------- */
-	public:
-		/**
-		 * @brief Get key; identifer of the XML
-		 *
-		 * @return tag, identifer of the XML
-		 * @see XML::tag
-		 */
-		auto getTag() const -> std::string
-		{
-			return tag;
-		};
-
-		/**
-		 * @brief Get value of the XML
-		 */
-		template<class T = std::string> auto getValue() const -> T
-		{
-			double val = std::stod(value);
-
-			return (T)val;
-		};
-
-		template<> auto getValue() const -> std::string
-		{
-			return value;
-		};
-		template<> auto getValue() const -> WeakString
-		{
-			return value;
-		};
-
-		/**
-		 * @brief Get property
-		 */
-		template<class T = std::string> auto getProperty(const std::string &key) const -> T
-		{
-			double val = std::stod(properties.get(key));
-
-			return (T)val;
-		};
-
-		template<> auto getProperty(const std::string &key) const -> std::string
-		{
-			return properties.get(key);
-		};
-		template<> auto getProperty(const std::string &key) const -> WeakString
-		{
-			return properties.get(key);
-		};
-
-		/**
-		 * @brief Try to get property.
-		 */
-		template<class T = std::string> auto fetchProperty(const std::string &key) const -> T
-		{
-			if (hasProperty(key))
-				return getProperty<T>(key);
-			else
-				return T();
-		};
-
-		/**
-		 * @brief Test wheter a property exists or not
-		 */
-		auto hasProperty(const std::string &key) const -> bool
-		{
-			return properties.has(key);
-		};
-
-		/**
-		 * @brief Get properties
-		 */
-		auto getPropertyMap() const -> const HashMap<std::string, std::string>&
-		{
-			return properties;
-		};
-
+	private:
 		/* -----------------------------------------------------------
 			FILTERS
 		----------------------------------------------------------- */
-	private:
 		auto calc_min_index(const std::vector<size_t> &vec) const -> size_t
 		{
 			size_t val = std::string::npos;
@@ -769,27 +896,29 @@ namespace library
 		----------------------------------------------------------- */
 	public:
 		/**
-		 * @brief Get the string content.
-		 * @details Returns a string representation of the XML and its all children.
-		 *
-		 * @return A string represents the XML.
+		 * {@link XML} object to xml string.
+		 * 
+		 * Returns a string representation of the {@link XML} object.
+		 * 
+		 * @param tab Number of tabs to spacing.
+		 * @return The string representation of the {@link XML} object.
 		 */
 		auto toString(size_t level = 0) const -> std::string
 		{
 			// KEY
-			std::string str = std::string(level, '\t') + "<" + tag;
+			std::string str = std::string(level, '\t') + "<" + tag_;
 
 			// PROPERTIES
-			for (auto it = properties.begin(); it != properties.end(); it++)
+			for (auto it = property_map_.begin(); it != property_map_.end(); it++)
 				str += " " + it->first + "=\"" + encode_property(it->second) + "\"";
 
 			if (this->empty() == true)
 			{
 				// VALUE
-				if (value.empty() == true)
+				if (value_.empty() == true)
 					str += " />";
 				else
-					str += ">" + encode_value(value) + "</" + tag + ">";
+					str += ">" + encode_value(value_) + "</" + tag_ + ">";
 			}
 			else
 			{
@@ -800,7 +929,7 @@ namespace library
 					for (size_t i = 0; i < it->second->size(); i++)
 						str += it->second->at(i)->toString(level + 1);
 
-				str += std::string(level, '\t') + "</" + tag + ">";
+				str += std::string(level, '\t') + "</" + tag_ + ">";
 			}
 
 			return str + "\n";

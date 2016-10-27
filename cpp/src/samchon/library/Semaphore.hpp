@@ -32,8 +32,7 @@ namespace library
 	 * <p> Referenced Wediapedia </p>
 	 *	\li https://en.wikipedia.org/wiki/Semaphore_(programming)
 	 *
-	 * @image html cpp/library_critical_section.png
-	 * @image latex cpp/library_critical_section.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_critical_section.png)
 	 *
 	 * @note
 	 * <p> Of course, semaphore is already defined in linux C and MFC in Window. But it is dependent on
@@ -42,7 +41,7 @@ namespace library
 	 *
 	 * <p> As that reason, if STL supports the semaphore in near future, the Semaphore can be deprecated. </p>
 	 *
-	 * @see samchon::library
+	 * @handbook [Library - Critical Section](https://github.com/samchon/framework/wiki/CPP-Library-Critical_Section)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class Semaphore

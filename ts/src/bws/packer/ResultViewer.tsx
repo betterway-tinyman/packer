@@ -14,14 +14,14 @@ namespace bws.packer
 			this.props.application.drawWrapper(wrapper, index);
 		}
 
-		private clear(event: React.MouseEvent): void
+		private clear(event: React.MouseEvent<HTMLElement>): void
 		{
 			this.props.wrappers.clear();
 			this.drawWrapper(new Wrapper());
 
 			this.refresh();
 		}
-		private open(event: React.MouseEvent): void
+		private open(event: React.MouseEvent<HTMLElement>): void
 		{
 			let this_ = this;
 			let handle_select = function (event: library.BasicEvent): void
@@ -46,7 +46,7 @@ namespace bws.packer
 
 			file_ref.browse();
 		}
-		private save(event: React.MouseEvent): void
+		private save(event: React.MouseEvent<HTMLElement>): void
 		{
 			let file_ref = new library.FileReference();
 			file_ref.save(this.props.wrappers.toXML().toString(), "packing_result.xml");

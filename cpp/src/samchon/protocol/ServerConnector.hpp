@@ -3,66 +3,106 @@
 
 #include <samchon/protocol/Communicator.hpp>
 
-#include <string>
-
 namespace samchon
 {
 namespace protocol
 {
 	/**
-	 * @brief A server connector for a physical client.
-	 *
-	 * @details
-	 * <p> ServerConnector is a class for a physical client connecting a server. If you want to connect 
-	 * to a server,  then implements this ServerConnector and just override some methods like 
-	 * getIP(), getPort() and replyData(). That's all. </p>
-	 *
-	 * <p> In Samchon Framework, package protocol, There are basic 3 + 1 components that can make any 
-	 * type of network system in Samchon Framework. The basic 3 components are IProtocol, Server and
-	 * IClient. The last, surplus one is the ServerConnector. Looking around classes in 
-	 * Samchon Framework, especially module master and slave which are designed for realizing 
-	 * distributed processing systems and parallel processing systems, physical client classes are all 
-	 * derived from this ServerConnector. </p>
-	 *
-	 * @image html cpp/protocol_interface.png
-	 * @image latex cpp/protocol_interface.png
-	 *
+	 * A server connector.
+	 * 
+	 * The {@link ServerConnector} class is a type of {@link Communicator}, specified for connecting to remote server who 
+	 * follows Samchon Framework's own protocol and taking full charge of network communication with the remote server. 
+	 * 
+	 * Create a {@link ServerConnector} instance from a {@IProtocol listener} and call the {@link connect connect()} method.
+	 * Then whenever a replied message comes from the remote system, the message will be converted to an {@link Invoke} 
+	 * object and the {@link Invoke} object will be shifted to the {@link IProtocol listener}'s {@link IProtocol.replyData} 
+	 * method. Below code is an example connecting to remote server and interacting with it.
+	 * 
+	 * - https://github.com/samchon/framework/blob/master/ts/examples/calculator/calculator-application.ts
+	 * 
+	 * Note that, {@link ServerConnector} connects to a remote server who follows the protocol of Samchon Framework's own. 
+	 * If the remote server is following web-socket protocol, then use {@link WebServerConnector} instead.
+	 * 
+	 * Protocol                | Derived Type               | Connect to
+	 * ------------------------|----------------------------|-------------------
+	 * Samchon Framework's own | {@link ServerConnector}    | {@link Server}
+	 * Web-socket protocol     | {@link WebServerConnector} | {@link WebServer}
+	 * 
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_basic_components.png)
+	 * 
+	 * @see {@link Server}, {@link IProtocol}
+	 * @handbook [Protocol - Basic Components](https://github.com/samchon/framework/wiki/CPP-Protocol-Basic_Components#serverconnector)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class SAMCHON_FRAMEWORK_API ServerConnector
+	class ServerConnector
 		: public virtual Communicator
 	{
 	protected:
-		/**
-		 * @brief An io_service of Boost.Asio's own.
-		 */
 		std::unique_ptr<boost::asio::io_service> io_service;
 
-		/**
-		 * @brief An endpoint directing a server.
-		 */
-		std::unique_ptr<EndPoint> endpoint;
+		std::unique_ptr<boost::asio::ip::tcp::endpoint> endpoint;
 
 	public:
 		/* -----------------------------------------------------------
 			CONSTRUCTORS
 		----------------------------------------------------------- */
-		ServerConnector(IProtocol *listener);
-		virtual ~ServerConnector();
+		/**
+		 * Construct from *listener*.
+		 * 
+		 * @param listener A listener object to listen replied message from newly connected client in
+		 *				   {@link IProtocol.replyData replyData()} as an {@link Invoke} object.
+		 */
+		ServerConnector(IProtocol *listener)
+		{
+			this->listener = listener;
+		};
+		
+		/**
+		 * Default Destructor.
+		 */
+		virtual ~ServerConnector() = default;
 
 		/* -----------------------------------------------------------
 			CONNECTOR
 		----------------------------------------------------------- */
 		/**
-		 * @brief Connect to a server
-		 *
-		 * @details
-		 * <p> Connects to a server with configured ip address and port number. After connection,
-		 * listens data replied from the server (IClient::listen()). </p>
-		 *
-		 * @note It monopolies a thread
+		 * Connect to a server.
+		 * 
+		 * Connects to a server with specified *host* address and *port* number. After the connection has
+		 * succeeded, callback function {@link onConnect} is called. Listening data from the connected server also begins.
+		 * Replied messages from the connected server will be converted to {@link Invoke} classes and will be shifted to
+		 * the {@link WebCommunicator.listener listener}'s {@link IProtocol.replyData replyData()} method.
+		 * 
+		 * If the connection fails immediately, either an event is dispatched or an exception is thrown: an error 
+		 * event is dispatched if a host was specified, and an exception is thrown if no host was specified. Otherwise, 
+		 * the status of the connection is reported by an event. If the socket is already connected, the existing 
+		 * connection is closed first.
+		 * 
+		 * @param ip The name or IP address of the host to connect to. 
+		 *			 If no host is specified, the host that is contacted is the host where the calling file resides. 
+		 *			 If you do not specify a host, use an event listener to determine whether the connection was 
+		 *			 successful.
+		 * @param port The port number to connect to.
 		 */
-		virtual void connect(const std::string &ip, int port);
+		virtual void connect(const std::string &ip, int port)
+		{
+			_Connect(ip, port);
+
+			listen_message();
+		};
+
+	protected:
+		void _Connect(const std::string &ip, int port)
+		{
+			if (socket != nullptr && socket->is_open() == true)
+				throw std::logic_error("Already connected");
+
+			io_service.reset(new boost::asio::io_service());
+			endpoint.reset(new boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
+
+			socket.reset(new boost::asio::ip::tcp::socket(*io_service, boost::asio::ip::tcp::v4()));
+			socket->connect(*endpoint);
+		};
 	};
 };
 };

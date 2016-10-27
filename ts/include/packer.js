@@ -1,9 +1,16 @@
+/// <reference types="react" />
+/// <reference types="react-dom" />
+/// <reference types="react-data-grid" />
+/// <reference types="three" />
+/// <reference types="typescript-stl" />
+/// <reference types="samchon-framework" />
 try {
-    eval("var std = require('typescript-stl')");
-    eval("var samchon = require('samchon-framework')");
-    eval("var React = require('react')");
-    eval("var ReactDataGrid = require('react-data-grid')");
-    eval("var THREE = require('three')");
+    eval("var React = require('react');");
+    eval("var ReactDOM = require('react-dom');");
+    eval("var ReactDataGrid = require('react-data-grid');");
+    eval("var THREE = require('three');");
+    eval("var std = require('typescript-stl');");
+    eval("var samchon = require('samchon-framework');");
 }
 catch (exception) { }
 var bws;
@@ -12,8 +19,8 @@ var bws;
     (function (packer) {
         packer.library = samchon.library;
         packer.protocol = samchon.protocol;
-        packer.SERVER_IP = "172.16.0.209";
-        //export const SERVER_IP: string = "127.0.0.1";
+        //export const SERVER_IP: string = "172.16.0.209";
+        packer.SERVER_IP = "127.0.0.1";
         packer.SERVER_PORT = 37896;
     })(packer = bws.packer || (bws.packer = {}));
 })(bws || (bws = {}));
@@ -1202,7 +1209,12 @@ var bws;
             Editor.prototype.render = function () {
                 this.props.dataProvider.addEventListener("insert", this.handle_data_change, this);
                 this.props.dataProvider.addEventListener("erase", this.handle_data_change, this);
-                var ret = React.createElement("div", null, React.createElement("h3", null, " Type of wrappers to pack "), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.props.dataProvider.size(), columns: this.columns, onRowUpdated: this.handle_row_change.bind(this), onCellSelected: this.handle_select.bind(this), enableCellSelect: true, minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.props.dataProvider.size() * 35)}), React.createElement("p", {style: { textAlign: "right" }}, React.createElement("button", {onClick: this.insert_instance.bind(this)}, "Insert"), React.createElement("button", {onClick: this.erase_instances.bind(this)}, "Erase")));
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " Type of wrappers to pack "), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.props.dataProvider.size(), columns: this.columns, onRowUpdated: this.handle_row_change.bind(this), onCellSelected: this.handle_select.bind(this), enableCellSelect: true, minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.props.dataProvider.size() * 35)}), 
+                    React.createElement("p", {style: { textAlign: "right" }}, 
+                        React.createElement("button", {onClick: this.insert_instance.bind(this)}, "Insert"), 
+                        React.createElement("button", {onClick: this.erase_instances.bind(this)}, "Erase")));
                 return ret;
             };
             return Editor;
@@ -1676,7 +1688,42 @@ var bws;
                 this.props.application.pack();
             };
             ItemEditor.prototype.render = function () {
-                return React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/document.png", onClick: this.pack.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File "), React.createElement("td", null, " Pack ")))), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(InstanceEditor, {dataProvider: this.props.instances}), " "), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperEditor, {dataProvider: this.props.wrappers}), " "));
+                return React.createElement("div", null, 
+                    React.createElement("table", {style: { textAlign: "center" }}, 
+                        React.createElement("tbody", null, 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/document.png", onClick: this.pack.bind(this)}), 
+                                    " ")), 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, " New File "), 
+                                React.createElement("td", null, " Open File "), 
+                                React.createElement("td", null, " Save File "), 
+                                React.createElement("td", null, " Pack ")))
+                    ), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(InstanceEditor, {dataProvider: this.props.instances}), 
+                        " "), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(WrapperEditor, {dataProvider: this.props.wrappers}), 
+                        " "));
             };
             return ItemEditor;
         }(React.Component));
@@ -2076,7 +2123,21 @@ var bws;
                 RENDERERS
             ----------------------------------------------------------- */
             PackerApplication.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, React.createElement(flex.NavigatorContent, {label: "First Tab"}, React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})), React.createElement(flex.NavigatorContent, {label: "Second Tab"}, React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result}))), React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, React.createElement("img", {src: "images/redprinting_logo.png", width: "250"}))));
+                var ret = React.createElement("div", null, 
+                    React.createElement("div", {style: { width: "100%", height: "100%", fontSize: 12 }}, 
+                        React.createElement(flex.TabNavigator, {ref: "tabNavigator", style: { width: 400, height: "100%", float: "left" }}, 
+                            React.createElement(flex.NavigatorContent, {label: "First Tab"}, 
+                                React.createElement(packer_2.ItemEditor, {application: this, instances: this.instances, wrappers: this.wrappers})
+                            ), 
+                            React.createElement(flex.NavigatorContent, {label: "Second Tab"}, 
+                                React.createElement(packer_2.ResultViewer, {application: this, wrappers: this.result})
+                            )), 
+                        React.createElement("div", {id: "wrapper_viewer", style: { height: "100%", overflow: "hidden" }})), 
+                    React.createElement("div", {style: { position: "absolute", right: 10, bottom: 10 }}, 
+                        React.createElement("a", {href: "http://redprinting.co.kr/", target: "_blank"}, 
+                            React.createElement("img", {src: "images/redprinting_logo.png", width: "250"})
+                        )
+                    ));
                 return ret;
             };
             PackerApplication.main = function () {
@@ -2271,7 +2332,47 @@ var bws;
                 var wrapper = this.props.wrappers.empty()
                     ? new packer.Wrapper()
                     : this.props.wrappers.front();
-                var ret = React.createElement("div", null, React.createElement("table", {style: { textAlign: "center" }}, React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, " ", React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), " "), React.createElement("td", null, " ", React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), " ")), React.createElement("tr", null, React.createElement("td", null, " New File "), React.createElement("td", null, " Open File "), React.createElement("td", null, " Save File ")))), React.createElement("hr", null), React.createElement("p", null, " Optimization Result "), React.createElement("ul", null, React.createElement("li", null, " Cost: $ ", this.props.wrappers.getPrice(), " "), React.createElement("li", null, " Space Utilization: ", Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, " % ")), React.createElement("hr", null), React.createElement("p", null, " ", React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), " "), React.createElement("hr", null), React.createElement("div", {id: "wrap_grid_div"}, React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})));
+                var ret = React.createElement("div", null, 
+                    React.createElement("table", {style: { textAlign: "center" }}, 
+                        React.createElement("tbody", null, 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/newFile.png", onClick: this.clear.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/openFile.png", onClick: this.open.bind(this)}), 
+                                    " "), 
+                                React.createElement("td", null, 
+                                    " ", 
+                                    React.createElement("img", {src: "images/saveFile.png", onClick: this.save.bind(this)}), 
+                                    " ")), 
+                            React.createElement("tr", null, 
+                                React.createElement("td", null, " New File "), 
+                                React.createElement("td", null, " Open File "), 
+                                React.createElement("td", null, " Save File ")))
+                    ), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, " Optimization Result "), 
+                    React.createElement("ul", null, 
+                        React.createElement("li", null, 
+                            " Cost: $ ", 
+                            this.props.wrappers.getPrice(), 
+                            " "), 
+                        React.createElement("li", null, 
+                            " Space Utilization: ", 
+                            Math.round(this.props.wrappers.getUtilization() * 10000) / 100.0, 
+                            " % ")), 
+                    React.createElement("hr", null), 
+                    React.createElement("p", null, 
+                        " ", 
+                        React.createElement(WrapperGrid, {ref: "wrapperGrid", viewer: this}), 
+                        " "), 
+                    React.createElement("hr", null), 
+                    React.createElement("div", {id: "wrap_grid_div"}, 
+                        React.createElement(WrapGrid, {ref: "wrapGrid", viewer: this})
+                    ));
                 return ret;
             };
             return ResultViewer;
@@ -2319,7 +2420,9 @@ var bws;
                 EXPORTERS
             ------------------------------------------------------------ */
             WrapperGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " List of wrappers."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " List of wrappers."), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrappers.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrappers.size() * 35)}));
                 return ret;
             };
             return WrapperGrid;
@@ -2373,7 +2476,9 @@ var bws;
                 EXPORTERS
             ------------------------------------------------------------ */
             WrapGrid.prototype.render = function () {
-                var ret = React.createElement("div", null, React.createElement("h3", null, " Instances packed in a Wrapper."), React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
+                var ret = React.createElement("div", null, 
+                    React.createElement("h3", null, " Instances packed in a Wrapper."), 
+                    React.createElement(ReactDataGrid, {rowGetter: this.get_row.bind(this), rowsCount: this.wrapper.size(), columns: this.columns, enableCellSelect: true, onCellSelected: this.handle_select.bind(this), minHeight: Math.min(document.body.offsetHeight * .3, 40 + this.wrapper.size() * 35)}));
                 return ret;
             };
             return WrapGrid;
@@ -3482,10 +3587,14 @@ var flex;
             for (var i = 0; i < children.length; i++) {
                 var child = children[i];
                 var className = (i == this.state.selectedIndex) ? "active" : "";
-                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label));
+                var label = React.createElement("li", {key: i, className: "tabNavigator_label"}, 
+                    React.createElement("a", {href: "#", className: className, onClick: this.handle_change.bind(this, i)}, child.props.label)
+                );
                 tabs.push(label);
             }
-            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, React.createElement("ul", {className: "tabNavigator_label"}, tabs), selected);
+            var ret = React.createElement("div", {className: "tabNavigator", style: this.props.style}, 
+                React.createElement("ul", {className: "tabNavigator_label"}, tabs), 
+                selected);
             return ret;
         };
         TabNavigator.prototype.handle_change = function (index, event) {

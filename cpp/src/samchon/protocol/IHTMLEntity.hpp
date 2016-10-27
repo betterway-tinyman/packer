@@ -25,8 +25,7 @@ namespace protocol
 	 * developing the homepage or html service. If you're familiar with the html, please contribute to
 	 * the IHTMLEntity interface. </p>
 	 *
-	 * @image html  cpp/protocol_entity.png
-	 * @image latex cpp/protocol_entity.png
+	 * ![Basic Components](http://samchon.github.io/framework/images/design/cpp_class_diagram/protocol_entity.png)
 	 *
 	 * \par Example source
 	 * @includelineno example/entity/main.cpp

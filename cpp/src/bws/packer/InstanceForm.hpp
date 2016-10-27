@@ -19,10 +19,10 @@ namespace packer
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class InstanceForm
-		: public protocol::Entity
+		: public protocol::Entity<>
 	{
 	private:
-		typedef protocol::Entity super;
+		typedef protocol::Entity<> super;
 
 		/**
 		 * @brief A duplicated Instance.

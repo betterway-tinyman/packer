@@ -15,10 +15,9 @@ namespace library
 	 *	\li nPr -> PermutationGenerator
 	 *	\li n! -> FactorialGenerator
 	 *
-	 * \par Example Sources
-	 *	\li example::packer
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_math.png)
 	 *
-	 * @see samchon::library
+	 * @handbook [Library - Genetic Algorithm](https://github.com/samchon/framework/wiki/CPP-Library-Case_Generator)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class CaseGenerator

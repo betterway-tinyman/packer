@@ -37,12 +37,12 @@ namespace bws.packer
 			return this.props.dataProvider.at(index);
 		}
 
-		private insert_instance(event: React.MouseEvent): void
+		private insert_instance(event: React.MouseEvent<HTMLElement>): void
 		{
 			let child: T = this.props.dataProvider["createChild"](null);
 			this.props.dataProvider.push_back(child);
 		}
-		private erase_instances(event: React.MouseEvent): void
+		private erase_instances(event: React.MouseEvent<HTMLElement>): void
 		{
 			try
 			{
@@ -57,7 +57,7 @@ namespace bws.packer
 		/* ------------------------------------------------------------
 			EVENT HANDLERS
 		------------------------------------------------------------ */
-		private handle_data_change(event: samchon.collection.CollectionEvent<any>): void
+		private handle_data_change(event: samchon.collections.CollectionEvent<any>): void
 		{
 			setTimeout(this.setState.bind(this, {}), 0);
 		}

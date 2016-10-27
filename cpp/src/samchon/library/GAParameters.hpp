@@ -11,20 +11,16 @@ namespace library
 	 * @details
 	 * <p> The number and rate parameters in the structure affects success of evolution of genetic algorithm. </p> 
 	 *
-	 * \par Example Sources
-	 *	\li example::tsp
-	 *
-	 * @see library::GeneticAlgorithm
-	 * @see library::GAPopulation
-	 * @see example::tsp
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_math.png)
 	 * 
+	 * @handbook [Library - Genetic Algorithm](https://github.com/samchon/framework/wiki/CPP-Library-Genetic_Algorithm)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class GAParameters
-		: public protocol::Entity
+		: public protocol::Entity<>
 	{
 	private:
-		typedef protocol::Entity super;
+		typedef protocol::Entity<> super;
 
 	protected:
 		/**

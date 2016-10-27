@@ -16,7 +16,7 @@ namespace library
 	 * only safety. If a logic needs a mutual exclusion not only level of the container, it'd better 
 	 * to avoid using the CriticalAllocator and use RWMutex by yourself. </p>
 	 *
-	 * \par [Inherited]]
+	 * #### [Inherited]
 	 * <p> Allocators are classes that define memory models to be used by 
 	 * some parts of the Standard Library, and most specifically, by STL containers. </p>
 	 *
@@ -39,12 +39,11 @@ namespace library
 	 * <p> Referenced comments of std::allocator </p>
 	 *	\li http://www.cplusplus.com/reference/memory/allocator/
 	 *
-	 * @image html cpp/library_critical_section.png
-	 * @image latex cpp/library_critical_section.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_critical_section.png)
 	 *
 	 * @tparam _Ty Type of the elements allocated by the object (aliased as member type value_type).
 	 *
-	 * @see samchon::library
+	 * @handbook [Library - Critical Section](https://github.com/samchon/framework/wiki/CPP-Library-Critical_Section)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	template <class T>

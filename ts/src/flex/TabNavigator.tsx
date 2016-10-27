@@ -45,7 +45,7 @@ namespace flex
 			return ret;
 		}
 
-		private handle_change(index: number, event: React.MouseEvent): void
+		private handle_change(index: number, event: React.MouseEvent<HTMLElement>): void
 		{
 			this.setState({ selectedIndex: index });
 		}

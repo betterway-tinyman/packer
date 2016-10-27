@@ -11,13 +11,12 @@
 #include <mutex>
 
 #include <samchon/library/RWMutex.hpp>
+#include <samchon/library/Event.hpp>
 
 namespace samchon
 {
 namespace library
 {
-	class Event;
-
 	/**
 	 * @brief Abstract class for dispatching Event
 	 *
@@ -48,7 +47,7 @@ namespace library
 	 * @see samchon::library
 	 * @author Jeongho Nam <http://samchon.org>, Jun Ryung Ju <https://github.com/ArtBlnd>
 	 */
-	class SAMCHON_FRAMEWORK_API EventDispatcher
+	class EventDispatcher
 	{
 	public:
 		typedef void(*Listener)(std::shared_ptr<Event>, void*);
@@ -72,7 +71,9 @@ namespace library
 		/**
 		 * @brief Default Constructor
 		 */
-		EventDispatcher();
+		EventDispatcher()
+		{
+		};
 
 		/**
 		 * @brief Copy Constructor
@@ -83,19 +84,50 @@ namespace library
 		 *
 		 * @param eventDispatcher The object to copy
 		 */
-		EventDispatcher(const EventDispatcher &);
+		EventDispatcher(const EventDispatcher &)
+		{
+			// DO NOT COPY LISTENERS
+		};
 
 		/**
 		 * @brief Move Constructor
 		 *
 		 * @param eventDispatcher The object to move
 		 */
-		EventDispatcher(EventDispatcher &&);
+		EventDispatcher(EventDispatcher &&obj)
+		{
+			UniqueWriteLock obj_uk(obj.mtx);
+			{
+				listeners = move(obj.listeners);
+			}
+			obj_uk.unlock();
+
+			std::unique_lock<std::mutex> s_uk(sMtx());
+
+			for (auto it = eventMap().begin(); it != eventMap().end(); it++)
+				if (it->first == &obj)
+				{
+					auto event = it->second;
+
+					it = eventMap().erase(it);
+					eventMap().insert(it, { this, event });
+				}
+		};
 
 		/**
 		 * @brief Default Destructor
 		 */
-		virtual ~EventDispatcher();
+		virtual ~EventDispatcher()
+		{
+			UniqueWriteLock my_uk(mtx);
+			std::unique_lock<std::mutex> s_uk(sMtx());
+
+			for (auto it = eventMap().begin(); it != eventMap().end();)
+				if (it->first == this)
+					eventMap().erase(it++);
+				else
+					it++;
+		};
 
 		/* ----------------------------------------------------------
 			ADD-REMOVE EVENT LISTENERS
@@ -119,7 +151,12 @@ namespace library
 		 * @param listener The listener function processes the event.
 		 * @param addiction Something to be addicted following the listener.
 		 */
-		void addEventListener(int, Listener, void* = nullptr);
+		void addEventListener(int type, Listener listener, void *addiction = nullptr)
+		{
+			UniqueWriteLock uk(mtx);
+
+			listeners[type][listener].insert(addiction);
+		};
 
 		/**
 		 * @brief Remove a registered event listener
@@ -132,7 +169,28 @@ namespace library
 		 * @param listener The listener function to remove.
 		 * @param addiction Somethhing to be addicted following the listener.
 		 */
-		void removeEventListener(int, Listener, void* = nullptr);
+		void removeEventListener(int type, Listener listener, void *addiction = nullptr)
+		{
+			UniqueWriteLock uk(mtx);
+			if (listeners.count(type) == 0)
+				return;
+
+			// TEST WHETHER HAS THE LISTENER
+			if (listeners.count(type) == 0 ||
+				listeners[type].count(listener) == 0 ||
+				listeners[type][listener].count(addiction) == 0)
+				return;
+
+			listeners[type][listener].erase(addiction);
+
+			if (listeners[type][listener].empty() == true)
+				listeners[type].erase(listener);
+
+			if (listeners[type].empty() == true)
+				listeners.erase(type);
+
+			// NEED TO DELETE FROM EVENT MAP
+		};
 
 		/**
 		 * @brief Dispatches an event to all listeners
@@ -144,28 +202,123 @@ namespace library
 		 * @param event The Event object that is dispatched into the event flow.
 		 * @return Whether there's some listener to listen the event
 		 */
-		void dispatch(std::shared_ptr<Event>);
+		void dispatch(std::shared_ptr<Event> event)
+		{
+			// STARTS BACK-GROUND PROCESS IF NOT STARTED
+			start();
+
+			UniqueReadLock my_uk(mtx);
+			if (listeners.count(event->getType()) == 0)
+				return;
+
+			my_uk.unlock();
+
+			std::unique_lock<std::mutex> s_uk(sMtx());
+			eventMap().insert({ this, event });
+
+			cv().notify_all();
+		};
 
 	private:
-		void deliver(std::shared_ptr<Event>);
+		void deliver(std::shared_ptr<Event> event)
+		{
+			UniqueReadLock my_uk(mtx);
+			if (listeners.count(event->getType()) == 0)
+				return;
+
+			auto listenerMap = listeners[event->getType()];
+			my_uk.unlock();
+
+			for (auto it = listenerMap.begin(); it != listenerMap.end(); it++)
+			{
+				Listener listener = it->first;
+
+				for (auto s_it = it->second.begin(); s_it != it->second.end(); s_it++)
+				{
+					void *addiction = *s_it;
+
+					listener(event, addiction);
+				}
+			}
+		};
 
 		/* ----------------------------------------------------------
 			MEMBERS OF STATIC
 		---------------------------------------------------------- */
-		static bool started;
-		static std::condition_variable cv;
-		static std::mutex cv_mtx;
+		static bool& started()
+		{
+			static bool flag = false;
+			return flag;
+		};
+		static std::condition_variable& cv()
+		{
+			static std::condition_variable obj;
+			return obj;
+		};
+		static std::mutex& cv_mtx()
+		{
+			static std::mutex obj;
+			return obj;
+		};
 
-		static std::unordered_multimap<EventDispatcher*, std::shared_ptr<Event>> eventMap;
-		static std::mutex sMtx;
+		static std::unordered_multimap<EventDispatcher*, std::shared_ptr<Event>>& eventMap()
+		{
+			static std::unordered_multimap<EventDispatcher*, std::shared_ptr<Event>> map;
+			return map;
+		};
 
-		static void start();
+		static std::mutex& sMtx()
+		{
+			static std::mutex obj;
+			return obj;
+		};
+
+		static void start()
+		{
+			std::unique_lock<std::mutex> uk(sMtx());
+			if (started() == true)
+				return;
+
+			started() = true;
+			uk.unlock();
+
+			for (size_t i = 0; i < THREAD_SIZE(); i++)
+				std::thread([]()
+				{
+					while (true)
+					{
+						while (true)
+						{
+							std::unique_lock<std::mutex> uk(sMtx());
+							if (eventMap().empty() == true)
+								break;
+
+							auto pair = *eventMap().begin();
+							eventMap().erase(eventMap().begin());
+
+							uk.unlock();
+
+							EventDispatcher *obj = pair.first;
+							std::shared_ptr<Event> &event = pair.second;
+
+							obj->deliver(event);
+						}
+
+						std::unique_lock<std::mutex> cv_uk(cv_mtx());
+						cv().wait(cv_uk);
+					}
+				}).detach();
+		};
 
 	public:
 		/**
 		 * @brief Numer of threads for background.
 		 */
-		static size_t THREAD_SIZE;
+		static size_t& THREAD_SIZE() 
+		{
+			static size_t val = 2;
+			return val;
+		};
 	};
 };
 };

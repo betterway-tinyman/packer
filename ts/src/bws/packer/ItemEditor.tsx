@@ -16,12 +16,12 @@ namespace bws.packer
 	export class ItemEditor
 		extends React.Component<ItemEditorProps, { }>
 	{
-		private clear(event: React.MouseEvent): void
+		private clear(event: React.MouseEvent<HTMLElement>): void
 		{
 			this.props.instances.clear();
 			this.props.wrappers.clear();
 		}
-		private open(event: React.MouseEvent): void
+		private open(event: React.MouseEvent<HTMLElement>): void
 		{
 			let this_ = this;
 			let handle_select = function (event: library.BasicEvent): void
@@ -43,7 +43,7 @@ namespace bws.packer
 
 			file_ref.browse();
 		}
-		private save(event: React.MouseEvent): void
+		private save(event: React.MouseEvent<HTMLElement>): void
 		{
 			let packer_form = new PackerForm(this.props.instances, this.props.wrappers);
 
@@ -51,7 +51,7 @@ namespace bws.packer
 			file_ref.save(packer_form.toXML().toString(), "packing_items.xml");
 		}
 
-		private pack(event: React.MouseEvent): void
+		private pack(event: React.MouseEvent<HTMLElement>): void
 		{
 			this.props.application.pack();
 		}

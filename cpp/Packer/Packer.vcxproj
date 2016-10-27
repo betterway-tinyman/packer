@@ -114,23 +114,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Platform\Boost\boost_1_62_0\stage\lib_x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Platform\Boost\boost_1_62_0\stage\lib_x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

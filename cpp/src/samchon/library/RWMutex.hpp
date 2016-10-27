@@ -14,8 +14,7 @@ namespace library
 	 * @details
 	 * <p> A mutex divided into reading and writing. </p>
 	 * 
-	 * @image html cpp/library_critical_section.png
-	 * @image latex cpp/library_critical_section.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_critical_section.png)
 	 *
 	 * @note
 	 * <p> Of course, rw_mutex is already defined in linux C. But it is dependent on
@@ -24,7 +23,7 @@ namespace library
 	 *
 	 * <p> As that reason, if STL supports the rw_mutex in near future, the RWMutex can be deprecated. </p>
 	 * 
-	 * @see samchon::library
+	 * @handbook [Library - Critical Section](https://github.com/samchon/framework/wiki/CPP-Library-Critical_Section)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class RWMutex

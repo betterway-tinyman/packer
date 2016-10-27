@@ -21,7 +21,7 @@ namespace protocol
 	 * @see samchon::protocol
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	template <typename T = Entity>
-	using UniqueEntityList = EntityGroup<std::list<std::unique_ptr<T>>, T>;
+	template <typename T, typename Key = std::string>
+	using UniqueEntityList = EntityGroup<std::list<std::unique_ptr<T>>, T, Key>;
 };
 };

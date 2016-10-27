@@ -24,8 +24,7 @@ namespace library
 	 * <p> Referenced comments of std::unique_lock </p>
 	 *	\li http://www.cplusplus.com/reference/mutex/unique_lock/
 	 *
-	 * @image html cpp/library_critical_section.png
-	 * @image latex cpp/library_critical_section.png
+	 * ![Class Diagram](http://samchon.github.io/framework/images/design/cpp_class_diagram/library_critical_section.png)
 	 *
 	 * @note
 	 * <p> Though, that the UniqueAcquire object does not manage the lifetime of the semaphore
@@ -34,7 +33,7 @@ namespace library
 	 *
 	 * <p> The UniqueAcquire is movable, but not copyable. </p>
 	 *
-	 * @see samchon::library
+	 * @handbook [Library - Critical Section](https://github.com/samchon/framework/wiki/CPP-Library-Critical_Section)
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class UniqueAcquire
