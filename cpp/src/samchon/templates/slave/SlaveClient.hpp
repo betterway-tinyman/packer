@@ -39,7 +39,7 @@ namespace slave
 		--------------------------------------------------------- */
 		void connect(const std::string &ip, int port)
 		{
-			shared_ptr<protocol::ServerConnector> connector(createServerConnector());
+			std::shared_ptr<protocol::ServerConnector> connector(createServerConnector());
 			this->communicator_ = connector;
 
 			connector->connect(ip, port);

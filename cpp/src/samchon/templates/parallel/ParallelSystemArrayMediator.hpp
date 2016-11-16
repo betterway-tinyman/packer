@@ -128,7 +128,7 @@ namespace parallel
 		/* ---------------------------------------------------------
 			HISTORY HANDLER
 		--------------------------------------------------------- */
-		virtual auto _Complete_history(std::shared_ptr<protocol::InvokeHistory> history) -> bool override
+		virtual auto _Complete_history(std::shared_ptr<slave::InvokeHistory> history) -> bool override
 		{
 			bool ret = super::_Complete_history(history);
 			if (ret == true)

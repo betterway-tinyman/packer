@@ -2,10 +2,12 @@
 #include <samchon/API.hpp>
 
 #include <samchon/protocol/IProtocol.hpp>
+#include <samchon/TreeMap.hpp>
 #include <samchon/templates/service/Client.hpp>
 
+#include <vector>
 #include <functional>
-#include <samchon/HashMap.hpp>
+#include <thread>
 #include <samchon/library/RWMutex.hpp>
 
 namespace samchon
@@ -15,7 +17,6 @@ namespace templates
 namespace service
 {
 	class Server;
-	class Client;
 
 	/**
 	 * An user.
@@ -45,18 +46,17 @@ namespace service
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class User
-		: public HashMap<size_t, std::shared_ptr<Client>>,
+		: public TreeMap<size_t, std::shared_ptr<Client>>,
 		public virtual protocol::IProtocol
 	{
 		friend class Server;
 
 	private:
-		typedef HashMap<size_t, std::shared_ptr<Client>> super;
+		typedef TreeMap<size_t, std::shared_ptr<Client>> super;
 
 		// RELATED OBJECTS
 		Server *server;
-		
-		library::RWMutex client_map_mtx;
+		library::RWMutex mtx;
 		
 		// KEY
 		std::string session_id;
@@ -100,16 +100,12 @@ namespace service
 		virtual auto createClient() -> Client* = 0;
 
 	private:
-		void erase_client(Client *client)
+		void check_empty()
 		{
-			size_t left_size;
-			{
-				library::UniqueWriteLock w_uk(client_map_mtx);
-				left_size = erase(client->getNo());
-			}
+			library::UniqueWriteLock uk(mtx);
 
 			// NO CLIENT, THEN ERASE THIS USER.
-			if (left_size == 0)
+			if (empty() == true)
 				erase_user_function();
 		};
 
@@ -146,6 +142,9 @@ namespace service
 		{
 			return authority;
 		};
+
+		auto getMutex() -> library::RWMutex& { return mtx; };
+		auto getMutex() const -> const library::RWMutex& { return mtx; };
 
 		/**
 		* Set *account id* and *authority*.
@@ -229,12 +228,16 @@ namespace service
 		 */
 		virtual void sendData(std::shared_ptr<protocol::Invoke> invoke) override
 		{
-			client_map_mtx.readLock();
-			super clients = *this;
-			client_map_mtx.readUnlock();
+			std::vector<std::thread> threadArray;
+			library::UniqueReadLock uk(mtx);
 
-			for (auto it = clients.begin(); it != clients.end(); it++)
-				it->second->sendData(invoke);
+			threadArray.reserve(size());
+			for (auto it = begin(); it != end(); it++)
+				threadArray.emplace_back(&Client::sendData, it->second.get(), invoke);
+
+			uk.unlock();
+			for (auto it = threadArray.begin(); it != threadArray.end(); it++)
+				it->join();
 		};
 
 		/**

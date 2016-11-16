@@ -4,6 +4,15 @@
 #include <samchon/protocol/IProtocol.hpp>
 #include <samchon/protocol/ClientDriver.hpp>
 
+#include <bws/packer/PackerForm.hpp>
+#include <bws/packer/Packer.hpp>
+#include <bws/packer/WrapperArray.hpp>
+#include <samchon/library/GAParameters.hpp>
+
+#include <iostream>
+#include <samchon/library/Date.hpp>
+#include <samchon/library/ProgressEvent.hpp>
+
 namespace bws
 {
 namespace packer
@@ -13,7 +22,8 @@ namespace packer
 	 *
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
-	class Client : public virtual protocol::IProtocol
+	class Client 
+		: public protocol::IProtocol
 	{
 	private:
 		std::shared_ptr<protocol::ClientDriver> driver;
@@ -24,12 +34,26 @@ namespace packer
 		 *
 		 * @param socket A socket connected with the client.
 		 */
-		Client(std::shared_ptr<protocol::ClientDriver>);
-		virtual ~Client();
+		Client(std::shared_ptr<protocol::ClientDriver> driver)
+		{
+			this->driver = driver;
+			driver->listen(this);
+		};
+		virtual ~Client() = default;
 
-		virtual void sendData(std::shared_ptr<protocol::Invoke>) override;
+		virtual void sendData(std::shared_ptr<protocol::Invoke> invoke) override
+		{
+			driver->sendData(invoke);
+		};
 
-		virtual void replyData(std::shared_ptr<protocol::Invoke>) override;
+		virtual void replyData(std::shared_ptr<protocol::Invoke> invoke) override
+		{
+			library::Date date;
+			std::cout << invoke->getListener() << " - " << date.toString() << std::endl;
+
+			if (invoke->getListener() == "pack")
+				pack(invoke->at(0)->getValueAsXML());
+		};
 
 	private:
 		/**
@@ -42,7 +66,27 @@ namespace packer
 		 * 
 		 * @param xml XML represents instances and wrappers to pack.
 		 */
-		void pack(std::shared_ptr<library::XML>);
+		void pack(std::shared_ptr<library::XML> xml)
+		{
+			std::unique_ptr<PackerForm> packerForm(new PackerForm());
+			packerForm->construct(xml);
+
+			auto packer = packerForm->toPacker();
+			auto gaParams = packerForm->getGAParameters();
+
+			packer->addEventListener(library::ProgressEvent::PROGRESS, handleProgress, this);
+
+			std::shared_ptr<WrapperArray> wrapperArray = packer->optimize(*gaParams);
+			sendData(std::make_shared<protocol::Invoke>("setWrapperArray", wrapperArray->toXML()));
+		};
+
+		static void handleProgress(std::shared_ptr<library::Event> evt, void *lpVoid)
+		{
+			Client *client = (Client*)lpVoid;
+			library::ProgressEvent *event = (library::ProgressEvent*)evt.get();
+
+			client->sendData(std::make_shared<protocol::Invoke>("setProgress", event->getNumerator(), event->getDenominator()));
+		};
 	};
 };
 };

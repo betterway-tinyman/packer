@@ -3,13 +3,15 @@
 
 #include <samchon/library/GeneticAlgorithm.hpp>
 
+#include <bws/packer/GAWrapperArray.hpp>
+#include <bws/packer/WrapperArray.hpp>
+
+#include <samchon/library/Math.hpp>
+
 namespace bws
 {
 namespace packer
 {
-	class GAWrapperArray;
-	class WrapperArray;
-
 	/**
 	 * @brief A genetic algorithm class for Packer.
 	 *
@@ -39,7 +41,11 @@ namespace packer
 		 * @param tournament Size of tournament in selection
 		 * @param candidates Candidate wrappers of mutation
 		 */
-		PCKGeneticAlgorithm(double, size_t, std::shared_ptr<WrapperArray>);
+		PCKGeneticAlgorithm(double mutate, size_t tournament, std::shared_ptr<WrapperArray> candidates)
+			: super(false, mutate, tournament)
+		{
+			this->candidates = candidates;
+		};
 
 	protected:
 		/**
@@ -52,7 +58,17 @@ namespace packer
 		 *
 		 * @param individual A sequcen list.
 		 */
-		virtual void mutate(std::shared_ptr<GAWrapperArray>) const override;
+		virtual void mutate(std::shared_ptr<GAWrapperArray> individual) const override
+		{
+			for (size_t i = 0; i < individual->size(); i++)
+			{
+				if (library::Math::random() > mutationRate)
+					continue;
+
+				size_t index = (size_t)(library::Math::random() * candidates->size());
+				individual->at(i) = candidates->at(index);
+			}
+		};
 	};
 };
 };

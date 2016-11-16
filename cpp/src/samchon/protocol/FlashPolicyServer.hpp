@@ -68,7 +68,7 @@ namespace protocol
 
 			while (true)
 			{
-				boost::asio::ip::tcp::socket *socket = new boost::asio::ip::tcp::socket(ioService);
+				auto socket = std::make_shared<boost::asio::ip::tcp::socket>(ioService);
 				acceptor.accept(*socket);
 
 				std::thread(&FlashPolicyServer::accept, this, socket).detach();

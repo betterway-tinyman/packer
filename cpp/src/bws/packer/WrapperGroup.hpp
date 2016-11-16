@@ -3,13 +3,16 @@
 
 #include <bws/packer/WrapperArray.hpp>
 
+#include <bws/packer/InstanceArray.hpp>
+
+#include <array>
+#include <algorithm>
+#include <boxologic/Boxologic.hpp>
+
 namespace bws
 {
 namespace packer
 {
-	class Wrapper;
-	class InstanceArray;
-
 	/**
 	 * @brief A group of {@link Wrapper Wrappers} with same type.
 	 *
@@ -41,7 +44,11 @@ namespace packer
 		/**
 		 * @brief Default Constructor.
 		 */
-		WrapperGroup();
+		WrapperGroup()
+		{
+			sample = nullptr;
+			allocatedInstanceArray.reset(new InstanceArray());
+		};
 
 		/** 
 		 * @brief Construct from memebers of sample.
@@ -53,47 +60,91 @@ namespace packer
 		 * @param length Length, dimensional length on the Z-axis in 3D, of the sample.
 		 * @param thickness A thickness, causes shrinkness on containable volume, of the sample.
 		 */
-		WrapperGroup(const std::string &, double, double, double, double, double);
+		WrapperGroup(const std::string &name, double price, double width, double height, double length, double thickness)
+			: WrapperGroup()
+		{
+			sample.reset(new Wrapper(name, price, width, height, length, thickness));
+		};
 		
 		/**
 		 * @brief Construct from a sample Wrapper.
 		 *
 		 * @param sample A sample, standard of the WrapperGroup.
 		 */
-		WrapperGroup(std::shared_ptr<Wrapper>);
+		WrapperGroup(std::shared_ptr<Wrapper> sample)
+			: WrapperGroup()
+		{
+			this->sample = sample;
+		};
 
 		virtual ~WrapperGroup() = default;
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			super::construct(xml);
+
+			if (xml->hasProperty("width"))
+			{
+				if (sample == nullptr)
+					sample.reset(new Wrapper());
+
+				sample->construct(xml);
+			}
+		};
 
 	public:
 		/* -----------------------------------------------------------
 			GETTERS
 		----------------------------------------------------------- */
-		virtual auto key() const -> std::string override;
+		virtual auto key() const -> std::string override
+		{
+			if (sample == nullptr)
+				return "";
+			else
+				return sample->key();
+		};
 
 		/**
 		 * @brief Get sample.
 		 *
 		 * @return A sample, standard of the group.
 		 */
-		auto getSample() const -> std::shared_ptr<Wrapper>;
+		auto getSample() const -> std::shared_ptr<Wrapper>
+		{
+			return sample;
+		};
 
 		/**
 		 * @brief Get allocated instances.
 		 *
 		 * @return Allocated instances.
 		 */
-		auto getAllocatedInstanceArray() const -> std::shared_ptr<InstanceArray>;
+		auto getAllocatedInstanceArray() const -> std::shared_ptr<InstanceArray>
+		{
+			return allocatedInstanceArray;
+		};
 
 		/**
 		 * Get (calculate) price.
 		 *
 		 * @return (Price of the sample) x (numbers of children Wrappers)
 		 */
-		virtual auto getPrice() const -> double override;
+		virtual auto getPrice() const -> double override
+		{
+			if (sample == nullptr)
+				return 0.0;
+			else
+				return sample->getPrice() * size();
+		};
 
-		virtual auto getUtilization() const -> double override;
+		virtual auto getUtilization() const -> double override
+		{
+			double utilization = 0.0;
+			for (size_t i = 0; i < size(); i++)
+				utilization += at(i)->getUtilization();
+
+			return utilization / (double)size();
+		};
 
 		/* -----------------------------------------------------------
 			OPERATORS
@@ -119,7 +170,21 @@ namespace packer
 		 * @return Whether the instance is enough small to be wrapped into a (new) wrapper 
 		 *		   of same type with the sample.
 		 */
-		auto allocate(std::shared_ptr<Instance>, size_t n = 1) -> bool;
+		auto allocate(std::shared_ptr<Instance> instance, size_t n = 1) -> bool
+		{
+			// TEST WHETHER A PRODUCT IS NOT LARGER THAN BOX
+			if (sample->operator>=(*instance) == false)
+				return false;
+
+			// INSERTS TO THE RESERVED ITEMS
+			this->allocatedInstanceArray->insert
+			(
+				allocatedInstanceArray->end(),
+				n, instance
+			);
+
+			return true;
+		};
 		
 		/**
 		 * @brief Run optimization in level of the group.
@@ -136,7 +201,18 @@ namespace packer
 		 * When call this optimize() method, ordinary children Wrapper objects in the WrapperGroup
 		 * will be substituted with the newly optimized Wrapper objects.
 		 */
-		void optimize();
+		void optimize()
+		{
+			// CLEAR PREVIOUS OPTIMIZATION
+			this->clear();
+
+			// CONSTRUCT INSTANCES FROM RESERVEDS
+			std::shared_ptr<InstanceArray> instanceArray = this->allocatedInstanceArray;
+
+			// UNTIL UNPACKED INSTANCE DOES NOT EXIST
+			while (instanceArray->empty() == false)
+				instanceArray = this->pack(instanceArray);
+		};
 
 	protected:
 		/**
@@ -152,15 +228,39 @@ namespace packer
 		 *
 		 * @return Instances failed to wrap by overloading.
 		 */
-		virtual auto pack(std::shared_ptr<InstanceArray>) -> std::shared_ptr<InstanceArray>;
+		virtual auto pack(std::shared_ptr<InstanceArray> instanceArray) -> std::shared_ptr<InstanceArray>
+		{
+			boxologic::Boxologic adaptor(std::make_shared<Wrapper>(*sample), instanceArray);
+			auto pair = adaptor.pack();
+
+			this->push_back(pair.first);
+			return pair.second;
+		};
 
 	public:
 		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
-		virtual auto TAG() const -> std::string override;
+		virtual auto TAG() const -> std::string override
+		{
+			return "wrapperGroup";
+		};
 
-		virtual auto toXML() const -> std::shared_ptr<library::XML> override;
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override
+		{
+			auto xml = super::toXML();
+
+			if (sample != nullptr)
+			{
+				xml->insertAllProperties(sample->toXML());
+
+				xml->eraseProperty("type");
+				xml->setProperty("price", getPrice());
+				xml->setProperty("utilization", getUtilization());
+			}
+
+			return xml;
+		};
 	};
 };
 };

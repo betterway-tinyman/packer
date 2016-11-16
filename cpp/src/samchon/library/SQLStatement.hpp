@@ -1,18 +1,6 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#ifdef _WIN32
-#	ifndef WIN32_LEAN_AND_MEAN 
-#		define WIN32_LEAN_AND_MEAN 
-#	endif
-#	include <Windows.h>
-#endif
-#include <sql.h>
-#include <sqlext.h>
-
-#define _SQLNCLI_ODBC_
-#include <sqlncli.h>
-
 #include <samchon/library/base/SQLiBase.hpp>
 
 #include <vector>
@@ -112,14 +100,14 @@ namespace library
 			this->sqli = sqli;
 			bindParameterCount = 0;
 
-			SQLAllocHandle(SQL_HANDLE_STMT, sqli->hdbc, &hstmt);
+			SQLAllocHandle(SQL_HANDLE_STMT, ((base::SQLiBase*)sqli)->hdbc, &hstmt);
 		};
 		void reset(SQLi *sqli)
 		{
 			free();
 			this->sqli = sqli;
 
-			SQLAllocHandle(SQL_HANDLE_STMT, sqli->hdbc, &hstmt);
+			SQLAllocHandle(SQL_HANDLE_STMT, ((base::SQLiBase*)sqli)->hdbc, &hstmt);
 		};
 
 	public:
@@ -223,7 +211,7 @@ namespace library
 			SQLRETURN res = SQLExecute(hstmt);
 
 			if (res == SQL_ERROR)
-				throw exception(sqli->getErrorMessage(SQL_HANDLE_STMT).c_str());
+				throw std::exception(((base::SQLiBase*)sqli)->getErrorMessage(SQL_HANDLE_STMT).data());
 
 			// device or resource busy
 			// it means network disconnection in almost case
@@ -513,11 +501,11 @@ namespace library
 			return SQL_C_DOUBLE;
 		}
 
-		template<> auto C_TYPE(const string &) const -> short
+		template<> auto C_TYPE(const std::string &) const -> short
 		{
 			return SQL_C_CHAR;
 		}
-		template<> auto C_TYPE(const wstring &) const -> short
+		template<> auto C_TYPE(const std::wstring &) const -> short
 		{
 			return SQL_C_WCHAR;
 		}
@@ -585,11 +573,11 @@ namespace library
 			return SQL_DOUBLE;
 		}
 
-		template<> auto SQL_TYPE(const string &) const -> short
+		template<> auto SQL_TYPE(const std::string &) const -> short
 		{
 			return SQL_CHAR;
 		}
-		template<> auto SQL_TYPE(const wstring &) const -> short
+		template<> auto SQL_TYPE(const std::wstring &) const -> short
 		{
 			return SQL_WCHAR;
 		}

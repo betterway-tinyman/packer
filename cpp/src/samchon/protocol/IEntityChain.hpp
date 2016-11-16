@@ -4,7 +4,7 @@ namespace samchon
 {
 namespace protocol
 {
-	class Entity;
+	class EntityBase;
 
 	/**
 	 * @brief A chain of entity.
@@ -25,7 +25,7 @@ namespace protocol
 		/**
 		 * @brief An entity related with the chain.
 		 */
-		Entity *entity;
+		EntityBase *entity;
 
 	public:
 		/**
@@ -33,7 +33,7 @@ namespace protocol
 		 *
 		 * @param entity A related entity.
 		 */
-		IEntityChain(Entity *entity) 
+		IEntityChain(EntityBase *entity)
 		{
 			entity = this->entity;
 		};

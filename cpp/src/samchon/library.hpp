@@ -6,11 +6,10 @@
 	CRITICAL SECTION
 ------------------------------------------------------------- */
 #include <samchon/library/CriticalAllocator.hpp>
-#include <samchon/library/CriticalDictionary.hpp>
 #include <samchon/library/CriticalList.hpp>
-#include <samchon/library/CriticalMap.hpp>
-#include <samchon/library/CriticalSet.hpp>
 #include <samchon/library/CriticalVector.hpp>
+#include <samchon/library/CriticalTreeMap.hpp>
+#include <samchon/library/CriticalHashMap.hpp>
 
 #include <samchon/library/RWMutex.hpp>
 #include <samchon/library/Semaphore.hpp>

@@ -2,6 +2,7 @@
 #include <samchon/API.hpp>
 
 #include <string>
+#include <codecvt>
 #include <samchon/WeakString.hpp>
 
 namespace samchon
@@ -173,7 +174,7 @@ namespace library
 			}
 			else if (charset == UTF8)
 			{
-				wstring_convert<codecvt_utf8_utf16<wchar_t>> utf8Converter;
+				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> utf8Converter;
 				wstring &wstr = move(utf8Converter.from_bytes(source));
 
 				return wstr;

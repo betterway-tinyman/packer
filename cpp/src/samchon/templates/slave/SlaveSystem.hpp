@@ -4,7 +4,7 @@
 #include <samchon/protocol/IListener.hpp>
 
 #include <samchon/protocol/Communicator.hpp>
-#include <samchon/protocol/InvokeHistory.hpp>
+#include <samchon/templates/slave/PInvoke.hpp>
 
 namespace samchon
 {
@@ -36,22 +36,25 @@ namespace slave
 		};
 		
 	protected:
-		virtual void _replyData(std::shared_ptr<protocol::Invoke> invoke) override
+		virtual void _Reply_data(std::shared_ptr<protocol::Invoke> invoke) override
 		{
 			if (invoke->has("_History_uid"))
 			{
 				std::thread([this, invoke]()
 				{
 					// INIT HISTORY - WITH START TIME
-					std::unique_ptr<protocol::InvokeHistory> history(new protocol::InvokeHistory(invoke));
+					std::shared_ptr<InvokeHistory> history(new InvokeHistory(invoke));
 					invoke->erase("_History_uid");
+					invoke->erase("_Process_name");
+					invoke->erase("_Process_weight");
 
 					// MAIN PROCESS - REPLY_DATA
-					replyData(invoke);
+					std::shared_ptr<PInvoke> pInvoke(new PInvoke(invoke, history, this));
+					replyData(pInvoke);
 
 					// NOTIFY - WITH END TIME
-					history->complete();
-					sendData(history->toInvoke());
+					if (pInvoke->isHold() == false)
+						pInvoke->complete();
 				}).detach();
 			}
 			else

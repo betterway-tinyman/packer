@@ -3,13 +3,12 @@
 
 #include <samchon/protocol/Entity.hpp>
 
+#include <bws/packer/InstanceArray.hpp>
+
 namespace bws
 {
 namespace packer
 {
-	class Instance;
-	class InstanceArray;
-
 	/**
 	 * @brief A repeated Instance.
 	 *
@@ -41,24 +40,61 @@ namespace packer
 		/**
 		 * @brief Default Constructor.
 		 */
-		InstanceForm();
+		InstanceForm() 
+			: super()
+		{
+		};
 		virtual ~InstanceForm() = default;
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			if (xml->hasProperty("type"))
+			{
+				instance.reset(createInstance(xml));
+				instance->construct(xml);
+			}
+			else if (xml->has("instance"))
+			{
+				auto instanceXML = xml->get("instance")->at(0);
+
+				instance.reset(createInstance(instanceXML));
+				instance->construct(instanceXML);
+			}
+
+			count = xml->getProperty<size_t>("count");
+		};
 
 	private:
 		/**
 		 * @brief Factory method of #instance.
 		 */
-		auto createInstance(std::shared_ptr<library::XML>) -> Instance*;
+		auto createInstance(std::shared_ptr<library::XML> xml) -> Instance*
+		{
+			if (xml->getProperty("type") == "product")
+				return new Product();
+			else
+				return new Wrapper();
+		};
 
 	public:
 		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
-		virtual auto TAG() const -> std::string override;
+		virtual auto TAG() const -> std::string override
+		{
+			return "instanceForm";
+		};
 
-		virtual auto toXML() const -> std::shared_ptr<library::XML> override;
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override
+		{
+			auto xml = super::toXML();
+			if (instance != nullptr)
+				xml->push_back(instance->toXML());
+
+			xml->setProperty("count", count);
+
+			return xml;
+		};
 
 		/**
 		 * @brief Repeated #instance to InstanceArray.
@@ -70,7 +106,13 @@ namespace packer
 		 *
 		 * @return An array of instance containing repeated #instance.
 		 */
-		auto toInstanceArray() const -> std::shared_ptr<InstanceArray>;
+		auto toInstanceArray() const -> std::shared_ptr<InstanceArray>
+		{
+			std::shared_ptr<InstanceArray> instanceArray(new InstanceArray());
+			instanceArray->assign(count, instance);
+
+			return instanceArray;
+		};
 	};
 };
 };

@@ -39,7 +39,7 @@ namespace parallel
 		 * @param ip IP address to connect.
 		 * @param port Port number to connect.
 		 */
-		MediatorWebClient(ParallelSystemArrayMediator *system_array_, const std::string &ip, int port)
+		MediatorWebClient(external::base::ExternalSystemArrayBase *system_array_, const std::string &ip, int port)
 			: MediatorWebClient(system_array_, ip, port, "")
 		{
 		};
@@ -52,7 +52,7 @@ namespace parallel
 		 * @param port Port number to connect.
 		 * @param path Path of service which you want.
 		 */
-		MediatorWebClient(ParallelSystemArrayMediator *system_array_, const std::string &ip, int port, const std::string &path)
+		MediatorWebClient(external::base::ExternalSystemArrayBase *system_array_, const std::string &ip, int port, const std::string &path)
 			: super(system_array_, ip, port)
 		{
 			this->path_ = path;

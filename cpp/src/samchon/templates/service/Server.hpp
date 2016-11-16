@@ -141,8 +141,16 @@ namespace service
 		 */
 		virtual void sendData(std::shared_ptr<protocol::Invoke> invoke) override
 		{
+			std::vector<std::thread> threadArray;
+			library::UniqueReadLock uk(session_map_mtx);
+
+			threadArray.reserve(session_map.size());
 			for (auto it = session_map.begin(); it != session_map.end(); it++)
-				it->second->sendData(invoke);
+				threadArray.emplace_back(&User::sendData, it->second.get(), invoke);
+
+			uk.unlock();
+			for (auto it = threadArray.begin(); it != threadArray.end(); it++)
+				it->join();
 		};
 
 		/**
@@ -223,7 +231,7 @@ namespace service
 
 			// REGISTER TO USER
 			{
-				library::UniqueWriteLock uk(user->client_map_mtx);
+				library::UniqueWriteLock uk(user->mtx);
 
 				client->no = ++user->sequence;
 				user->insert({ client->no, client });
@@ -249,7 +257,8 @@ namespace service
 
 			// DISCONNECTED - ERASE CLIENT.
 			// IF THE USER HAS NO CLIENT LEFT, THEN THE USER WILL ALSO BE ERASED.
-			user->erase_client(client.get());
+			user->erase(client->no);
+			user->check_empty();
 		};
 
 		void erase_user(User *user)
@@ -258,11 +267,8 @@ namespace service
 			// IT WAITS UNTIL 30 SECONDS TO KEEP SESSION
 			std::this_thread::sleep_for(std::chrono::seconds(30));
 
-			library::UniqueReadLock r_uk(user->client_map_mtx);
 			if (user->empty() == false)
 			{
-				r_uk.unlock();
-
 				// ERASE FROM ACCOUNT_MAP
 				if (user->account.empty() == false)
 				{

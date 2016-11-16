@@ -70,13 +70,17 @@ namespace external
 				return;
 
 			system->communicator_ = driver;
-
-			push_back(system);
+			{
+				library::UniqueWriteLock uk(getMutex());
+				push_back(system);
+			}
 			driver->listen(system.get());
 
 			for (size_t i = 0; i < size(); i++)
 				if (at(i) == system)
 				{
+					library::UniqueWriteLock uk(getMutex());
+
 					erase(begin() + i);
 					break;
 				}
@@ -93,7 +97,7 @@ namespace external
 		 * @param xml An {@link XML} object represents the child {@link ExternalSystem} object.
 		 * @return null
 		 */
-		virtual auto createChild(std::shared_ptr<library::XML> xml) -> ExternalSystem* override
+		virtual auto createChild(std::shared_ptr<library::XML> xml) -> System* override
 		{
 			return nullptr;
 		} // = delete;
@@ -104,7 +108,7 @@ namespace external
 		 * @param driver A communicator with connected client.
 		 * @return A newly created {@link ExternalSystem} object.
 		 */
-		virtual auto createExternalClient(std::shared_ptr<protocol::ClientDriver>) -> ExternalSystem* = 0;
+		virtual auto createExternalClient(std::shared_ptr<protocol::ClientDriver>) -> System* = 0;
 	};
 };
 };

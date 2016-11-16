@@ -10,11 +10,6 @@
 
 namespace samchon
 {
-namespace protocol
-{
-	class WebClientDriver;
-};
-
 namespace templates
 {
 namespace service
@@ -88,7 +83,10 @@ namespace service
 		 */
 		virtual auto createService(const std::string &) -> Service* = 0;
 
-		auto __keep_alive() const -> std::pair<std::shared_ptr<User>, std::shared_ptr<Client>>;
+		auto __keep_alive() const -> std::pair<std::shared_ptr<User>, std::shared_ptr<Client>>
+		{
+			return std::make_pair(user_weak_ptr.lock(), my_weak_ptr.lock());
+		};
 
 	public:
 		/* ---------------------------------------------------------

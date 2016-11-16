@@ -6,6 +6,9 @@
 #include <samchon/templates/external/base/ExternalSystemArrayBase.hpp>
 #include <samchon/protocol/IProtocol.hpp>
 
+#include <vector>
+#include <thread>
+
 namespace samchon
 {
 namespace templates
@@ -141,8 +144,16 @@ namespace external
 		 */
 		virtual void sendData(std::shared_ptr<protocol::Invoke> invoke)
 		{
+			std::vector<std::thread> threads;
+			library::UniqueReadLock uk(getMutex());
+			
+			threads.reserve(this->size());
 			for (size_t i = 0; i < size(); i++)
-				at(i)->sendData(invoke);
+				threads.emplace_back(&ExternalSystem::sendData, at(i).get(), invoke);
+			
+			uk.unlock();
+			for (auto it = threads.begin(); it != threads.end(); it++)
+				it->join();
 		};
 
 		/**

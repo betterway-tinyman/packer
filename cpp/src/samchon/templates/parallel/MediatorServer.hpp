@@ -37,7 +37,7 @@ namespace parallel
 		 * @param systemArray The parent {@link ParallelSystemArrayMediator} object.
 		 * @param port Port number of server to open.
 		 */
-		MediatorServer(ParallelSystemArrayMediator *system_array, int port)
+		MediatorServer(external::base::ExternalSystemArrayBase *system_array, int port)
 			: super(system_array),
 			protocol::Server()
 		{

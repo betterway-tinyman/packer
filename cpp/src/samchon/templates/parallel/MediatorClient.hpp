@@ -40,7 +40,7 @@ namespace parallel
 		 * @param ip IP address to connect.
 		 * @param port Port number to connect.
 		 */
-		MediatorClient(ParallelSystemArrayMediator *system_array_, const std::string &ip, int port)
+		MediatorClient(external::base::ExternalSystemArrayBase *system_array_, const std::string &ip, int port)
 			: super(system_array_)
 		{
 			this->ip_ = ip;

@@ -29,7 +29,10 @@ namespace packer
 		/* -----------------------------------------------------------
 			EXPORTERS
 		----------------------------------------------------------- */
-		virtual auto TYPE() const -> std::string override;
+		virtual auto TYPE() const -> std::string override
+		{
+			return "product";
+		};
 	};
 };
 };

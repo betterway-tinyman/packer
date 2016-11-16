@@ -2,7 +2,6 @@
 #include <samchon/API.hpp>
 
 #include <samchon/library/SQLi.hpp>
-#include <samchon/library/TSQLStatement.hpp>
 
 namespace samchon
 {

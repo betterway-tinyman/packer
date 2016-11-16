@@ -67,7 +67,7 @@ namespace external
 		 * @param xml An {@link XML} object represents child element, so that can identify the type of child to create.
 		 * @return A new child Entity via {@link createExternalServer createExternalServer()}.
 		 */
-		virtual auto createChild(std::shared_ptr<library::XML> xml) -> ExternalSystem* override final
+		virtual auto createChild(std::shared_ptr<library::XML> xml) -> System* override final
 		{
 			return nullptr;
 		};
@@ -78,7 +78,7 @@ namespace external
 		 * @param xml An {@link XML} object represents child element, so that can identify the type of child to create.
 		 * @return A newly created {@link IExternalServer} object.
 		 */
-		virtual auto createExternalServer(std::shared_ptr<library::XML>) -> ExternalServer* = 0;
+		virtual auto createExternalServer(std::shared_ptr<library::XML>) -> System* = 0;
 	};
 };
 };

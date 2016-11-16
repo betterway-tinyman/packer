@@ -1,6 +1,8 @@
 #pragma once
 #include <samchon/library/CaseGenerator.hpp>
 
+#define TEMPLATE_FACTORIAL_CASE_MACRO(N) case N: size_ = factorial<N>::value; break;
+
 namespace samchon
 {
 namespace library
@@ -23,6 +25,15 @@ namespace library
 
 		std::vector<size_t> atoms;
 
+		template<const size_t N> struct factorial
+		{
+			enum { value = N * factorial<N - 1>::value };
+		};
+		template<> struct factorial<1>
+		{
+			enum {value = 1};
+		};
+
 	public:
 		/**
 		 * @brief Construct from size of N and R
@@ -32,9 +43,38 @@ namespace library
 		PermutationGenerator(size_t n, size_t r)
 			: super(n, r)
 		{
-			size_ = n;
-			for (size_t i = n - 1; i > n - r; i--)
-				size_ *= i;
+			if (n == r)
+				if (n <= 15)
+					switch (n)
+					{
+						TEMPLATE_FACTORIAL_CASE_MACRO(1)
+						TEMPLATE_FACTORIAL_CASE_MACRO(2)
+						TEMPLATE_FACTORIAL_CASE_MACRO(3)
+						TEMPLATE_FACTORIAL_CASE_MACRO(4)
+						TEMPLATE_FACTORIAL_CASE_MACRO(5)
+						TEMPLATE_FACTORIAL_CASE_MACRO(6)
+						TEMPLATE_FACTORIAL_CASE_MACRO(7)
+						TEMPLATE_FACTORIAL_CASE_MACRO(8)
+						TEMPLATE_FACTORIAL_CASE_MACRO(9)
+						TEMPLATE_FACTORIAL_CASE_MACRO(10)
+						TEMPLATE_FACTORIAL_CASE_MACRO(11)
+						TEMPLATE_FACTORIAL_CASE_MACRO(12)
+						TEMPLATE_FACTORIAL_CASE_MACRO(13)
+						TEMPLATE_FACTORIAL_CASE_MACRO(14)
+						TEMPLATE_FACTORIAL_CASE_MACRO(15)
+					}
+				else
+				{
+					size_ = factorial<15>::value;
+					for (size_t i = 16; i < n; i++)
+						size_ *= i;
+				}
+			else
+			{
+				size_ = 1;
+				for (size_t i = n - r + 1; i <= n; i++)
+					size_ *= i;
+			}
 
 			atoms.assign(n, 0);
 			for (size_t i = 0; i < n; i++)

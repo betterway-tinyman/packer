@@ -3,6 +3,9 @@
 
 #include <samchon/protocol/Entity.hpp>
 
+#include <array>
+#include <algorithm>
+
 namespace bws
 {
 namespace packer
@@ -46,12 +49,18 @@ namespace packer
 		/**
 		 * @brief Default Constructor.
 		 */
-		Instance();
+		Instance() 
+			: Instance("", 0, 0, 0)
+		{
+		};
 
 		/**
 		 * @brief Copy Constructor.
 		 */
-		Instance(const Instance &);
+		Instance(const Instance &instance)
+			: Instance(instance.name, instance.width, instance.height, instance.length)
+		{
+		};
 
 		/**
 		* @brief Construct from members.
@@ -61,10 +70,25 @@ namespace packer
 		* @param height 세로 (y축)
 		* @param length 길이 (z축)
 		*/
-		Instance(const std::string &, double, double, double);
+		Instance(const std::string &name, double width, double height, double length)
+			: super()
+		{
+			this->name = name;
+
+			this->width = width;
+			this->height = height;
+			this->length = length;
+		};
 		virtual ~Instance() = default;
 
-		virtual void construct(std::shared_ptr<library::XML>) override;
+		virtual void construct(std::shared_ptr<library::XML> xml) override
+		{
+			name = xml->getProperty<std::string>("name");
+
+			width = xml->getProperty<double>("width");
+			height = xml->getProperty<double>("height");
+			length = xml->getProperty<double>("length");
+		};
 
 		/* -----------------------------------------------------------
 			GETTERS
@@ -72,34 +96,52 @@ namespace packer
 		/**
 		 * Key of an Instance is its name.
 		 */
-		virtual auto key() const -> std::string override;
+		virtual auto key() const -> std::string override
+		{
+			return name;
+		};
 
 		/**
 		 * @brief Get name.
 		 */
-		auto getName() const -> std::string;
+		auto getName() const -> std::string
+		{
+			return name;
+		};
 
 		/**
 		 * @brief Get width, length on the X-axis in 3D.
 		 */
-		auto getWidth() const -> double;
+		auto getWidth() const -> double
+		{
+			return width;
+		};
 		
 		/**
 		 * @brief Get height, length on the Y-axis in 3D.
 		 */
-		auto getHeight() const -> double;
+		auto getHeight() const -> double
+		{
+			return height;
+		};
 		
 		/**
 		 * Get length, length on the Z-axis in 3D.
 		 */
-		auto getLength() const -> double;
+		auto getLength() const -> double
+		{
+			return length;
+		};
 		
 		/**
 		 * @brief Get (calculate) volume.
 		 *
 		 * @return width x height x length
 		 */
-		auto getVolume() const -> double;
+		auto getVolume() const -> double
+		{
+			return width * height * length;
+		};
 
 	protected:
 		/* -----------------------------------------------------------
@@ -115,9 +157,23 @@ namespace packer
 		virtual auto TYPE() const -> std::string = 0;
 
 	public:
-		virtual auto TAG() const -> std::string override;
+		virtual auto TAG() const -> std::string override
+		{
+			return "instance";
+		};
 
-		virtual auto toXML() const -> std::shared_ptr<library::XML> override;;
+		virtual auto toXML() const -> std::shared_ptr<library::XML> override
+		{
+			auto xml = super::toXML();
+			xml->setProperty("type", TYPE());
+			xml->setProperty("name", name);
+
+			xml->setProperty("width", width);
+			xml->setProperty("height", height);
+			xml->setProperty("length", length);
+
+			return xml;
+		};
 	};
 };
 };

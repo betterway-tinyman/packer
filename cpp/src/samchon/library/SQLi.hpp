@@ -3,24 +3,10 @@
 
 #include <samchon/library/base/SQLiBase.hpp>
 
-#ifdef _WIN32
-#	ifndef WIN32_LEAN_AND_MEAN 
-#		define WIN32_LEAN_AND_MEAN 
-#	endif
-#	include <Windows.h>
-#endif
-
-#define _SQLNCLI_ODBC_
-#include <sqltypes.h>
-#include <sql.h>
-#include <sqlext.h>
-#include <odbcss.h>
+#include <samchon/library/SQLStatement.hpp>
 
 #include <memory>
-#include <mutex>
 #include <samchon/library/StringUtil.hpp>
-
-#include <samchon/library/SQLStatement.hpp>
 
 namespace samchon
 {
@@ -79,11 +65,6 @@ namespace library
 		int port;
 
 	private:
-		/**
-		 * @brief Handler of DB-connector
-		 */
-		void *hdbc;
-
 		/**
 		 * @brief Had connected to DBMS.
 		 *

@@ -36,7 +36,11 @@ namespace library
 		/**
 		 * @brief Cookies got from remote web server.
 		 */
-		static HashMap<std::string, std::string> cookie_map;
+		static HashMap<std::string, std::string>& cookie_map()
+		{
+			static HashMap<std::string, std::string> map;
+			return map;
+		};
 
 	public:
 		enum METHOD : int
@@ -102,9 +106,9 @@ namespace library
 		 */
 		auto getCookie(const std::string &key) const -> std::string
 		{
-			auto it = cookie_map.find(key);
+			auto it = cookie_map().find(key);
 
-			if (it == cookie_map.end())
+			if (it == cookie_map().end())
 				return "";
 			else
 				return it->second;
@@ -233,8 +237,6 @@ namespace library
 						break;
 				}
 
-				cout << header << endl;
-
 				WeakString wstr = header;
 				std::vector<WeakString> wstrArray = wstr.split("\r\n");
 
@@ -319,7 +321,7 @@ namespace library
 							size_t pos = wstr.find("\r\n", startIndex);
 							WeakString piece = wstr.substr(startIndex, pos);
 
-							size_t size = stoull(piece, 0, 16);
+							size_t size = stoull(piece.str(), 0, 16);
 							if (size == 0)
 								break;
 

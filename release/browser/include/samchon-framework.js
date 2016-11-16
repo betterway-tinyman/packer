@@ -4825,14 +4825,6 @@ var samchon;
                     for (var i = 0; i < this.size(); i++)
                         this.at(i).sendData(invoke);
                 };
-                /**
-                 * Handle an {@Invoke} message have received.
-                 *
-                 * @param invoke An {@link Invoke} message have received.
-                 */
-                ExternalSystemArray.prototype.replyData = function (invoke) {
-                    invoke.apply(this);
-                };
                 /* ---------------------------------------------------------
                     EXPORTERS
                 --------------------------------------------------------- */
@@ -5712,8 +5704,8 @@ var samchon;
                 if (this.listener_ == null)
                     this.unhandled_invokes.push_back(invoke);
                 else {
-                    if (this.listener_._replyData instanceof Function)
-                        this.listener_._replyData(invoke);
+                    if (this.listener_._Reply_data instanceof Function)
+                        this.listener_._Reply_data(invoke);
                     else
                         this.listener_.replyData(invoke);
                 }
@@ -6819,7 +6811,6 @@ var samchon;
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
 /// <reference path="EntityArray.ts" />
-/// <reference path="Entity.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
@@ -6929,6 +6920,8 @@ var samchon;
         protocol.Invoke = Invoke;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
+/// <reference path="../API.ts" />
+/// <reference path="Entity.ts" />
 var samchon;
 (function (samchon) {
     var protocol;
@@ -6986,6 +6979,8 @@ var samchon;
                 this.type = xml.getProperty("type");
                 if (this.type == "XML")
                     this.value = xml.begin().second.front();
+                else if (this.type == "boolean")
+                    this.value = Boolean(xml.getValue());
                 else if (this.type == "number")
                     this.value = Number(xml.getValue());
                 else if (this.type == "string")
@@ -7055,128 +7050,6 @@ var samchon;
             return InvokeParameter;
         }(protocol.Entity));
         protocol.InvokeParameter = InvokeParameter;
-    })(protocol = samchon.protocol || (samchon.protocol = {}));
-})(samchon || (samchon = {}));
-/// <reference path="../API.ts" />
-/// <reference path="../protocol/Entity.ts" />
-/// <reference path="../protocol/EntityArray.ts" />
-var samchon;
-(function (samchon) {
-    var protocol;
-    (function (protocol) {
-        /**
-         * History of an {@link Invoke} message.
-         *
-         * The {@link InvokeHistory} is a class archiving history log of an {@link Invoke} message with elapsed time. This
-         * {@link InvokeHistory} class is used to report elapsed time of handling a requested process from **slave** to
-         * **master** system.
-         *
-         * The **master** system utilizes derived {@link InvokeHistory} objects to compute performance indices.
-         * - {@link ParallelSytem.getPerformance}
-         * - {@link DistributedProcess.getResource}
-         *
-         * @author Jeongho Nam <http://samchon.org>
-         */
-        var InvokeHistory = (function (_super) {
-            __extends(InvokeHistory, _super);
-            function InvokeHistory(invoke) {
-                if (invoke === void 0) { invoke = null; }
-                _super.call(this);
-                if (invoke == null) {
-                    // DEFAULT CONSTRUCTOR
-                    this.uid = 0;
-                    this.listener = "";
-                }
-                else {
-                    // CONSTRUCT FROM AN INVOKE MESSAGE
-                    this.uid = invoke.get("_History_uid").getValue();
-                    this.listener = invoke.getListener();
-                    this.start_time_ = new Date();
-                }
-            }
-            /**
-             * @inheritdoc
-             */
-            InvokeHistory.prototype.construct = function (xml) {
-                _super.prototype.construct.call(this, xml);
-                this.start_time_ = new Date(parseInt(xml.getProperty("startTime")));
-                this.end_time_ = new Date(parseInt(xml.getProperty("endTime")));
-            };
-            /**
-             * Complete the history.
-             *
-             * Completes the history and determines the {@link getEndTime end time}.
-             */
-            InvokeHistory.prototype.complete = function () {
-                this.end_time_ = new Date();
-            };
-            /* ---------------------------------------------------------
-                ACCESSORS
-            --------------------------------------------------------- */
-            InvokeHistory.prototype.key = function () {
-                return this.uid;
-            };
-            /**
-             * Get unique ID.
-             */
-            InvokeHistory.prototype.getUID = function () {
-                return this.uid;
-            };
-            /**
-             * Get {@link Invoke.getListener listener} of the {@link Invoke} message.
-             */
-            InvokeHistory.prototype.getListener = function () {
-                return this.listener;
-            };
-            /**
-             * Get start time.
-             */
-            InvokeHistory.prototype.getStartTime = function () {
-                return this.start_time_;
-            };
-            /**
-             * Get end time.
-             */
-            InvokeHistory.prototype.getEndTime = function () {
-                return this.end_time_;
-            };
-            /**
-             * Compute elapsed time.
-             *
-             * @return nanoseconds.
-             */
-            InvokeHistory.prototype.computeElapsedTime = function () {
-                return Math.max(this.end_time_.getTime() - this.start_time_.getTime(), 1);
-            };
-            /* ---------------------------------------------------------
-                EXPORTERS
-            --------------------------------------------------------- */
-            /**
-             * @inheritdoc
-             */
-            InvokeHistory.prototype.TAG = function () {
-                return "history";
-            };
-            /**
-             * @inheritdoc
-             */
-            InvokeHistory.prototype.toXML = function () {
-                var xml = _super.prototype.toXML.call(this);
-                xml.setProperty("startTime", this.start_time_.getTime() + "");
-                xml.setProperty("endTime", this.end_time_.getTime() + "");
-                return xml;
-            };
-            /**
-             * Convert to an {@link Invoke} message.
-             *
-             * Creates and returns an {@link Invoke} message that is used to reporting to the **master**.
-             */
-            InvokeHistory.prototype.toInvoke = function () {
-                return new protocol.Invoke("_Report_history", this.toXML());
-            };
-            return InvokeHistory;
-        }(protocol.Entity));
-        protocol.InvokeHistory = InvokeHistory;
     })(protocol = samchon.protocol || (samchon.protocol = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../API.ts" />
@@ -8835,10 +8708,16 @@ var samchon;
                         var system = this.system_array_.at(i);
                         if (system.exclude_ == true)
                             continue; // BEING REMOVED SYSTEM
-                        if (idle_system == null
-                            || system.progress_list_.size() < idle_system.progress_list_.size()
-                            || system.getPerformance() < idle_system.getPerformance())
-                            idle_system = system;
+                        if (idle_system == null ||
+                            system.history_list_.empty() == true ||
+                            system.progress_list_.size() < idle_system.progress_list_.size() ||
+                            (system.progress_list_.size() == idle_system.progress_list_.size() &&
+                                system.getPerformance() > idle_system.getPerformance()) ||
+                            (system.progress_list_.size() == idle_system.progress_list_.size() &&
+                                system.getPerformance() == idle_system.getPerformance() &&
+                                system.history_list_.size() < idle_system.history_list_.size()))
+                            if (idle_system == null || idle_system.history_list_.empty() == false)
+                                idle_system = system;
                     }
                     if (idle_system == null)
                         throw new std.OutOfRange("No remote system to send data");
@@ -9290,7 +9169,7 @@ var samchon;
                 /**
                  * @hidden
                  */
-                ParallelSystem.prototype._replyData = function (invoke) {
+                ParallelSystem.prototype._Reply_data = function (invoke) {
                     if (invoke.getListener() == "_Report_history") {
                         this._Report_history(invoke.front().getValue());
                     }
@@ -9476,6 +9355,7 @@ var samchon;
                     var progress_it = this.progress_list_.find(history.getUID());
                     if (progress_it.equal_to(this.progress_list_.end()) == true)
                         return;
+                    history.process_ = progress_it.second.second.getProcess();
                     history.weight_ = progress_it.second.second.getWeight();
                     // ERASE FROM ORDINARY PROGRESS AND MIGRATE TO THE HISTORY
                     this.progress_list_.erase(progress_it);
@@ -10117,7 +9997,131 @@ var samchon;
     })(templates = samchon.templates || (samchon.templates = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
-/// <reference path="../../protocol/InvokeHistory.ts" />
+/// <reference path="../../protocol/Entity.ts" />
+var samchon;
+(function (samchon) {
+    var templates;
+    (function (templates) {
+        var slave;
+        (function (slave) {
+            /**
+             * History of an {@link Invoke} message.
+             *
+             * The {@link InvokeHistory} is a class archiving history log of an {@link Invoke} message with elapsed time. This
+             * {@link InvokeHistory} class is used to report elapsed time of handling a requested process from **slave** to
+             * **master** system.
+             *
+             * The **master** system utilizes derived {@link InvokeHistory} objects to compute performance indices.
+             * - {@link ParallelSytem.getPerformance}
+             * - {@link DistributedProcess.getResource}
+             *
+             * @author Jeongho Nam <http://samchon.org>
+             */
+            var InvokeHistory = (function (_super) {
+                __extends(InvokeHistory, _super);
+                function InvokeHistory(invoke) {
+                    if (invoke === void 0) { invoke = null; }
+                    _super.call(this);
+                    if (invoke == null) {
+                        // DEFAULT CONSTRUCTOR
+                        this.uid = 0;
+                        this.listener = "";
+                    }
+                    else {
+                        // CONSTRUCT FROM AN INVOKE MESSAGE
+                        this.uid = invoke.get("_History_uid").getValue();
+                        this.listener = invoke.getListener();
+                        this.start_time_ = new Date();
+                    }
+                }
+                /**
+                 * @inheritdoc
+                 */
+                InvokeHistory.prototype.construct = function (xml) {
+                    _super.prototype.construct.call(this, xml);
+                    this.start_time_ = new Date(parseInt(xml.getProperty("startTime")));
+                    this.end_time_ = new Date(parseInt(xml.getProperty("endTime")));
+                };
+                /**
+                 * Complete the history.
+                 *
+                 * Completes the history and determines the {@link getEndTime end time}.
+                 */
+                InvokeHistory.prototype.complete = function () {
+                    this.end_time_ = new Date();
+                };
+                /* ---------------------------------------------------------
+                    ACCESSORS
+                --------------------------------------------------------- */
+                InvokeHistory.prototype.key = function () {
+                    return this.uid;
+                };
+                /**
+                 * Get unique ID.
+                 */
+                InvokeHistory.prototype.getUID = function () {
+                    return this.uid;
+                };
+                /**
+                 * Get {@link Invoke.getListener listener} of the {@link Invoke} message.
+                 */
+                InvokeHistory.prototype.getListener = function () {
+                    return this.listener;
+                };
+                /**
+                 * Get start time.
+                 */
+                InvokeHistory.prototype.getStartTime = function () {
+                    return this.start_time_;
+                };
+                /**
+                 * Get end time.
+                 */
+                InvokeHistory.prototype.getEndTime = function () {
+                    return this.end_time_;
+                };
+                /**
+                 * Compute elapsed time.
+                 *
+                 * @return nanoseconds.
+                 */
+                InvokeHistory.prototype.computeElapsedTime = function () {
+                    return Math.max(this.end_time_.getTime() - this.start_time_.getTime(), 1);
+                };
+                /* ---------------------------------------------------------
+                    EXPORTERS
+                --------------------------------------------------------- */
+                /**
+                 * @inheritdoc
+                 */
+                InvokeHistory.prototype.TAG = function () {
+                    return "history";
+                };
+                /**
+                 * @inheritdoc
+                 */
+                InvokeHistory.prototype.toXML = function () {
+                    var xml = _super.prototype.toXML.call(this);
+                    xml.setProperty("startTime", this.start_time_.getTime() + "");
+                    xml.setProperty("endTime", this.end_time_.getTime() + "");
+                    return xml;
+                };
+                /**
+                 * Convert to an {@link Invoke} message.
+                 *
+                 * Creates and returns an {@link Invoke} message that is used to reporting to the **master**.
+                 */
+                InvokeHistory.prototype.toInvoke = function () {
+                    return new samchon.protocol.Invoke("_Report_history", this.toXML());
+                };
+                return InvokeHistory;
+            }(samchon.protocol.Entity));
+            slave.InvokeHistory = InvokeHistory;
+        })(slave = templates.slave || (templates.slave = {}));
+    })(templates = samchon.templates || (samchon.templates = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="../slave/InvokeHistory.ts" />
 var samchon;
 (function (samchon) {
     var templates;
@@ -10206,7 +10210,7 @@ var samchon;
                     return xml;
                 };
                 return DSInvokeHistory;
-            }(samchon.protocol.InvokeHistory));
+            }(templates.slave.InvokeHistory));
             distributed.DSInvokeHistory = DSInvokeHistory;
         })(distributed = templates.distributed || (templates.distributed = {}));
     })(templates = samchon.templates || (samchon.templates = {}));
@@ -10748,20 +10752,22 @@ var samchon;
                 /**
                  * @hidden
                  */
-                SlaveSystem.prototype._replyData = function (invoke) {
+                SlaveSystem.prototype._Reply_data = function (invoke) {
                     // INTERCEPT INVOKE MESSAGE
                     if (invoke.has("_History_uid")) {
                         // INIT HISTORY - WITH START TIME
-                        var history_4 = new samchon.protocol.InvokeHistory(invoke);
+                        var history_4 = new slave.InvokeHistory(invoke);
                         std.remove_if(invoke.begin(), invoke.end(), function (parameter) {
                             return parameter.getName() == "_History_uid"
-                                || parameter.getName() == "_Process_name";
+                                || parameter.getName() == "_Process_name"
+                                || parameter.getName() == "_Process_weight";
                         }); // DETACH THE UID FOR FUNCTION AUTO-MATCHING
                         // MAIN PROCESS - REPLY_DATA
-                        this.replyData(invoke);
+                        var pInvoke = new slave.PInvoke(invoke, history_4, this);
+                        this.replyData(pInvoke);
                         // NOTIFY - WITH END TIME
-                        history_4.complete();
-                        this.sendData(history_4.toInvoke());
+                        if (pInvoke.isHold() == false)
+                            pInvoke.complete();
                     }
                     else
                         this.replyData(invoke);
@@ -10865,10 +10871,10 @@ var samchon;
                 /**
                  * @hidden
                  */
-                MediatorSystem.prototype._replyData = function (invoke) {
+                MediatorSystem.prototype._Reply_data = function (invoke) {
                     if (invoke.has("_History_uid") == true) {
                         // INIT HISTORY OBJECT
-                        var history_5 = new samchon.protocol.InvokeHistory(invoke);
+                        var history_5 = new templates.slave.InvokeHistory(invoke);
                         if (this.system_array_.empty() == true) {
                             // NO BELONGED SLAVE, THEN SEND BACK
                             this.sendData(new samchon.protocol.Invoke("_Send_back_history", history_5.getUID()));
@@ -12395,7 +12401,7 @@ var samchon;
     })(templates = samchon.templates || (samchon.templates = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />
-/// <reference path="../../protocol/InvokeHistory.ts" />
+/// <reference path="../slave/InvokeHistory.ts" />
 var samchon;
 (function (samchon) {
     var templates;
@@ -12465,7 +12471,7 @@ var samchon;
                     return this.last;
                 };
                 return PRInvokeHistory;
-            }(samchon.protocol.InvokeHistory));
+            }(templates.slave.InvokeHistory));
             parallel.PRInvokeHistory = PRInvokeHistory;
         })(parallel = templates.parallel || (templates.parallel = {}));
     })(templates = samchon.templates || (samchon.templates = {}));
@@ -13156,6 +13162,48 @@ var samchon;
             }(samchon.collections.HashMapCollection));
             service.User = User;
         })(service = templates.service || (templates.service = {}));
+    })(templates = samchon.templates || (samchon.templates = {}));
+})(samchon || (samchon = {}));
+/// <reference path="../../API.ts" />
+/// <reference path="../../protocol/Invoke.ts" />
+var samchon;
+(function (samchon) {
+    var templates;
+    (function (templates) {
+        var slave;
+        (function (slave) {
+            var PInvoke = (function (_super) {
+                __extends(PInvoke, _super);
+                function PInvoke(invoke, history, masterDriver) {
+                    _super.call(this, invoke.getListener());
+                    this.assign(invoke.begin(), invoke.end());
+                    this.history_ = history;
+                    this.master_driver_ = masterDriver;
+                    this.hold_ = false;
+                }
+                PInvoke.prototype.getHistory = function () {
+                    return this.history_;
+                };
+                PInvoke.prototype.isHold = function () {
+                    return this.hold_;
+                };
+                /**
+                 * Hold reporting completion to master.
+                 */
+                PInvoke.prototype.hold = function () {
+                    this.hold_ = true;
+                };
+                /**
+                 * Report completion.
+                 */
+                PInvoke.prototype.complete = function () {
+                    this.history_.complete();
+                    this.master_driver_.sendData(this.history_.toInvoke());
+                };
+                return PInvoke;
+            }(samchon.protocol.Invoke));
+            slave.PInvoke = PInvoke;
+        })(slave = templates.slave || (templates.slave = {}));
     })(templates = samchon.templates || (samchon.templates = {}));
 })(samchon || (samchon = {}));
 /// <reference path="../../API.ts" />

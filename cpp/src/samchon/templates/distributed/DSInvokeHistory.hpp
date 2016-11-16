@@ -1,7 +1,7 @@
 #pragma once
 #include <samchon/API.hpp>
 
-#include <samchon/protocol/InvokeHistory.hpp>
+#include <samchon/templates/slave/InvokeHistory.hpp>
 
 #include <samchon/templates/distributed/base/DistributedSystemArrayBase.hpp>
 #include <samchon/templates/external/base/ExternalSystemBase.hpp>
@@ -31,12 +31,12 @@ namespace distributed
 	 * @author Jeongho Nam <http://samchon.org>
 	 */
 	class DSInvokeHistory
-		: public protocol::InvokeHistory
+		: public slave::InvokeHistory
 	{
 		friend class DistributedSystem;
 
 	private:
-		typedef protocol::InvokeHistory super;
+		typedef slave::InvokeHistory super;
 
 		DistributedSystem *system_;
 		DistributedProcess *process_;

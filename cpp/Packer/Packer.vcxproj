@@ -42,24 +42,7 @@
     <ClInclude Include="..\src\bws\packer\WrapperVolume.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\boxologic\Boxologic.cpp" />
-    <ClCompile Include="..\src\boxologic\Pallet.cpp" />
-    <ClCompile Include="..\src\bws\packer\Client.cpp" />
-    <ClCompile Include="..\src\bws\packer\GAWrapperArray.cpp" />
-    <ClCompile Include="..\src\bws\packer\Instance.cpp" />
-    <ClCompile Include="..\src\bws\packer\InstanceArray.cpp" />
-    <ClCompile Include="..\src\bws\packer\InstanceForm.cpp" />
-    <ClCompile Include="..\src\bws\packer\InstanceFormArray.cpp" />
     <ClCompile Include="..\src\bws\packer\main.cpp" />
-    <ClCompile Include="..\src\bws\packer\Packer.cpp" />
-    <ClCompile Include="..\src\bws\packer\PackerForm.cpp" />
-    <ClCompile Include="..\src\bws\packer\PCKGeneticAlgorithm.cpp" />
-    <ClCompile Include="..\src\bws\packer\Product.cpp" />
-    <ClCompile Include="..\src\bws\packer\Server.cpp" />
-    <ClCompile Include="..\src\bws\packer\Wrap.cpp" />
-    <ClCompile Include="..\src\bws\packer\Wrapper.cpp" />
-    <ClCompile Include="..\src\bws\packer\WrapperArray.cpp" />
-    <ClCompile Include="..\src\bws\packer\WrapperGroup.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1DD9777E-5279-4832-AD81-3272B72B61BD}</ProjectGuid>
@@ -114,23 +97,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src;$(BOOST_ROOT);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Platform\Boost\boost_1_62_0\stage\lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\src;$(BOOST_ROOT);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\lib_x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src;$(BOOST_ROOT);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\src;D:\Platform\Boost\boost_1_62_0;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Platform\Boost\boost_1_62_0\stage\lib_x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\src;$(BOOST_ROOT);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\lib_x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
