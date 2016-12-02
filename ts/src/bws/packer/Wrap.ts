@@ -325,7 +325,7 @@ namespace bws.packer
 		/**
 		 * Get width.
 		 */
-		public getWidth(): number
+		public getLayoutWidth(): number
 		{
 			switch (this.orientation)
 			{
@@ -341,7 +341,7 @@ namespace bws.packer
 		/**
 		 * Get height.
 		 */
-		public getHeight(): number
+		public getLayoutHeight(): number
 		{
 			switch (this.orientation)
 			{
@@ -384,7 +384,7 @@ namespace bws.packer
 		}
 		public get $layoutScale(): string
 		{
-			return this.getWidth() + ", " + this.getHeight() + ", " + this.getLength();
+			return this.getLayoutWidth() + ", " + this.getLayoutHeight() + ", " + this.getLength();
 		}
 		public get $position(): string
 		{
@@ -411,6 +411,9 @@ namespace bws.packer
 			xml.push(this.instance.toXML());
 			
 			xml.eraseProperty("color");
+			xml.setProperty("layoutWidth", this.getLayoutWidth() + "");
+			xml.setProperty("layoutHeight", this.getLayoutHeight() + "");
+			xml.setProperty("layoutLength", this.getLength() + "");
 
 			return xml;
 		}
@@ -459,12 +462,12 @@ namespace bws.packer
 				switch (i)
 				{
 					case 1: case 3: case 9: case 12:
-						width = this.getWidth();
+						width = this.getLayoutWidth();
 						height = Wrap.BOUNDARY_THICKNESS;
 						length = Wrap.BOUNDARY_THICKNESS;
 						break;
 					case 2: case 4: case 10: case 11: case 10:
-						height = this.getHeight();
+						height = this.getLayoutHeight();
 						width = Wrap.BOUNDARY_THICKNESS;
 						length = Wrap.BOUNDARY_THICKNESS;
 						break;
@@ -479,7 +482,7 @@ namespace bws.packer
 				switch (i)
 				{
 					case 4: case 6: case 8: case 11:
-						x = this.x + this.getWidth() - Wrap.BOUNDARY_THICKNESS;
+						x = this.x + this.getLayoutWidth() - Wrap.BOUNDARY_THICKNESS;
 						break;
 					default:
 						x = this.x;
@@ -490,7 +493,7 @@ namespace bws.packer
 				switch (i)
 				{
 					case 3: case 7: case 8: case 12:
-						y = this.y + this.getHeight() - Wrap.BOUNDARY_THICKNESS;
+						y = this.y + this.getLayoutHeight() - Wrap.BOUNDARY_THICKNESS;
 						break;
 					default:
 						y = this.y;
@@ -532,11 +535,11 @@ namespace bws.packer
 					})
 				);
 
-			shape.scale.set(this.getWidth(), this.getHeight(), this.getLength());
+			shape.scale.set(this.getLayoutWidth(), this.getLayoutHeight(), this.getLength());
 			shape.position.set
 			(
-				this.x + this.getWidth() / 2, 
-				this.y + this.getHeight() / 2, 
+				this.x + this.getLayoutWidth() / 2, 
+				this.y + this.getLayoutHeight() / 2, 
 				this.z + this.getLength() / 2
 			);
 

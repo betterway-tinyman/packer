@@ -2697,7 +2697,7 @@ var bws;
             /**
              * Get width.
              */
-            Wrap.prototype.getWidth = function () {
+            Wrap.prototype.getLayoutWidth = function () {
                 switch (this.orientation) {
                     case 1:
                     case 5:
@@ -2712,7 +2712,7 @@ var bws;
             /**
              * Get height.
              */
-            Wrap.prototype.getHeight = function () {
+            Wrap.prototype.getLayoutHeight = function () {
                 switch (this.orientation) {
                     case 1:
                     case 2:
@@ -2754,7 +2754,7 @@ var bws;
             });
             Object.defineProperty(Wrap.prototype, "$layoutScale", {
                 get: function () {
-                    return this.getWidth() + ", " + this.getHeight() + ", " + this.getLength();
+                    return this.getLayoutWidth() + ", " + this.getLayoutHeight() + ", " + this.getLength();
                 },
                 enumerable: true,
                 configurable: true
@@ -2782,6 +2782,9 @@ var bws;
                 var xml = _super.prototype.toXML.call(this);
                 xml.push(this.instance.toXML());
                 xml.eraseProperty("color");
+                xml.setProperty("layoutWidth", this.getLayoutWidth() + "");
+                xml.setProperty("layoutHeight", this.getLayoutHeight() + "");
+                xml.setProperty("layoutLength", this.getLength() + "");
                 return xml;
             };
             Object.defineProperty(Wrap, "BOUNDARY_THICKNESS", {
@@ -2822,7 +2825,7 @@ var bws;
                         case 3:
                         case 9:
                         case 12:
-                            width = this.getWidth();
+                            width = this.getLayoutWidth();
                             height = Wrap.BOUNDARY_THICKNESS;
                             length_1 = Wrap.BOUNDARY_THICKNESS;
                             break;
@@ -2831,7 +2834,7 @@ var bws;
                         case 10:
                         case 11:
                         case 10:
-                            height = this.getHeight();
+                            height = this.getLayoutHeight();
                             width = Wrap.BOUNDARY_THICKNESS;
                             length_1 = Wrap.BOUNDARY_THICKNESS;
                             break;
@@ -2847,7 +2850,7 @@ var bws;
                         case 6:
                         case 8:
                         case 11:
-                            x = this.x + this.getWidth() - Wrap.BOUNDARY_THICKNESS;
+                            x = this.x + this.getLayoutWidth() - Wrap.BOUNDARY_THICKNESS;
                             break;
                         default:
                             x = this.x;
@@ -2859,7 +2862,7 @@ var bws;
                         case 7:
                         case 8:
                         case 12:
-                            y = this.y + this.getHeight() - Wrap.BOUNDARY_THICKNESS;
+                            y = this.y + this.getLayoutHeight() - Wrap.BOUNDARY_THICKNESS;
                             break;
                         default:
                             y = this.y;
@@ -2892,8 +2895,8 @@ var bws;
                     opacity: 0.5,
                     transparent: true
                 }));
-                shape.scale.set(this.getWidth(), this.getHeight(), this.getLength());
-                shape.position.set(this.x + this.getWidth() / 2, this.y + this.getHeight() / 2, this.z + this.getLength() / 2);
+                shape.scale.set(this.getLayoutWidth(), this.getLayoutHeight(), this.getLength());
+                shape.position.set(this.x + this.getLayoutWidth() / 2, this.y + this.getLayoutHeight() / 2, this.z + this.getLength() / 2);
                 objects.push_back(shape);
                 return objects;
             };

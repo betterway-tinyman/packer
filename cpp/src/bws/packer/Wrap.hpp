@@ -321,7 +321,7 @@ namespace packer
 		 * 
 		 * @details 제품의 실제 가로가 아닌, 포장지 내 배치되는 방향에 따른 가로 사이즈를 리턴한다.
 		 */
-		auto getWidth() const -> double
+		auto getLayoutWidth() const -> double
 		{
 			switch (orientation)
 			{
@@ -339,7 +339,7 @@ namespace packer
 		 *
 		 * @details 제품의 실제 높이가 아닌, 포장지 내 배치되는 방향에 따른 높이 사이즈를 리턴한다.
 		 */
-		auto getHeight() const -> double
+		auto getLayoutHeight() const -> double
 		{
 			switch (orientation)
 			{
@@ -357,7 +357,7 @@ namespace packer
 		 *
 		 * @details 제품의 실제 길이가 아닌, 포장지 내 배치되는 방향에 따른 길이 사이즈를 리턴한다.
 		 */
-		auto getLength() const -> double
+		auto getLayoutLength() const -> double
 		{
 			switch (orientation)
 			{
@@ -382,14 +382,18 @@ namespace packer
 		{
 			auto xml = super::toXML();
 			xml->setProperty("instance", instance->key());
-
-			// 나중에 없애야 함
 			xml->push_back(instance->toXML());
 
+			// MEMBERS
 			xml->setProperty("x", x);
 			xml->setProperty("y", y);
 			xml->setProperty("z", z);
 			xml->setProperty("orientation", orientation);
+
+			// PROPERTIES
+			xml->setProperty("layoutWidth", getLayoutWidth());
+			xml->setProperty("layoutHeight", getLayoutHeight());
+			xml->setProperty("layoutLength", getLayoutLength());
 
 			return xml;
 		};

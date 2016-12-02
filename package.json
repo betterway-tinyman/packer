@@ -9,7 +9,7 @@
   
   "main": "./release/node/packer.js",
   "typings": "./release/node/packer.d.ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
 
   "dependencies": {
     "@types/react": "^0.14.43",
