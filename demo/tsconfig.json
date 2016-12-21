@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+	"outFile": "include/packer.js",
+
+	"target": "es5",
+	"jsx": "react",
+	"lib": ["dom", "es2015.promise", "es5"],
+
+	"noImplicitAny": true,
+    "sourceMap": true
+  }
+}

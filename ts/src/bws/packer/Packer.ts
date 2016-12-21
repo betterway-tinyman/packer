@@ -140,7 +140,7 @@ namespace bws.packer
 
 				// FETCH RESULT
 				let result: std.HashMap<string, WrapperGroup> = geneArray.getResult();
-				for (let it = result.begin(); !it.equal_to(result.end()); it = it.next())
+				for (let it = result.begin(); !it.equals(result.end()); it = it.next())
 					wrappers.insert(wrappers.end(), it.second.begin(), it.second.end());
 
 				// TRY TO REPACK
@@ -150,9 +150,7 @@ namespace bws.packer
 			// SORT THE WRAPPERS BY ITEMS' POSITION
 			for (let i: number = 0; i < wrappers.size(); i++)
 			{
-				let wrapper = wrappers[i];
-				let begin = wrapper.begin();
-				let end = wrapper.end();
+				let wrapper: Wrapper = wrappers.at(i);
 
 				std.sort(wrapper.begin(), wrapper.end(),
 					function (left: Wrap, right: Wrap): boolean
@@ -302,7 +300,7 @@ namespace bws.packer
 				for (let j: number = 0; j < this.wrapperArray.size(); j++)
 				{
 					let myWrapper: Wrapper = this.wrapperArray.at(j);
-					if (wrapper.equal_to(myWrapper))
+					if (wrapper.equals(myWrapper))
 						continue;
 
 					let valid: boolean = true;

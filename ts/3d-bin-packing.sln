@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "3d-bin-packing", "3d-bin-packing.njsproj", "{CCEAE363-D05D-47E5-994D-E23350718805}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demo", "..\demo\demo.csproj", "{5F673CB6-9689-47A5-A27E-78097E624BA1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCEAE363-D05D-47E5-994D-E23350718805}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCEAE363-D05D-47E5-994D-E23350718805}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCEAE363-D05D-47E5-994D-E23350718805}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCEAE363-D05D-47E5-994D-E23350718805}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F673CB6-9689-47A5-A27E-78097E624BA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F673CB6-9689-47A5-A27E-78097E624BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F673CB6-9689-47A5-A27E-78097E624BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F673CB6-9689-47A5-A27E-78097E624BA1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

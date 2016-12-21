@@ -2,8 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "declaration": true,
-        "jsx": "react",
         "module": "none",
-        "outFile": "../release/node/packer.js"
+        "outFile": "../lib/3d-bin-packing.js"
     }
 }

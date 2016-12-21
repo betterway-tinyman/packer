@@ -1,0 +1,26 @@
+{
+  "name": "3d-bin-packing-demo",
+  "version": "1.1.0",
+  "description": "Demo, visualization of 3D-Bin-Packing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/betterwaysystems/packer.git"
+  },
+  "author": "Jeongho Nam",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/betterwaysystems/packer/issues"
+  },
+  "homepage": "https://github.com/betterwaysystems/packer#readme",
+  "dependencies": {
+    "@types/3d-bin-packing": "0.0.4",
+    "@types/react": "^0.14.55",
+    "@types/react-data-grid": "^1.0.6",
+    "@types/react-dom": "^0.14.19",
+    "@types/three": "0.0.28"
+  }
+}

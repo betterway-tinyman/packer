@@ -308,7 +308,7 @@ namespace boxologic
 				let box: Box = new Box(this.instanceArray.at(i));
 
 				this.total_box_volume += box.volume;
-				this.box_array[i] = box;
+				this.box_array.set(i, box);
 			}
 
 			// SCRAP_LIST
@@ -425,7 +425,7 @@ namespace boxologic
 			//		// ERASE FROM NEIGHBORS
 			//		let overlapped_boxes = boxes[i].overlapped_boxes;
 
-			//		for (let it = overlapped_boxes.begin(); !it.equal_to(overlapped_boxes.end()); it = it.next())
+			//		for (let it = overlapped_boxes.begin(); !it.equals(overlapped_boxes.end()); it = it.next())
 			//			boxes[i].overlapped_boxes.erase(boxes[i]);
 					
 			//		// ERASE FROM PALLET
@@ -485,7 +485,7 @@ namespace boxologic
 				this.construct_layers();
 
 				// ITERATION IN LAYERS
-				for (let it = this.layer_map.begin(); !it.equal_to(this.layer_map.end()); it = it.next())
+				for (let it = this.layer_map.begin(); !it.equals(this.layer_map.end()); it = it.next())
 				{
 					// BEGINS PACKING
 					this.iterate_layer(it.first);
@@ -531,7 +531,7 @@ namespace boxologic
 
 			// UNPACK ALL BOXES
 			for (let i: number = 0; i < this.box_array.size(); i++)
-				this.box_array[i].is_packed = false;
+				this.box_array.at(i).is_packed = false;
 
 			do
 			{
@@ -586,7 +586,7 @@ namespace boxologic
 
 			for (let i: number = 0; i < this.box_array.size(); i++)
 			{
-				let box: Box = this.box_array[i];
+				let box: Box = this.box_array.at(i);
 
 				for (let j: number = 1; j <= 3; j++)
 				{
@@ -639,7 +639,7 @@ namespace boxologic
 						if (i == k)
 							continue;
 
-						let my_box: Box = this.box_array[k];
+						let my_box: Box = this.box_array.at(k);
 						let dim_diff: number = Math.min
 							(
 								Math.abs(ex_dim - my_box.width),
@@ -687,11 +687,11 @@ namespace boxologic
 				let prev = this.scrap_min_z.prev();
 				let next = this.scrap_min_z.next();
 
-				if (this.scrap_min_z.equal_to(this.scrap_list.end()))
+				if (this.scrap_min_z.equals(this.scrap_list.end()))
 				{
 					break;
 				}
-				if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end()))
+				if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end()))
 				{
 					/////////////////////////////////////////////////////////
 					// NO LEFT AND RIGHT
@@ -709,7 +709,7 @@ namespace boxologic
 					if (this.evened) continue;
 
 					// UPDATE CURRENT BOX
-					let box: Box = this.box_array[this.cboxi];
+					let box: Box = this.box_array.at(this.cboxi);
 					box.cox = 0;
 					box.coy = this.packed_layout_height;
 					box.coz = this.scrap_min_z.value.cumz;
@@ -734,7 +734,7 @@ namespace boxologic
 						this.scrap_min_z = this.scrap_list.insert(this.scrap_min_z, scrap);
 					}
 				}
-				else if (prev.equal_to(this.scrap_list.end()))
+				else if (prev.equals(this.scrap_list.end()))
 				{
 					/////////////////////////////////////////////////////////
 					// NO LEFT, BUT RIGHT
@@ -756,7 +756,7 @@ namespace boxologic
 					next = this.scrap_min_z.next();
 
 					// UPDATE CURRENT BOX
-					let box: Box = this.box_array[this.cboxi];
+					let box: Box = this.box_array.at(this.cboxi);
 					box.coy = this.packed_layout_height;
 					box.coz = this.scrap_min_z.value.cumz;
 
@@ -800,7 +800,7 @@ namespace boxologic
 						}
 					}
 				}
-				else if (next.equal_to(this.scrap_list.end()))
+				else if (next.equals(this.scrap_list.end()))
 				{
 					////////////////////////////////////////////////////////
 					// NO RIGHT BUT LEFT
@@ -822,7 +822,7 @@ namespace boxologic
 					prev = this.scrap_min_z.prev();
 
 					// UPDATE CURRENT BOX
-					let box: Box = this.box_array[this.cboxi];
+					let box: Box = this.box_array.at(this.cboxi);
 					box.coy = this.packed_layout_height;
 					box.coz = this.scrap_min_z.value.cumz;
 					box.cox = prev.value.cumx;
@@ -886,7 +886,7 @@ namespace boxologic
 					next = this.scrap_min_z.next();
 
 					// UPDATE CURRENT BOX
-					let box: Box = this.box_array[this.cboxi];
+					let box: Box = this.box_array.at(this.cboxi);
 					box.coy = this.packed_layout_height;
 					box.coz = this.scrap_min_z.value.cumz;
 
@@ -977,7 +977,7 @@ namespace boxologic
 					next = this.scrap_min_z.next();
 
 					// UPDATE CURRENT BOX
-					let box: Box = this.box_array[this.cboxi];
+					let box: Box = this.box_array.at(this.cboxi);
 					box.coy = this.packed_layout_height;
 					box.coz = this.scrap_min_z.value.cumz;
 					box.cox = prev.value.cumx;
@@ -1041,7 +1041,7 @@ namespace boxologic
 
 			for (let i: number = 0; i < this.box_array.size(); i++)
 			{
-				let box: Box = this.box_array[i];
+				let box: Box = this.box_array.at(i);
 				if (box.is_packed) 
 					continue;
 
@@ -1085,7 +1085,7 @@ namespace boxologic
 					{
 						for (let k: number = 0; k < this.box_array.size(); k++)
 						{
-							let my_box: Box = this.box_array[k];
+							let my_box: Box = this.box_array.at(k);
 
 							// SAME INSTANCE WITH THE SAME INDEX OR ALREADY PACKED
 							if (i == k || my_box.is_packed == true)
@@ -1137,7 +1137,7 @@ namespace boxologic
 
 			for (let i: number = 0; i < this.box_array.size(); i++)
 			{
-				let box: Box = this.box_array[i];
+				let box: Box = this.box_array.at(i);
 				if (box.is_packed) 
 					continue;
 		
@@ -1237,7 +1237,7 @@ namespace boxologic
 						this.layer_in_layer != 0 || 
 						(
 							// NO LEFT AND RIGHT EXISTS
-							prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end())
+							prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end())
 						)
 					))
 				{
@@ -1260,7 +1260,7 @@ namespace boxologic
 				}
 				else
 				{
-					if (prev.equal_to(this.scrap_list.end()) && next.equal_to(this.scrap_list.end()))
+					if (prev.equals(this.scrap_list.end()) && next.equals(this.scrap_list.end()))
 					{
 						///////////////////////////////////////////
 						// SCRAP_MIN_Z HAS NO NEIGHBOR
@@ -1273,7 +1273,7 @@ namespace boxologic
 					{
 						this.evened = true;
 
-						if (prev.equal_to(this.scrap_list.end()))
+						if (prev.equals(this.scrap_list.end()))
 						{
 							///////////////////////////////////////////
 							// NO LEFT, BUT RIGHT
@@ -1282,7 +1282,7 @@ namespace boxologic
 							// RIGHT IS THE NEW SCRAP_MIN_Z
 							this.scrap_min_z = this.scrap_list.erase(this.scrap_min_z);
 						}
-						else if (next.equal_to(this.scrap_list.end()))
+						else if (next.equals(this.scrap_list.end()))
 						{
 							///////////////////////////////////////////
 							// NO RIGHT, BUT LEFT
@@ -1332,7 +1332,7 @@ namespace boxologic
 		 */
 		private volume_check(): void
 		{
-			let box: Box = this.box_array[this.cboxi];
+			let box: Box = this.box_array.at(this.cboxi);
 
 			box.is_packed = true;
 			box.layout_width = this.cbox_layout_width;
@@ -1366,7 +1366,7 @@ namespace boxologic
 		{
 			this.scrap_min_z = this.scrap_list.begin();
 
-			for (let it = this.scrap_min_z; !it.equal_to(this.scrap_list.end()); it = it.next())
+			for (let it = this.scrap_min_z; !it.equals(this.scrap_list.end()); it = it.next())
 				if (it.value.cumz < this.scrap_min_z.value.cumz)
 					this.scrap_min_z = it;
 		}
@@ -1399,7 +1399,7 @@ namespace boxologic
 		 */
 		private write_box_file(): void
 		{
-			let box: Box = this.box_array[this.cboxi];
+			let box: Box = this.box_array.at(this.cboxi);
 
 			let cox: number;
 			let coy: number;

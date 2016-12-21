@@ -79,8 +79,6 @@ You also can separate cloud server(C++) and clients(Web), let users to connect r
 ## Usage
 ##### TypeScript (Node.JS)
 ```typescript
-/// <reference path="typings/3d-bin-packing/packer.d.ts" />
-
 import packer = require("3d-bin-packing");
 import samchon = require("samchon-framework");
 
@@ -89,8 +87,8 @@ function main(): void
     ///////////////////////////
     // CONSTRUCT OBJECTS
     ///////////////////////////
-    let wrapperArray: bws.packer.WrapperArray = new packer.WrapperArray();
-    let instanceArray: bws.packer.InstanceArray = new packer.InstanceArray();
+    let wrapperArray: packer.WrapperArray = new packer.WrapperArray();
+    let instanceArray: packer.InstanceArray = new packer.InstanceArray();
 
     // Wrappers
     wrapperArray.push
@@ -116,11 +114,11 @@ function main(): void
     // BEGINS PACKING
     ///////////////////////////
     // CONSTRUCT PACKER
-    let my_packer: bws.packer.Packer = new packer.Packer(wrapperArray, instanceArray);
+    let my_packer: packer.Packer = new packer.Packer(wrapperArray, instanceArray);
 
     ///////
     // PACK (OPTIMIZE)
-    let result: bws.packer.WrapperArray = my_packer.optimize();
+    let result: packer.WrapperArray = my_packer.optimize();
     ///////
 
     ///////////////////////////

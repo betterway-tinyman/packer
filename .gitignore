@@ -9,7 +9,6 @@ Desktop.ini
 #	CUSTOM
 # ======================================================
 *.bat
-*.*ignore
 .gitattribute
-bin
-release/demo
+
+node_modules

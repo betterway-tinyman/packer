@@ -47,11 +47,6 @@ namespace bws.packer
 		 */
 		protected orientation: number;
 
-		/**
-		 * 
-		 */
-		protected color: number = -1;
-
 		/* ============================================================
 			CONSTRUCTORS & SETTERS
 		===============================================================
@@ -410,141 +405,11 @@ namespace bws.packer
 			let xml: library.XML = super.toXML();
 			xml.push(this.instance.toXML());
 			
-			xml.eraseProperty("color");
 			xml.setProperty("layoutWidth", this.getLayoutWidth() + "");
 			xml.setProperty("layoutHeight", this.getLayoutHeight() + "");
 			xml.setProperty("layoutLength", this.getLength() + "");
 
 			return xml;
-		}
-
-		/* -----------------------------------------------------------
-			VISUALIZERS
-		----------------------------------------------------------- */
-		/**
-		 * Thickness of boundary lines of a shape represents the {@link instance}.
-		 */
-		private static get BOUNDARY_THICKNESS(): number
-		{
-			return 0.1;
-		}
-
-		/**
-		 * 
-		 * 
-		 * @param geometry
-		 *
-		 * @return A shape and its boundary lines as 3D-objects.
-		 */
-		public toDisplayObjects(geometry: THREE.Geometry): std.Vector<THREE.Object3D>
-		{
-			let objects: std.Vector<THREE.Object3D> = new std.Vector<THREE.Object3D>();
-
-			// ---------------------------------------
-			// BOUNDARIES
-			// ---------------------------------------
-			for (let i: number = 1; i <= 12; i++)
-			{
-				let boundaryLine: THREE.Mesh =
-					new THREE.Mesh
-					(
-						geometry,
-						new THREE.MeshPhongMaterial
-						({
-								color: 0xFF0000, shading: THREE.FlatShading,
-								vertexColors: THREE.VertexColors, shininess: 0
-						})
-					);
-				let width: number, height: number, length: number;
-				let x: number, y: number, z: number;
-				
-				// SCALE
-				switch (i)
-				{
-					case 1: case 3: case 9: case 12:
-						width = this.getLayoutWidth();
-						height = Wrap.BOUNDARY_THICKNESS;
-						length = Wrap.BOUNDARY_THICKNESS;
-						break;
-					case 2: case 4: case 10: case 11: case 10:
-						height = this.getLayoutHeight();
-						width = Wrap.BOUNDARY_THICKNESS;
-						length = Wrap.BOUNDARY_THICKNESS;
-						break;
-					default: // 5, 6, 7, 8
-						length = this.getLength();
-						width = Wrap.BOUNDARY_THICKNESS;
-						height = Wrap.BOUNDARY_THICKNESS;
-						break;
-				}
-
-				// X
-				switch (i)
-				{
-					case 4: case 6: case 8: case 11:
-						x = this.x + this.getLayoutWidth() - Wrap.BOUNDARY_THICKNESS;
-						break;
-					default:
-						x = this.x;
-						break;
-				}
-
-				// Y
-				switch (i)
-				{
-					case 3: case 7: case 8: case 12:
-						y = this.y + this.getLayoutHeight() - Wrap.BOUNDARY_THICKNESS;
-						break;
-					default:
-						y = this.y;
-						break;
-				}
-
-				// Z
-				switch (i)
-				{
-					case 9: case 10: case 11: case 12:
-						z = this.z + this.getLength() - Wrap.BOUNDARY_THICKNESS;
-						break;
-					default:
-						z = this.z;
-						break;
-				}
-
-				// SET POSITION AND SCALE
-				boundaryLine.scale.set(width, height, length);
-				boundaryLine.position.set(x + width / 2, y + height / 2, z + length / 2);
-				
-				objects.push_back(boundaryLine);
-			}
-
-			// ---------------------------------------
-			// SHAPE
-			// ---------------------------------------
-			if (this.color == -1)
-				this.color = Math.random() * 0xFFFFFF;
-			
-			let shape: THREE.Mesh = new THREE.Mesh
-				(
-					geometry, 
-					new THREE.MeshLambertMaterial
-					({ 
-						color: this.color,
-						opacity: 0.5,
-						transparent: true
-					})
-				);
-
-			shape.scale.set(this.getLayoutWidth(), this.getLayoutHeight(), this.getLength());
-			shape.position.set
-			(
-				this.x + this.getLayoutWidth() / 2, 
-				this.y + this.getLayoutHeight() / 2, 
-				this.z + this.getLength() / 2
-			);
-
-			objects.push_back(shape);
-			return objects;
 		}
 	}
 }
