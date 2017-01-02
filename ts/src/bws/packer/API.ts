@@ -1,8 +1,11 @@
-﻿// IMPORTS
+﻿/// <reference types="tstl" />
+/// <reference types="samchon" />
+
+// IMPORTS
 try
 {
 	eval("var std = require('tstl');");
-	eval("var samchon = require('samchon-framework');");
+	eval("var samchon = require('samchon');");
 }
 catch (exception) { }
 

@@ -1,6 +1,5 @@
 const fs = require("fs");
 const process = require('child_process');
-const minifier = require('minifier');
 
 compile();
 attach_header();
@@ -34,13 +33,15 @@ function distribute()
 	fs.writeFileSync
 	(
 		"./demo/node_modules/@types/3d-bin-packing/index.d.ts",
-		fs.readFileSync("./lib/3d-bin-packing.d.ts", "utf8"), "utf8"
+		fs.readFileSync("./lib/3d-bin-packing.d.ts", "utf8"), 
+		"utf8"
 	);
 
 	// COPY BODY
 	fs.writeFileSync
 	(
 		"./demo/include/3d-bin-packing.js",
-		fs.readFileSync("./lib/3d-bin-packing.js", "utf8"), "utf8"
+		fs.readFileSync("./lib/3d-bin-packing.js", "utf8"), 
+		"utf8"
 	);
 }
