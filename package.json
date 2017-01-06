@@ -8,10 +8,10 @@
   },
   "main": "./lib/3d-bin-packing.js",
   "typings": "./lib/3d-bin-packing.d.ts",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "dependencies": {
-    "samchon": "~2.0.2",
-    "tstl": "~1.3.5"
+    "samchon": "~2.0.4",
+    "tstl": "~1.3.6"
   },
   "homepage": "http://betterwaysystems.github.io/packer",
   "repository": {

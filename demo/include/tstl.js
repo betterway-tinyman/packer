@@ -1079,7 +1079,8 @@ var std;
      */
     function shuffle(first, last) {
         for (var it = first; !it.equals(last); it = it.next()) {
-            var rand_index = Math.floor(Math.random() * (last.index - first.index));
+            var last_index = (last.index == -1) ? last.source().size() : last.index;
+            var rand_index = Math.floor(Math.random() * (last_index - first.index));
             it.swap(first.advance(rand_index));
         }
     }
